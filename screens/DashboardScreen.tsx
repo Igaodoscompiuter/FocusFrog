@@ -13,6 +13,7 @@ import { DailyAgenda } from '../components/tasks/DailyAgenda';
 import { LeavingHomeChecklist } from '../components/dashboard/LeavingHomeChecklist';
 import { MorningReviewModal } from '../components/modals/MorningReviewModal';
 import { EndDayReviewModal } from '../components/modals/EndDayReviewModal';
+import styles from './DashboardScreen.module.css'; // Importando os estilos modulares
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -164,7 +165,7 @@ export const DashboardScreen: React.FC = () => {
                 <form onSubmit={handleBrainDumpSubmit} className="brain-dump-form">
                     <input 
                         type="text" 
-                        placeholder="O que está na sua mente? (Despejo Mental)" 
+                        placeholder="O que está na sua mente? (Despejo Mental)"
                         value={brainDumpText}
                         onChange={(e) => setBrainDumpText(e.target.value)}
                     />
@@ -206,24 +207,18 @@ export const DashboardScreen: React.FC = () => {
                     )}
                 </div>
                 {frogTask ? (
-                    <>
-                        <p>Sua prioridade #1. Completar isso muda o jogo.</p>
-                        <TaskCard 
-                            task={frogTask} 
-                            onEdit={setEditingTask} 
-                            onSubtaskClick={handleSubtaskClick}
-                            onToggleSubtask={handleToggleSubtask}
-                            isDragging={false}
-                        />
-                    </>
-                ) : (
-                    <div className="empty-state">
-                        <p>Ainda não escolheu seu Sapo?</p>
-                        <button className="control-button" onClick={() => setIsMorningReviewOpen(true)}>
-                            <Icon path={icons.target} />
-                            <span>Definir Foco Agora</span>
+                    <div className={styles.frogCardContentActive}>
+                        <p className={styles.frogTaskTitle}>{frogTask.title}</p>
+                        <button className="control-button primary" style={{width: '100%', justifyContent: 'center'}} onClick={() => handleAgendaTaskClick(frogTask)}>
+                            Comer o Sapo!
                         </button>
                     </div>
+                ) : (
+                    <button className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
+                        <Icon path={icons.info} />
+                        <h4>Escolha seu Sapo!</h4>
+                        <p>Selecione a tarefa que vai destravar seu dia.</p>
+                    </button>
                 )}
             </div>
 
@@ -235,7 +230,7 @@ export const DashboardScreen: React.FC = () => {
                     style={{ width: '100%', marginBottom: '1.5rem', justifyContent: 'center' }} 
                     onClick={() => handleNavigate('tasks')}
                 >
-                    <Icon path={icons.layoutGrid} /> Organizar Matriz Completa
+                    <Icon path={icons.layoutGrid} /> Ver todas as tarefas
                 </button>
             </div>
 
