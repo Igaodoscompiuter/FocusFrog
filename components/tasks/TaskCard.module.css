@@ -1,0 +1,70 @@
+
+/*
+ * CSS Module for the new TaskCard component
+ */
+
+.cardWrapper {
+    position: relative;
+    overflow: hidden; /* Crucial para o efeito de deslizar */
+    border-radius: 12px; /* Arredonda o wrapper, que vai conter tudo */
+}
+
+.cardContent {
+    background-color: var(--surface-color);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animação suave */
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.actionsPanel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 80px; /* Largura do painel de ações */
+    background-color: var(--surface-secondary-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-left: 1px solid var(--border-color);
+}
+
+.actionsPanelVisible .cardContent {
+    transform: translateX(-80px); /* Desliza o conteúdo para a esquerda */
+    box-shadow: -10px 0px 20px rgba(0,0,0,0.1);
+}
+
+.actionButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0.5rem;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 0.7rem;
+    color: var(--text-secondary-color);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.actionButton:hover {
+    background-color: var(--surface-secondary-hover-color);
+    color: var(--text-color);
+}
+
+.actionButton svg {
+    width: 20px;
+    height: 20px;
+}
+
+.actionButton.danger {
+    color: var(--danger-color);
+}
+.actionButton.danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+

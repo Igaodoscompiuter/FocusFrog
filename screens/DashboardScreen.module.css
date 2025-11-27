@@ -20,6 +20,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1rem; /* Espaçamento entre o texto e o novo botão */
     padding: 1.5rem 1rem;
     text-align: center;
     background-color: var(--surface-secondary-color);
@@ -27,24 +28,7 @@
     border-radius: var(--border-radius);
     color: var(--text-secondary-color);
     width: 100%;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.frogCardContentEmpty:hover {
-    background-color: var(--surface-secondary-color); /* Usando uma var do seu sistema */
-}
-
-.frogCardContentEmpty .icon {
-    margin-bottom: 0.5rem;
-    width: 24px;
-    height: 24px;
-}
-
-.frogCardContentEmpty h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.1rem;
-    color: var(--text-color);
+    /* Removemos o cursor: pointer e o hover, pois o container não é mais clicável */
 }
 
 .frogCardContentEmpty p {

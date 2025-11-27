@@ -214,11 +214,12 @@ export const DashboardScreen: React.FC = () => {
                         </button>
                     </div>
                 ) : (
-                    <button className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
-                        <Icon path={icons.info} />
-                        <h4>Escolha seu Sapo!</h4>
+                    <div className={styles.frogCardContentEmpty}>
                         <p>Selecione a tarefa que vai destravar seu dia.</p>
-                    </button>
+                        <button className="control-button primary" onClick={() => setIsMorningReviewOpen(true)}>
+                            Escolha seu Sapo!
+                        </button>
+                    </div>
                 )}
             </div>
 

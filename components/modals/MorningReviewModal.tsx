@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import { useUI } from '../../context/UIContext';
 import { useTasks } from '../../context/TasksContext';
+import styles from './MorningReviewModal.module.css'; // Importando o CSS Module
 
 export const MorningReviewModal: React.FC = () => {
   const { isMorningReviewOpen, setIsMorningReviewOpen } = useUI();
@@ -25,40 +27,41 @@ export const MorningReviewModal: React.FC = () => {
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal review-modal">
-        <div className="modal-header">
-          <h3>Escolha seu Sapo 🐸</h3>
-          <p>Qual tarefa, se concluída, fará você sentir que o dia valeu a pena?</p>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <h3>
+            Escolha seu Sapo <Icon path={icons.frog} />
+          </h3>
+          <p>Qual tarefa única, se concluída hoje, terá o maior impacto positivo?</p>
         </div>
-        <div className="modal-body">
+        <div className={styles.modalBody}>
           {availableTasks.length > 0 ? (
-              <ul className="frog-selection-list">
+              <ul className={styles.taskList}>
                 {availableTasks.map(task => (
-                  <li
-                    key={task.id}
-                    className={`frog-selection-item ${selectedTaskId === task.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedTaskId(task.id)}
-                    tabIndex={0}
-                    onKeyPress={(e) => e.key === 'Enter' && setSelectedTaskId(task.id)}
-                  >
-                    <span className="frog-selection-radio"></span>
-                    <span className="frog-selection-title">{task.title}</span>
+                  <li key={task.id}>
+                    <button
+                      className={`${styles.taskButton} ${selectedTaskId === task.id ? styles.selected : ''}`}
+                      onClick={() => setSelectedTaskId(task.id)}
+                    >
+                      {task.title}
+                    </button>
                   </li>
                 ))}
               </ul>
           ) : (
-              <div className="empty-state">
-                  <p>Você não tem tarefas pendentes.</p>
+              <div className={styles.emptyState}>
+                  <p>Você não tem tarefas pendentes para hoje.</p>
+                  <p style={{marginTop: '0.5rem', fontSize: '0.8rem'}}>Adicione algumas na tela de Tarefas!</p>
               </div>
           )}
         </div>
-        <div className="modal-footer">
+        <div className={styles.modalFooter}>
            <button className="control-button secondary" onClick={handleClose}>
              Cancelar
            </button>
           <button
-            className="control-button"
+            className="control-button primary" // Usando a classe global para consistência
             onClick={handleConfirm}
             disabled={!selectedTaskId}
           >
