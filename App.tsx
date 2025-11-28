@@ -7,6 +7,8 @@ import { AppLayout } from './components/AppLayout';
 import { MoodboardScreen } from './screens/MoodboardScreen';
 import { WireframeViewer } from './screens/wireframes/WireframeViewer';
 
+import './global-components.css'; // <-- Importando os estilos globais para modais
+
 // Altere esta flag para 'app', 'moodboard', ou 'wireframe' para ver diferentes estágios do projeto.
 // Fase 3: Mudando para 'app' para aplicar o design de alta fidelidade.
 // FIX: Use a type assertion to prevent the compiler from narrowing the type of VIEW_MODE

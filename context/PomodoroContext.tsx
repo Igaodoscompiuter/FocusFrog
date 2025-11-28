@@ -12,13 +12,16 @@ const DEFAULT_FOCUS_DURATION = 25 * 60;
 
 interface PomodoroContextType {
     pomodorosCompleted: number;
-    pomodorosInCycle: number; // Exposed to UI
+    pomodorosInCycle: number;
     timerMode: TimerMode;
     status: PomodoroStatus;
     isActive: boolean;
     timeRemaining: number;
-    distractionNotes: string; // New: Persist notes
-    setDistractionNotes: (notes: string) => void; // New: Setter
+    distractionNotes: string;
+    setDistractionNotes: (notes: string) => void;
+    activeTaskId: string | null; // New: Track the task being focused on
+    activeTaskTitle: string | null; // New: Display the task title
+    startFocusOnTask: (taskId: string, taskTitle: string) => void; // New: Specific action
     startCycle: () => void;
     pauseCycle: () => void;
     resumeCycle: () => void;
@@ -43,13 +46,14 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const { activeSoundId, setPontosFoco } = useTheme();
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
-    // Store local cycle state to persist on refresh, though SW is truth source for timing
     const [pomodorosInCycle, setPomodorosInCycle] = useLocalStorage('focusfrog_pomodorosInCycle', 0);
     const [timerMode, setTimerMode] = useState<TimerMode>('focus');
     const [status, setStatus] = useState<PomodoroStatus>('idle');
     const [timeRemaining, setTimeRemaining] = useState(DEFAULT_FOCUS_DURATION);
-    const [distractionNotes, setDistractionNotes] = useState(''); // Global state for session notes
-    
+    const [distractionNotes, setDistractionNotes] = useState('');
+    const [activeTaskId, setActiveTaskId] = useLocalStorage<string | null>('focusfrog_activeTaskId', null);
+    const [activeTaskTitle, setActiveTaskTitle] = useLocalStorage<string | null>('focusfrog_activeTaskTitle', null);
+
     const audioContextRef = useRef<AudioContext | null>(null);
     const backgroundSoundSourceRef = useRef<AudioScheduledSourceNode | null>(null);
     const gainNodeRef = useRef<GainNode | null>(null);
@@ -58,56 +62,42 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const isActive = status === 'running';
 
     // --- Audio Logic ---
-    
-    // Helper to get or create AudioContext and ensure it's running
     const getAudioContext = useCallback(() => {
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
         if (!AudioContextClass) return null;
-        
         if (!audioContextRef.current) {
             audioContextRef.current = new AudioContextClass();
         }
-        
-        const context = audioContextRef.current;
-        // Important: Resume context if suspended (browser autoplay policy)
-        if (context.state === 'suspended') {
-            context.resume().catch(e => console.error("Could not resume audio context", e));
+        if (audioContextRef.current.state === 'suspended') {
+            audioContextRef.current.resume().catch(e => console.error("Could not resume audio context", e));
         }
-        return context;
+        return audioContextRef.current;
     }, []);
 
     const playSound = useCallback((type: 'start' | 'end') => {
         try {
             const context = getAudioContext();
             if (!context) return;
-            
             const oscillator = context.createOscillator();
             const gainNode = context.createGain();
-            
             oscillator.connect(gainNode);
             gainNode.connect(context.destination);
-            
-            // Sound Design for Beeps
             const now = context.currentTime;
             gainNode.gain.setValueAtTime(0.15, now);
-            
             if (type === 'start') {
-                // Rising tone (Positive)
                 oscillator.frequency.setValueAtTime(440, now);
                 oscillator.frequency.exponentialRampToValueAtTime(880, now + 0.1);
             } else {
-                // Falling tone/Chord (Completion)
                 oscillator.frequency.setValueAtTime(880, now);
                 oscillator.frequency.exponentialRampToValueAtTime(440, now + 0.2);
             }
-            
             oscillator.start(now);
             oscillator.stop(now + 0.3);
         } catch (e) {
             console.error("Audio play failed", e);
         }
     }, [getAudioContext]);
-    
+
     const stopBackgroundSound = useCallback((fade = false) => {
         if (backgroundSoundSourceRef.current && audioContextRef.current && gainNodeRef.current) {
             const source = backgroundSoundSourceRef.current;
@@ -115,7 +105,6 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             const gainNode = gainNodeRef.current;
             try {
                 if (fade) {
-                    // Fade out logic
                     const now = context.currentTime;
                     gainNode.gain.cancelScheduledValues(now);
                     gainNode.gain.setValueAtTime(gainNode.gain.value, now);
@@ -126,40 +115,27 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 } else {
                     source.stop();
                 }
-            } catch (e) { /* Ignore already stopped errors */ }
-            
+            } catch (e) { /* Ignore */ }
             backgroundSoundSourceRef.current = null;
-            // Do not nullify gainNodeRef immediately if fading, but simple logic:
-            if (!fade) gainNodeRef.current = null;
         }
     }, []);
 
     const playBackgroundSound = useCallback((fade = false) => {
-        stopBackgroundSound(false); // Hard stop previous
-        
-        // Check if sound is enabled and exists in our library
+        stopBackgroundSound(false);
         if (activeSoundId !== 'none' && sounds[activeSoundId]) {
             try {
                 const context = getAudioContext();
                 if (!context) return;
-                
                 const gainNode = context.createGain();
-                
-                // Generate the sound graph. 
-                // Now we pass the gainNode as the destination so the generator can connect filters to it.
                 const source = sounds[activeSoundId].generator(context, gainNode);
-                
-                // Connect master gain to output
                 gainNode.connect(context.destination);
-                
                 const now = context.currentTime;
                 if (fade) {
                     gainNode.gain.setValueAtTime(0, now);
-                    gainNode.gain.linearRampToValueAtTime(0.4, now + 2.0); // Smooth fade in
+                    gainNode.gain.linearRampToValueAtTime(0.4, now + 2.0);
                 } else {
                     gainNode.gain.setValueAtTime(0.4, now);
                 }
-                
                 source.start(now);
                 backgroundSoundSourceRef.current = source;
                 gainNodeRef.current = gainNode;
@@ -179,49 +155,43 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, []);
 
     const handleCycleCompletionUI = useCallback((prevMode: TimerMode) => {
+        const completedTaskTitle = activeTaskTitle ? `: ${activeTaskTitle}` : '';
         if (prevMode === 'focus') {
             setPomodorosCompleted(p => p + 1);
             setPontosFoco(p => p + 25);
-            addNotification('Sessão de Foco concluída!', '🏆');
-            setDistractionNotes(''); // Clear notes after successful session
+            addNotification(`Sessão de Foco concluída!${completedTaskTitle}`, '🏆');
+            setDistractionNotes('');
+            setActiveTaskId(null);
+            setActiveTaskTitle(null);
         } else {
             addNotification('Pausa concluída! Hora de focar.', '💪');
         }
         playSound('end');
         stopBackgroundSound(true);
-    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound]);
+    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound, activeTaskTitle, setActiveTaskId, setActiveTaskTitle]);
 
-    // Keep a ref to the callback to prevent useEffect re-binding
     const uiCallbackRef = useRef(handleCycleCompletionUI);
     useEffect(() => { uiCallbackRef.current = handleCycleCompletionUI; }, [handleCycleCompletionUI]);
 
-    // --- Event Listener ---
     useEffect(() => {
         const handleSWMessage = (event: MessageEvent) => {
-            const { type, timeRemaining: swTime, timerMode: swMode, status: swStatus, pomodorosInCycle: swPoms, nextMode } = event.data;
-
+            const { type, timeRemaining: swTime, timerMode: swMode, status: swStatus, pomodorosInCycle: swPoms } = event.data;
             if (type === 'TIMER_STATE') {
-                // Update state from SW
                 setTimerMode(swMode);
                 setStatus(swStatus);
                 setPomodorosInCycle(swPoms);
-                
-                // Only update time if the drift is significant (>1s) or if paused/idle
                 if (swStatus !== 'running' || Math.abs(swTime - timeRemaining) > 1) {
                     setTimeRemaining(swTime);
                 }
             } else if (type === 'CYCLE_END') {
-                // Handle UI side effects
                 uiCallbackRef.current(timerMode);
             }
         };
-
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.addEventListener('message', handleSWMessage);
             postCommandToSW('SYNC_STATE');
             postCommandToSW('SET_CYCLE_COUNT', pomodorosInCycle);
         }
-
         return () => {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.removeEventListener('message', handleSWMessage);
@@ -229,7 +199,6 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         };
     }, [postCommandToSW, timerMode]);
 
-    // --- Local Ticker for Smooth UI ---
     useEffect(() => {
         if (status === 'running') {
             localTimerRef.current = window.setInterval(() => {
@@ -242,63 +211,75 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             }
         }
         return () => {
-            if (localTimerRef.current) {
-                clearInterval(localTimerRef.current);
-            }
+            if (localTimerRef.current) clearInterval(localTimerRef.current);
         };
     }, [status]);
 
-
     const startCycle = useCallback(() => {
-        // Critical: Resume AudioContext on user interaction
+        if (activeTaskId) {
+            setActiveTaskId(null);
+            setActiveTaskTitle(null);
+        }
         const ctx = getAudioContext();
         if(ctx && ctx.state === 'suspended') ctx.resume();
-
         playSound('start');
         playBackgroundSound(true);
-        setStatus('running'); // Optimistic update
+        setStatus('running');
         postCommandToSW('START_TIMER');
-    }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext]);
+    }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext, activeTaskId, setActiveTaskId, setActiveTaskTitle]);
 
     const pauseCycle = useCallback(() => {
         stopBackgroundSound(true);
-        setStatus('paused'); // Optimistic update
+        setStatus('paused');
         postCommandToSW('PAUSE_TIMER');
     }, [stopBackgroundSound, postCommandToSW]);
-    
+
     const resumeCycle = useCallback(() => {
-        // Critical: Resume AudioContext on user interaction
         const ctx = getAudioContext();
         if(ctx && ctx.state === 'suspended') ctx.resume();
-
         playSound('start');
         playBackgroundSound(true);
-        setStatus('running'); // Optimistic update
+        setStatus('running');
         postCommandToSW('START_TIMER');
     }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext]);
 
     const stopCycle = useCallback(() => {
         stopBackgroundSound();
-        setStatus('idle'); // Optimistic update
+        setStatus('idle');
         setTimeRemaining(DEFAULT_FOCUS_DURATION);
         postCommandToSW('STOP_TIMER');
-    }, [stopBackgroundSound, postCommandToSW]);
-    
+        setActiveTaskId(null);
+        setActiveTaskTitle(null);
+    }, [stopBackgroundSound, postCommandToSW, setActiveTaskId, setActiveTaskTitle]);
+
+    const startFocusOnTask = useCallback((taskId: string, taskTitle: string) => {
+        stopBackgroundSound(false);
+        postCommandToSW('STOP_TIMER');
+        setActiveTaskId(taskId);
+        setActiveTaskTitle(taskTitle);
+        addNotification(`Focando em: ${taskTitle}`, '🎯');
+        setStatus('running');
+        setTimerMode('focus');
+        const ctx = getAudioContext();
+        if(ctx && ctx.state === 'suspended') ctx.resume();
+        playSound('start');
+        playBackgroundSound(true);
+        postCommandToSW('START_TIMER');
+    }, [addNotification, getAudioContext, playBackgroundSound, playSound, postCommandToSW, stopBackgroundSound, setActiveTaskId, setActiveTaskTitle]);
+
     const skipBreak = useCallback(() => {
         stopBackgroundSound();
         postCommandToSW('SKIP_BREAK');
     }, [stopBackgroundSound, postCommandToSW]);
-    
+
     const endCycleAndStartNext = useCallback(() => {
         stopBackgroundSound();
         postCommandToSW('SKIP_CYCLE');
     }, [stopBackgroundSound, postCommandToSW]);
-    
+
     const setFocusDuration = useCallback((minutes: number) => {
         postCommandToSW('SET_FOCUS_DURATION', minutes);
-        // Force optimistic update immediately to prevent UI lag/flash
-        // This ensures "15:00" appears instantly even if SW is slow
-        setStatus('idle'); 
+        setStatus('idle');
         setTimerMode('focus');
         setTimeRemaining(minutes * 60);
     }, [postCommandToSW]);
@@ -312,6 +293,9 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         timeRemaining,
         distractionNotes,
         setDistractionNotes,
+        activeTaskId,
+        activeTaskTitle,
+        startFocusOnTask,
         startCycle,
         pauseCycle,
         resumeCycle,

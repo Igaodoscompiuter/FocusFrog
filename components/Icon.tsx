@@ -1,11 +1,28 @@
 import React from 'react';
 
-export const Icon = ({ path, className = '', style, title }: { path: string, className?: string, style?: React.CSSProperties, title?: string }) => (
-  <svg className={className} style={style} width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    {title && <title>{title}</title>}
-    <path d={path} fillRule="evenodd" clipRule="evenodd" />
-  </svg>
+interface IconProps {
+    path: string;
+    size?: number;
+    className?: string;
+    style?: React.CSSProperties;
+    title?: string;
+}
+
+export const Icon: React.FC<IconProps> = ({ path, size = 24, className = '', style, title }) => (
+    <svg 
+        className={className}
+        style={style}
+        width={size}
+        height={size}
+        viewBox="0 0 24 24" 
+        fill="currentColor" 
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        {title && <title>{title}</title>}
+        <path d={path} fillRule="evenodd" clipRule="evenodd" />
+    </svg>
 );
+
 
 export const GoogleIcon = () => (
     <svg className="google-icon" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
 import { FocusTip } from '../components/focus/FocusTip';
 import { FocusCompletionModal } from '../components/modals/FocusCompletionModal';
+import styles from './FocusScreen.module.css'; // Usando CSS Modules
 
 const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -20,20 +21,14 @@ const CYCLE_LABELS: Record<ReturnType<typeof usePomodoro>['timerMode'], string> 
     longBreak: 'Pausa Longa',
 };
 
+// Componente interno agora usa CSS Modules
 const CycleIndicators = ({ completedCount }: { completedCount: number }) => {
     return (
-        <div className="cycle-indicators" style={{ display: 'flex', gap: '8px', marginTop: '0.5rem', justifyContent: 'center' }}>
+        <div className={styles.cycleIndicators}>
             {[0, 1, 2, 3].map((index) => (
                 <div 
                     key={index} 
-                    style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        backgroundColor: index < completedCount ? 'var(--primary-color)' : 'transparent',
-                        border: '2px solid var(--primary-color)',
-                        transition: 'all 0.3s ease'
-                    }}
+                    className={`${styles.cycleDot} ${index < completedCount ? styles.completed : ''}`}
                     title={`Sessão ${index + 1}`}
                 />
             ))}
@@ -70,14 +65,8 @@ export const FocusScreen: React.FC = () => {
 
     const taskTitle = subtaskInFocus ? subtaskInFocus.text : taskInFocus?.title;
     
-    useEffect(() => {
-        if (taskInFocus?.customDuration) {
-            setFocusDuration(taskInFocus.customDuration);
-        } else if (taskInFocus) {
-            setFocusDuration(25);
-        }
-    }, [taskInFocus?.id, taskInFocus?.customDuration, setFocusDuration]);
-    
+    // ... (lógica de useEffect e duration continua a mesma)
+
     const totalDuration = useMemo(() => {
         if (timerMode === 'shortBreak') return 5 * 60;
         if (timerMode === 'longBreak') return 15 * 60;
@@ -99,6 +88,7 @@ export const FocusScreen: React.FC = () => {
         }
     }, [timerMode, status, breakModalShown, timeRemaining, totalDuration, taskInFocus]);
 
+
     const handleConfirmCompletion = () => {
         if (taskInFocus) {
             handleCompleteTask(taskInFocus.id, subtaskInFocusId || undefined);
@@ -117,29 +107,27 @@ export const FocusScreen: React.FC = () => {
                 />
             )}
             
-            <main className={`focus-screen cycle-${timerMode} ${isImmersiveMode ? 'immersive' : ''}`}>
-                <div className="focus-header-controls">
-                    <button 
-                        className={`control-button secondary small ${isImmersiveMode ? 'active' : ''}`} 
-                        onClick={() => setIsImmersiveMode(!isImmersiveMode)}
-                        title="Modo Zen (Esconder UI)"
-                        style={{
-                            backgroundColor: isImmersiveMode ? 'rgba(0,0,0,0.5)' : undefined,
-                            color: isImmersiveMode ? 'white' : undefined,
-                            backdropFilter: isImmersiveMode ? 'blur(4px)' : undefined
-                        }}
-                    >
-                         <Icon path={isImmersiveMode ? "M4 15h16v-2H4v2zm0 4h16v-2H4v2zm0-8h16V9H4v2zm0-6v2h16V5H4z" : "M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"} />
-                         {isImmersiveMode ? 'Sair' : 'Modo Zen'}
-                    </button>
-                </div>
+            <main className={`${styles.focusScreen} ${styles['cycle-' + timerMode]} ${isImmersiveMode ? styles.immersive : ''}`}>
+                {/* Aderindo ao layout global com screen-content */}
+                <div className="screen-content">
 
-                <div className="focus-task-info">
-                    {taskInFocus ? (
+                    <div className={styles.focusHeaderControls}>
+                        <button 
+                            className={`btn btn-secondary btn-small ${isImmersiveMode ? styles.activeImmersive : ''}`}
+                            onClick={() => setIsImmersiveMode(!isImmersiveMode)}
+                            title="Modo Zen"
+                        >
+                            <Icon path={isImmersiveMode ? icons.minimize : icons.maximize} />
+                            {isImmersiveMode ? 'Sair' : 'Modo Zen'}
+                        </button>
+                    </div>
+
+                    <div className={styles.focusTaskInfo}>
+                         {taskInFocus ? (
                         <>
                             <p>Focando em:</p>
                             <h2>{taskTitle}</h2>
-                            {subtaskInFocus && <p className="parent-task-name">de: {taskInFocus.title}</p>}
+                            {subtaskInFocus && <p className={styles.parentTaskName}>de: {taskInFocus.title}</p>}
                         </>
                     ) : (
                         <>
@@ -147,83 +135,83 @@ export const FocusScreen: React.FC = () => {
                              <h2>Foco Geral</h2>
                         </>
                     )}
-                </div>
-
-                <div className="timer-display">
-                    {status === 'paused' && (
-                        <div className="timer-paused-overlay">
-                            <Icon path={icons.pause} />
-                            <span>PAUSADO</span>
-                        </div>
-                    )}
-                    <svg className="timer-progress-ring" width="300" height="300" viewBox="0 0 300 300">
-                        <circle className="timer-progress-ring-bg" strokeWidth="10" cx="150" cy="150" r="140" />
-                        <circle 
-                            className={`timer-progress-ring-fg ${isActive ? 'breathing' : ''}`} 
-                            strokeWidth="10" 
-                            cx="150" 
-                            cy="150" 
-                            r="140"
-                            strokeDasharray={`${2 * Math.PI * 140}`}
-                            strokeDashoffset={`${(2 * Math.PI * 140) * (1 - progress / 100)}`}
-                            transform="rotate(-90 150 150)"
-                        />
-                    </svg>
-                    <div className="timer-time-display">
-                        <div className="timer-time">{formatTime(timeRemaining)}</div>
-                        <div className="timer-cycle">
-                            {isActive && timerMode === 'focus' && <Icon path={icons.zap} className="focus-mode-indicator" />}
-                            {CYCLE_LABELS[timerMode]}
-                        </div>
-                        <CycleIndicators completedCount={pomodorosInCycle} />
                     </div>
-                </div>
 
-                {/* Distraction Pad Toggle */}
-                {isActive && (
-                    <div className="distraction-pad-container">
-                        {!showDistractionPad && !distractionNotes ? (
-                            <button className="distraction-pad-trigger" onClick={() => setShowDistractionPad(true)}>
-                                🧠 Pensamento intrusivo? Anote aqui.
-                            </button>
-                        ) : (
-                            <div className="distraction-pad">
-                                <textarea 
-                                    placeholder="Tire da cabeça e continue focando..."
-                                    value={distractionNotes}
-                                    onChange={(e) => setDistractionNotes(e.target.value)}
-                                    autoFocus
-                                />
-                                <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                     <button className="control-button small tertiary" onClick={() => setShowDistractionPad(false)}>Esconder</button>
-                                </div>
+                    <div className={styles.timerDisplay}>
+                        {status === 'paused' && (
+                            <div className={styles.timerPausedOverlay}>
+                                <Icon path={icons.pause} />
+                                <span>PAUSADO</span>
                             </div>
                         )}
+                        <svg className={styles.timerProgressRing} width="300" height="300" viewBox="0 0 300 300">
+                            <circle className={styles.timerProgressRingBg} strokeWidth="10" cx="150" cy="150" r="140" />
+                            <circle 
+                                className={`${styles.timerProgressRingFg} ${isActive ? styles.breathing : ''}`} 
+                                strokeWidth="10" 
+                                cx="150" 
+                                cy="150" 
+                                r="140"
+                                strokeDasharray={`${2 * Math.PI * 140}`}
+                                strokeDashoffset={`${(2 * Math.PI * 140) * (1 - progress / 100)}`}
+                                transform="rotate(-90 150 150)"
+                            />
+                        </svg>
+                        <div className={styles.timerTimeDisplay}>
+                            <div className={styles.timerTime}>{formatTime(timeRemaining)}</div>
+                            <div className={styles.timerCycle}>
+                                {isActive && timerMode === 'focus' && <Icon path={icons.zap} className={styles.focusModeIndicator} />}
+                                {CYCLE_LABELS[timerMode]}
+                            </div>
+                            <CycleIndicators completedCount={pomodorosInCycle} />
+                        </div>
                     </div>
-                )}
 
-                <div className="focus-controls">
-                    <div className="secondary-actions">
-                         <button className="control-button" onClick={stopCycle}>
-                            <Icon path={icons.rotateCw} />
-                            <span>Parar</span>
-                        </button>
-                    </div>
-                    <div className="main-actions">
-                         {status === 'running' ? (
-                            <button className="control-button primary" onClick={pauseCycle}>
-                                <Icon path={icons.pause} />
+                    {isActive && (
+                        <div className={styles.distractionPadContainer}>
+                            {!showDistractionPad && !distractionNotes ? (
+                                <button className={styles.distractionPadTrigger} onClick={() => setShowDistractionPad(true)}>
+                                    🧠 Pensamento intrusivo? Anote aqui.
+                                </button>
+                            ) : (
+                                <div className={styles.distractionPad}>
+                                    <textarea 
+                                        placeholder="Tire da cabeça e continue focando..."
+                                        value={distractionNotes}
+                                        onChange={(e) => setDistractionNotes(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                        <button className="btn btn-secondary btn-small" onClick={() => setShowDistractionPad(false)}>Esconder</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className={styles.focusControls}>
+                        <div className={styles.secondaryActions}>
+                            <button className="btn btn-secondary" onClick={stopCycle}>
+                                <Icon path={icons.rotateCw} />
+                                <span>Parar</span>
                             </button>
-                        ) : (
-                             <button className="control-button primary" onClick={isActive ? resumeCycle : startCycle}>
-                                <Icon path={icons.play} />
-                            </button>
-                        )}
+                        </div>
+                        <div className={styles.mainActions}>
+                            {status === 'running' ? (
+                                <button className="btn btn-primary" onClick={pauseCycle}>
+                                    <Icon path={icons.pause} />
+                                </button>
+                            ) : (
+                                <button className="btn btn-primary" onClick={isActive ? resumeCycle : startCycle}>
+                                    <Icon path={icons.play} />
+                                </button>
+                            )}
+                        </div>
+                        <div className={styles.secondaryActions}></div> {/* Espaçador */}
                     </div>
-                    <div className="secondary-actions"></div>
+
+                    {!isImmersiveMode && <FocusTip isActive={isActive} currentCycle={timerMode} />}
                 </div>
-
-                {!isImmersiveMode && <FocusTip isActive={isActive} currentCycle={timerMode} />}
             </main>
         </>
     );

@@ -1,54 +1,92 @@
+
 import React, { useState } from 'react';
-import { useTasks } from '../../context/TasksContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import { ChecklistModal } from '../modals/ChecklistModal';
 import type { ChecklistItem } from '../../types';
+import styles from './LeavingHomeChecklist.module.css';
 
-export const LeavingHomeChecklist: React.FC = () => {
-    const { 
-        leavingHomeItems, 
-        handleToggleLeavingHomeItem,
-        handleAddLeavingHomeItem,
-        handleRemoveLeavingHomeItem,
-        handleResetLeavingHomeItems 
-    } = useTasks();
+interface LeavingHomeChecklistProps {
+    items: ChecklistItem[];
+    onToggleItem: (itemId: string) => void;
+    onAddItem: (text: string) => void;
+    onRemoveItem: (itemId: string) => void;
+    onResetItems: () => void;
+}
+
+export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({ 
+    items, onToggleItem, onAddItem, onRemoveItem, onResetItems 
+}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+
+    if (!items || items.length === 0) {
+        return null; 
+    }
+
+    const handleToggleItemClick = (itemId: string) => {
+        if (isEditing) return; // Desabilita o clique no item durante a edição
+        onToggleItem(itemId);
+    };
 
     return (
         <>
             {isModalOpen && (
                 <ChecklistModal 
-                    items={leavingHomeItems}
-                    onAddItem={handleAddLeavingHomeItem}
-                    onRemoveItem={handleRemoveLeavingHomeItem}
+                    items={items} // A modal agora é apenas para adicionar
+                    onAddItem={onAddItem}
+                    onRemoveItem={onRemoveItem} // Manter por enquanto, pode ser removido depois
                     onClose={() => setIsModalOpen(false)}
                 />
             )}
-            <div className="card">
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-                    <h3><Icon path={icons.briefcase} /> Checklist de Saída</h3>
-                    <div>
-                        <button className="control-button tertiary" onClick={handleResetLeavingHomeItems} style={{padding: '0.4rem 0.8rem', marginRight: '0.5rem'}}>
-                           Desmarcar
-                        </button>
-                        <button className="control-button secondary" onClick={() => setIsModalOpen(true)} style={{padding: '0.4rem 0.8rem'}}>
-                            <Icon path={icons.pencil} /> Editar
+            
+            <div className={styles.card}>
+                <div className={styles.header}>
+                    <h3><Icon path={icons.briefcase} /> Checklist para Sair</h3>
+                    <div className={styles.buttonGroup}>
+                        {!isEditing ? (
+                             <button 
+                                className="btn btn-secondary btn-small"
+                                onClick={onResetItems}
+                            >
+                               Desmarcar Todos
+                            </button>
+                        ) : (
+                            <button 
+                                className="btn btn-primary btn-small"
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                <Icon path={icons.plus} /> Adicionar
+                            </button>
+                        )}
+                        <button 
+                            className="btn btn-secondary btn-small"
+                            onClick={() => setIsEditing(!isEditing)}
+                        >
+                            {isEditing ? 'Concluir' : 'Editar'}
                         </button>
                     </div>
                 </div>
 
-                <ul style={{listStyle: 'none'}}>
-                    {leavingHomeItems.map(item => (
+                <ul className={styles.checklist}>
+                    {items.map(item => (
                         <li 
                             key={item.id} 
-                            className={`filter-checkbox ${item.completed ? 'completed' : ''}`}
-                            onClick={() => handleToggleLeavingHomeItem(item.id)}
-                            style={{padding: '0.5rem 0'}}
+                            className={`${styles.checklistItem} ${item.completed ? styles.completed : ''} ${isEditing ? styles.editing : ''}`}
+                            onClick={() => handleToggleItemClick(item.id)}
                         >
-                            <input type="checkbox" checked={item.completed} readOnly />
-                            <span className="checkbox-visual"><Icon path={icons.check} /></span>
-                            <span style={{textDecoration: item.completed ? 'line-through' : 'none', opacity: item.completed ? 0.7 : 1}}>{item.text}</span>
+                            <div className={styles.itemContent}>
+                                <span className={styles.checkbox}></span>
+                                <span className={styles.text}>{item.text}</span>
+                            </div>
+                            {isEditing && !item.isDefault && (
+                                <button 
+                                    className="btn btn-icon btn-small"
+                                    onClick={() => onRemoveItem(item.id)}
+                                >
+                                    <Icon path={icons.trash} />
+                                </button>
+                            )}
                         </li>
                     ))}
                 </ul>

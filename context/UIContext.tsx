@@ -36,6 +36,10 @@ interface UIContextType {
 
     installPrompt: any;
     handleInstallApp: () => void;
+
+    // Novo estado para o modo de desenvolvedor
+    devModeEnabled: boolean;
+    setDevModeEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -54,11 +58,13 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [subtaskInFocusId, setSubtaskInFocusId] = useState<string | null>(null);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     
-    // Persisted Settings
     const [density, setDensity] = useLocalStorage<Density>('focusfrog_density', 'normal');
     const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>('focusfrog_sound_enabled', true);
     const [hapticsEnabled, setHapticsEnabled] = useLocalStorage<boolean>('focusfrog_haptics_enabled', true);
     
+    // Novo estado persistido para o modo de desenvolvedor
+    const [devModeEnabled, setDevModeEnabled] = useLocalStorage<boolean>('focusfrog_dev_mode', false);
+
     const [isImmersiveMode, setIsImmersiveMode] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
@@ -67,41 +73,26 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     useEffect(() => {
         const handleBeforeInstallPrompt = (e: Event) => {
-            // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
-            // Stash the event so it can be triggered later.
             setInstallPrompt(e);
         };
-
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        };
+        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     }, []);
 
     const handleInstallApp = async () => {
         if (!installPrompt) return;
-        
-        // Show the install prompt
         installPrompt.prompt();
-        
-        // Wait for the user to respond to the prompt
         const { outcome } = await installPrompt.userChoice;
-        
         if (outcome === 'accepted') {
             addNotification('Instalando aplicativo...', '📲');
         }
-        
-        // We've used the prompt, and can't use it again, throw it away
         setInstallPrompt(null);
     };
 
     const addNotification = (message: string, icon: string, action?: Notification['action']) => {
         const newNotification: Notification = { id: Date.now(), message, icon, action };
         setNotifications(prev => [...prev, newNotification]);
-        
-        // Haptic Feedback for notification
         if (hapticsEnabled && navigator.vibrate) {
             navigator.vibrate(50);
         }
@@ -115,11 +106,9 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (activeScreen === 'focus' && screen !== 'focus') {
             setTaskInFocus(null);
             setSubtaskInFocusId(null);
-            setIsImmersiveMode(false); // Reset immersive when leaving focus
+            setIsImmersiveMode(false);
         }
         setActiveScreen(screen);
-        
-        // Light Haptic on navigation
         if (hapticsEnabled && navigator.vibrate) {
             navigator.vibrate(5);
         }
@@ -148,7 +137,10 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         isMorningReviewOpen,
         setIsMorningReviewOpen,
         installPrompt,
-        handleInstallApp
+        handleInstallApp,
+        // Incluindo o novo estado no provedor
+        devModeEnabled,
+        setDevModeEnabled
     };
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

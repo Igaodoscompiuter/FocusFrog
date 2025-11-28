@@ -1,43 +1,7 @@
-
 /*
  * CSS Módulo para o Modal de Revisão Matinal (Escolha do Sapo)
+ * As classes de layout base (.modalOverlay, .modal) foram movidas para global-components.css
  */
-
-.modalOverlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    backdrop-filter: blur(5px);
-    padding: 1rem;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.modal {
-    background-color: var(--surface-color);
-    border-radius: 16px;
-    padding: 1.5rem;
-    width: 100%;
-    max-width: 450px;
-    max-height: calc(100vh - 4rem);
-    display: flex;
-    flex-direction: column;
-    animation: slideUp 0.3s ease;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
 
 .modalHeader {
     text-align: center;
@@ -64,9 +28,16 @@
 .modalBody {
     overflow-y: auto;
     flex-grow: 1;
-    /* Remove padding to allow full-width buttons */
-    margin: 0 -0.5rem; /* Counteract padding on items */
+    margin: 0 -0.5rem;
     padding: 0 0.5rem;
+    /* Oculta a barra de rolagem */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Oculta a barra de rolagem para navegadores Webkit */
+.modalBody::-webkit-scrollbar {
+    display: none;
 }
 
 .taskList {
@@ -75,13 +46,13 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Espaço entre os botões de tarefa */
+    gap: 0.5rem;
 }
 
 .taskButton {
     display: block;
     width: 100%;
-    text-align: left;
+    text-align: center; 
     padding: 1rem 1.25rem;
     font-size: 1rem;
     font-weight: 500;
@@ -95,14 +66,18 @@
 
 .taskButton:hover {
     background-color: var(--surface-secondary-hover-color);
-    border-color: var(--primary-color-translucent);
+    border-color: var(--accent-color-light);
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .taskButton.selected {
-    background-color: var(--primary-color-translucent);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background-color: var(--surface-secondary-hover-color);
+    border-color: var(--accent-color);
+    color: var(--text-color);
     font-weight: 600;
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .emptyState {
@@ -120,4 +95,50 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
+}
+
+.controlButton {
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+.secondary {
+    background-color: transparent;
+    border-color: var(--border-color);
+    color: var(--text-secondary-color);
+}
+
+.secondary:hover {
+    background-color: var(--surface-secondary-color);
+    border-color: var(--border-color-hover);
+    color: var(--text-color);
+}
+
+.primary:not(:disabled) {
+    background-color: var(--accent-color);
+    color: var(--text-on-accent);
+    border-color: var(--accent-color);
+}
+
+.primary:not(:disabled):hover {
+    filter: brightness(1.15);
+}
+
+.primary:disabled {
+    background-color: var(--surface-secondary-color);
+    color: var(--text-disabled-color);
+    border-color: var(--surface-secondary-color);
+    cursor: not-allowed;
+    filter: none;
 }

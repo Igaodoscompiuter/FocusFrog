@@ -1,3 +1,4 @@
+
 /*
 
 STYLE GUIDE
@@ -21,9 +22,38 @@ STYLE GUIDE
 */
 
 /* =================================================================
-   FONTS
+   THEME & DESIGN SYSTEM VARIABLES
+   FIX: Adicionada a seção :root para definir as variáveis de design
+   que estavam faltando, incluindo as de border-radius.
 ================================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap');
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+
+  --font-scale: 1; /* Para controle de densidade */
+
+  /* Espaçamento (sp) */
+  --sp-xs: 0.25rem;  /* 4px */
+  --sp-sm: 0.5rem;   /* 8px */
+  --sp-md: 0.75rem;  /* 12px */
+  --sp-lg: 1rem;     /* 16px */
+  --sp-xl: 1.5rem;   /* 24px */
+  --sp-2xl: 2rem;    /* 32px */
+
+  /* Raios de Borda */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 24px;  /* <<< A VARIÁVEL QUE FALTAVA */
+  --border-radius-full: 9999px;
+
+  /* Safe Area Insets (para notches de celular, etc.) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
 
 /* =================================================================
    BASE & RESET
@@ -102,227 +132,60 @@ a {
   -webkit-overflow-scrolling: touch;
 }
 
-
 /* =================================================================
-   TASK CARD - REBUILT FOR ALIGNMENT & CONSISTENCY
+   GLOBAL COMPONENT STYLES
 ================================================================= */
 
-.task-card {
-    /* This class is now on the inner, sliding container */
-}
-
-.task-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Align items to the top for multi-line titles */
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.task-card-title-group {
-    display: flex;
-    align-items: flex-start; /* Align checkbox with the top of the title */
-    gap: 0.75rem;
-    flex-grow: 1;
-}
-
-.task-card-title-group h4 {
-    line-height: 1.4; /* Better for multi-line text */
-    margin-top: -2px; /* Fine-tune vertical alignment with checkbox */
-}
-
-.task-card-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    flex-shrink: 0; /* Prevent buttons from shrinking */
-}
-
-.task-complete-button {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--border-color);
-    flex-shrink: 0;
-    margin-top: 2px; /* Align with the baseline of the title */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.task-complete-button.completed {
-    background-color: var(--success-color);
-    border-color: var(--success-color);
-}
-
-.task-complete-button svg {
-    width: 14px;
-    height: 14px;
-    color: var(--surface-color);
-}
-
-.task-card-description {
-    font-size: 0.9rem;
-    color: var(--text-secondary-color);
-    margin: 0 0 1rem 2.25rem; /* Align with title */
-    line-height: 1.5;
-}
-
-.task-card-footer {
-    display: flex;
-    flex-wrap: wrap; /* Allow badges to wrap */
-    gap: 0.5rem;
-    margin-top: 1rem;
-    padding-left: 2.25rem; /* Align with title */
-}
-
-/* The key fix for icon/text alignment in badges */
-.task-card-badge {
+/* --- Global Button System --- */
+.btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 3px 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.75rem;
+    justify-content: center;
+    gap: var(--sp-sm);
+    padding: var(--sp-md) var(--sp-lg);
     font-weight: 600;
-    line-height: 1.5;
+    font-size: 0.9rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    transition: filter 100ms ease-out, transform 100ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out;
 }
 
-.task-card-badge svg {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
+.btn:active {
+    transform: scale(0.97);
+    filter: brightness(0.92);
 }
 
-.overdue-badge {
-    color: var(--danger-color);
-    border-color: transparent;
-    background-color: var(--danger-color-ultratranslucent);
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary-color);
 }
 
-.energy-badge-low, .energy-badge-medium, .energy-badge-high {
-    background-color: transparent; /* Remove default background */
+.btn-secondary {
+    background-color: var(--surface-secondary-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
 }
 
-.energy-badge-low {
-    color: #3b82f6;
-    border-color: rgba(59, 130, 246, 0.3);
-}
-.energy-badge-medium {
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.3);
-}
-.energy-badge-high {
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
+.btn-secondary:hover {
+    background-color: var(--border-color);
 }
 
-.tag-badge {
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 4px 10px;
+.btn-small {
+    padding: var(--sp-xs) var(--sp-md);
+    font-size: 0.8rem;
+    border-radius: var(--border-radius-md);
 }
 
-.task-card.status-done {
-    opacity: 0.6;
+.btn-icon {
+    padding: var(--sp-sm);
+    border-radius: 50%;
+    line-height: 0;
 }
 
-.task-card.status-done .task-card-title-group h4 {
-    text-decoration: line-through;
-}
-
-
-/* Subtasks Section */
-.subtasks-section { 
-    margin: 1rem 0 0 2.25rem;
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-}
-.subtasks-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    cursor: pointer; 
-    color: var(--text-secondary-color); 
-    font-size: 0.8rem; 
-    font-weight: 600; 
-    margin-bottom: 0.75rem; 
-}
-.collapsible-chevron { 
-    transition: transform 0.2s ease; 
-}
-.subtasks-section.collapsed .collapsible-chevron { 
-    transform: rotate(-90deg); 
-}
-.subtasks-content { 
-    display: grid; 
-    gap: 0.6rem; 
-}
-.subtasks-section.collapsed .subtasks-content { 
-    display: none; 
-}
-.subtask-item { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.6rem; 
-    font-size: 0.85rem; 
-    padding: 0.25rem; 
-    border-radius: 4px; 
-    transition: background-color 0.2s; 
-}
-.subtask-item:hover { 
-    background-color: var(--surface-secondary-color); 
-}
-.subtask-item.completed { 
-    opacity: 0.7; 
-}
-.subtask-item.completed span { 
-    text-decoration: line-through; 
-}
-.subtask-checkbox { 
-    width: 16px; 
-    height: 16px; 
-    border: 2px solid var(--border-color); 
-    border-radius: 50%; 
-    cursor: pointer; 
-    flex-shrink: 0; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-.subtask-checkbox.checked { 
-    border-color: var(--success-color); 
-    background-color: var(--success-color); 
-    color: white; 
-}
-.subtask-checkbox svg { 
-    width: 10px; 
-    height: 10px; 
-}
-.subtasks-progress { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.75rem; 
-    margin-top: 0.75rem; 
-}
-.subtasks-progress-bar-container { 
-    flex-grow: 1; 
-    height: 6px; 
-    background-color: var(--surface-secondary-color); 
-    border-radius: 3px; 
-    overflow: hidden; 
-}
-.subtasks-progress-bar { 
-    height: 100%; 
-    background-color: var(--primary-color); 
-    border-radius: 3px; 
-    transition: width 0.3s ease; 
-}
-.subtasks-progress-text { 
-    font-size: 0.7rem; 
-    color: var(--text-secondary-color); 
-    font-weight: 600;
+.btn-icon.btn-small {
+    padding: var(--sp-xs);
+    width: 32px;
+    height: 32px;
 }

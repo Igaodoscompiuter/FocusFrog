@@ -6,6 +6,7 @@ import { useUI } from '../context/UIContext';
 import { useTasks } from '../context/TasksContext';
 import { usePomodoro } from '../context/PomodoroContext';
 import { useTheme } from '../context/ThemeContext';
+import styles from './StatsScreen.module.css';
 
 export const StatsScreen: React.FC = () => {
   const { handleNavigate } = useUI();
@@ -13,157 +14,130 @@ export const StatsScreen: React.FC = () => {
   const { pomodorosCompleted } = usePomodoro();
   const { pontosFoco } = useTheme();
 
-  // Heatmap Logic - Timezone Corrected
-  const heatmapData = useMemo(() => {
-    const today = new Date();
-    const days = [];
-    const completedTasks = tasks.filter(t => t.status === 'done' && t.dueDate);
-    
-    // Create a map of date -> count
-    const activityMap = new Map<string, number>();
-    completedTasks.forEach(task => {
-        if (task.dueDate) {
-            // task.dueDate is already YYYY-MM-DD local string stored in DB
-            const count = activityMap.get(task.dueDate) || 0;
-            activityMap.set(task.dueDate, count + 1);
-        }
-    });
-
-    // Generate last 84 days (approx 3 months)
-    for (let i = 83; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        
-        // Manual construction to avoid UTC shifting
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        const dateStr = `${yyyy}-${mm}-${dd}`;
-
-        const count = activityMap.get(dateStr) || 0;
-        
-        let level = 0;
-        if (count > 0) level = 1;
-        if (count > 3) level = 2;
-        if (count > 6) level = 3;
-
-        days.push({ date: dateStr, level, count });
-    }
-    return days;
-  }, [tasks]);
-
   const stats = useMemo(() => {
-    const completedTasks = tasks.filter(t => t.status === 'done');
-    const tasksCompletedCount = completedTasks.length;
-    
-    // Calculate streak based on local dates strings
-    const completedDatesStr = [...new Set(completedTasks.filter(t => t.dueDate).map(t => t.dueDate!))].sort().reverse();
+    const tasksCompleted = tasks.filter(t => t.status === 'done');
+    const focusHours = (pomodorosCompleted * 25) / 60;
+
+    // Lógica de Streak
+    const completionDates = [...new Set(tasksCompleted.map(t => new Date(t.completedAt!).toDateString()))];
+    completionDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
     
     let streakDays = 0;
-    if(completedDatesStr.length > 0) {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        const todayStr = `${yyyy}-${mm}-${dd}`;
+    if (completionDates.length > 0) {
+        streakDays = 1;
+        let today = new Date();
+        // Se o último dia não for hoje ou ontem, o streak é 0 ou 1
+        const lastCompletionDate = new Date(completionDates[0]);
+        const daysSinceLastCompletion = (today.setHours(0,0,0,0) - lastCompletionDate.setHours(0,0,0,0)) / (1000*60*60*24);
 
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yyyyY = yesterday.getFullYear();
-        const mmY = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const ddY = String(yesterday.getDate()).padStart(2, '0');
-        const yesterdayStr = `${yyyyY}-${mmY}-${ddY}`;
-
-        // Check if streak is active (completed today OR yesterday)
-        if(completedDatesStr[0] === todayStr || completedDatesStr[0] === yesterdayStr) {
-            streakDays = 1;
-            let currentDate = new Date(completedDatesStr[0] + 'T00:00:00'); // Force local midnight
-            
-            for(let i = 1; i < completedDatesStr.length; i++) {
-                const prevDate = new Date(completedDatesStr[i] + 'T00:00:00');
-                const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
-                
-                if (diffDays === 1) { 
-                    streakDays++; 
-                    currentDate = prevDate; 
-                } else { 
-                    break; 
+        if (daysSinceLastCompletion > 1) {
+            streakDays = 0;
+        } else {
+             for (let i = 0; i < completionDates.length - 1; i++) {
+                const currentDate = new Date(completionDates[i]);
+                const previousDate = new Date(completionDates[i+1]);
+                const diffTime = currentDate.getTime() - previousDate.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    streakDays++;
+                } else {
+                    break;
                 }
             }
         }
     }
-    
-    const focusHours = (Number(pomodorosCompleted) * 25) / 60; 
 
-    return { 
-        tasksCompletedCount, 
-        pomodoroSessions: pomodorosCompleted, 
-        streakDays, 
-        pointsEarned: pontosFoco, 
-        focusHours: parseFloat(focusHours.toFixed(1)) 
+    return {
+      tasksCompletedCount: tasksCompleted.length,
+      focusHours: Math.floor(focusHours),
+      pointsEarned: pontosFoco,
+      streakDays: streakDays,
     };
   }, [tasks, pomodorosCompleted, pontosFoco]);
+  
+  const heatmapData = useMemo(() => {
+    const taskCountsByDay: { [key: string]: number } = {};
+    tasks.filter(t => t.status === 'done' && t.completedAt).forEach(task => {
+        const date = new Date(task.completedAt!).toISOString().split('T')[0];
+        taskCountsByDay[date] = (taskCountsByDay[date] || 0) + 1;
+    });
+
+    const data = [];
+    const today = new Date();
+    for (let i = 90; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateString = date.toISOString().split('T')[0];
+        const count = taskCountsByDay[dateString] || 0;
+        
+        let level = 0;
+        if (count > 0 && count <= 2) level = 1;
+        else if (count > 2 && count <= 5) level = 2;
+        else if (count > 5) level = 3;
+
+        data.push({ date: dateString, count, level });
+    }
+    return data;
+  }, [tasks]);
+
 
   return (
-    <main className="stats-screen">
-      <div className="stats-header">
-        <div className="stats-title">
+    <main className="screen-content">
+      <div className={styles.statsHeader}>
+        <div className={styles.statsTitle}>
             <h2>Seu Progresso</h2>
         </div>
       </div>
 
-      {/* Hero Card - Streak */}
-      <div className="streak-hero-card">
-        <div className="streak-content">
-            <div className="streak-icon-large">
-                <Icon path={icons.flame} className={stats.streakDays > 0 ? 'burning' : ''} />
+      <div className={styles.streakHeroCard}>
+        <div className={styles.streakContent}>
+            <div className={`${styles.streakIconLarge} ${stats.streakDays > 0 ? styles.burning : ''}`}>
+                <Icon path={icons.flame} />
             </div>
-            <div className="streak-info">
-                <span className="streak-count">{stats.streakDays}</span>
-                <span className="streak-label">Dias seguidos de foco!</span>
+            <div className={styles.streakInfo}>
+                <span className={styles.streakCount}>{stats.streakDays}</span>
+                <span className={styles.streakLabel}>Dias seguidos de foco!</span>
             </div>
         </div>
       </div>
 
-      <div className="key-metrics-grid">
-        <div className="card metric-card">
-          <div className="metric-header"><Icon path={icons.checkSquare} /><span>Tarefas</span></div>
-          <div className="value">{stats.tasksCompletedCount}</div>
+      <div className={styles.keyMetricsGrid}>
+        <div className={`card ${styles.metricCard}`}>
+          <div className={styles.metricHeader}><Icon path={icons.checkSquare} /><span>Tarefas</span></div>
+          <div className={styles.value}>{stats.tasksCompletedCount}</div>
         </div>
-        <div className="card metric-card">
-          <div className="metric-header"><Icon path={icons.timer} /><span>Horas Focadas</span></div>
-          <div className="value">{stats.focusHours}h</div>
+        <div className={`card ${styles.metricCard}`}>
+          <div className={styles.metricHeader}><Icon path={icons.timer} /><span>Horas Focadas</span></div>
+          <div className={styles.value}>{stats.focusHours}h</div>
         </div>
-         <div className="card metric-card">
-           <div className="metric-header"><Icon path={icons.trophy} /><span>Pontos</span></div>
-          <div className="value">{stats.pointsEarned}</div>
+         <div className={`card ${styles.metricCard}`}>
+           <div className={styles.metricHeader}><Icon path={icons.trophy} /><span>Pontos</span></div>
+          <div className={styles.value}>{stats.pointsEarned}</div>
         </div>
       </div>
       
-      {/* Heatmap Section */}
       <div className="card">
-          <h4 style={{marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+          <h4 className={styles.sectionTitle}>
               <Icon path={icons.calendar} /> Consistência
           </h4>
-          <div className="heatmap-wrapper">
-            <div className="heatmap-grid">
+          <div className={styles.heatmapWrapper}>
+            <div className={styles.heatmapGrid}>
                 {heatmapData.map((day) => (
                     <div 
                         key={day.date} 
-                        className={`heatmap-cell level-${day.level}`}
+                        className={`${styles.heatmapCell} ${styles['level-' + day.level]}`}
                         title={`${day.date}: ${day.count} tarefas`}
                     ></div>
                 ))}
             </div>
           </div>
-          <p style={{fontSize: '0.8rem', color: 'var(--text-secondary-color)', marginTop: '0.5rem', textAlign: 'right'}}>
+          <p className={styles.footnote}>
               Últimos 3 meses
           </p>
       </div>
 
-      <div className="stats-footer-actions">
-         <button className="control-button secondary" onClick={() => handleNavigate('rewards')} style={{width: '100%', justifyContent: 'center'}}>
+      <div className={styles.statsFooterActions}>
+         <button className="btn btn-secondary" onClick={() => handleNavigate('rewards')}>
             <Icon path={icons.trophy} /> Ir para Loja de Recompensas
          </button>
       </div>

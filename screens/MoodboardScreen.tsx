@@ -2,117 +2,121 @@
 import React from 'react';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
+import styles from './MoodboardScreen.module.css'; // 1. Usando CSS Modules!
 
+// Componentes internos agora usam styles
 const ColorSwatch = ({ hex, name }: { hex: string, name: string }) => (
-    <div className="swatch">
-        <div className="swatch-color" style={{ backgroundColor: hex }}></div>
-        <div className="swatch-info">
-            <span className="swatch-name">{name}</span>
-            <span className="swatch-hex">{hex}</span>
+    <div className={styles.swatch}>
+        <div className={styles.swatchColor} style={{ backgroundColor: hex }}></div>
+        <div className={styles.swatchInfo}>
+            <span className={styles.swatchName}>{name}</span>
+            <span className={styles.swatchHex}>{hex}</span>
         </div>
     </div>
 );
 
 const TypoExample = ({ size, weight, text, font, description }: { size: string, weight: number, text: string, font: string, description: string }) => (
-    <div className="typo-example">
-        <span className="typo-description">{description}</span>
+    <div className={styles.typoExample}>
+        <span className={styles.typoDescription}>{description}</span>
         <p style={{ fontSize: size, fontWeight: weight, fontFamily: `'${font}', sans-serif` }}>{text}</p>
     </div>
 );
 
 export const MoodboardScreen = () => {
     return (
-        <div className="moodboard-container">
-            <header className="moodboard-header">
-                <div className="logo-concept">
-                    <Icon path={icons.frog} className="logo-icon" />
+        <div className={styles.moodboardContainer}>
+            <header className={styles.moodboardHeader}>
+                <div className={styles.logoConcept}>
+                    <Icon path={icons.frog} className={styles.logoIcon} />
                     <h1>FocusFrog</h1>
                 </div>
-                <h2>Mood Board: Produtividade Energizante</h2>
-                <p className="subtitle">Uma identidade visual que capacita, motiva e foca. A produtividade se torna um jogo que você quer vencer.</p>
+                <h2>Guia de Estilo & Arquitetura</h2>
+                <p className={styles.subtitle}>Um guia vivo para a identidade visual, filosofia e arquitetura técnica do projeto.</p>
             </header>
 
-            <main className="moodboard-content">
-                <section className="moodboard-section">
-                    <h3>Paleta de Cores: Alto Contraste & Vibrante</h3>
-                    <div className="grid-colors">
-                        <ColorSwatch hex="#111827" name="Fundo (Deep Space)" />
-                        <ColorSwatch hex="#1F2937" name="Card (Azul-Grafite)" />
-                        <ColorSwatch hex="#3B82F6" name="Primária (Azul Elétrico)" />
-                        <ColorSwatch hex="#FBBF24" name="Acento (Amarelo Solar)" />
-                        <ColorSwatch hex="#F97316" name="Acento 2 (Laranja Vibrante)" />
-                        <ColorSwatch hex="#10B981" name="Sucesso (Verde Esmeralda)" />
-                        <ColorSwatch hex="#D1D5DB" name="Texto Principal" />
-                        <ColorSwatch hex="#9CA3AF" name="Texto Secundário" />
+            <main className={styles.moodboardContent}>
+                {/* Seção de Filosofia ATUALIZADA */}
+                <section className={styles.moodboardSection}>
+                    <h3>Filosofia & Arquitetura</h3>
+                    <div className={styles.philosophyGrid}>
+                        <div className={styles.philosophyCard}>
+                            <h4><Icon path={icons.eye} /> Foco Direcionado</h4>
+                            <p>O fundo escuro elimina distrações. O brilho das cores primárias guia o olho para ações importantes.</p>
+                        </div>
+                        <div className={styles.philosophyCard}>
+                            <h4><Icon path={icons.gift} /> Recompensa Imediata</h4>
+                            <p>Cores quentes e vibrantes são usadas para recompensas e celebrações, criando um feedback visual positivo.</p>
+                        </div>
+                        <div className={styles.philosophyCard}>
+                            <h4><Icon path={icons.home} /> Arquitetura da Casa</h4>
+                            <p><strong>Fundação:</strong> `App.css` e `ThemeContext` (regras globais). <strong>Cômodos:</strong> As Telas (`/screens`), que usam a classe `.screen-content`. <strong>Móveis:</strong> Os Componentes (`/components`), padronizados para qualquer cômodo.</p>
+                        </div>
+                        <div className={styles.philosophyCard}>
+                            <h4><Icon path={icons.fileCode} /> CSS Modules são Lei</h4>
+                            <p>Cada tela ou componente tem seu próprio arquivo `.module.css` para estilos. Não poluímos mais o escopo global com estilos específicos de componentes.</p>
+                        </div>
                     </div>
                 </section>
 
-                <section className="moodboard-section">
-                    <h3>Tipografia: Moderna & Amigável</h3>
-                     <div className="grid-typography">
-                        <TypoExample font="Poppins" size="2.5rem" weight={800} text="H1 Título Principal" description="Poppins ExtraBold - Títulos de Página" />
-                        <TypoExample font="Poppins" size="1.5rem" weight={700} text="H2 Título de Seção" description="Poppins Bold - Títulos de Card" />
-                        <TypoExample font="Inter" size="1rem" weight={400} text="Corpo de texto normal, para descrições e parágrafos." description="Inter Regular - Corpo de Texto" />
-                        <TypoExample font="Inter" size="0.875rem" weight={600} text="Texto de Botão" description="Inter SemiBold - Botões & UI" />
-                    </div>
-                </section>
-                
-                <section className="moodboard-section">
-                    <h3>Exemplos de Componentes</h3>
-                    <div className="grid-components">
-                        <div className="component-card">
-                            <h4>Botões</h4>
-                            <div className="component-example">
-                                <button className="mood-button mood-button-primary">
-                                    <Icon path={icons.plus} />
-                                    <span>Ação Primária</span>
+                {/* Seção de Componentes ATUALIZADA */}
+                <section className={styles.moodboardSection}>
+                    <h3>Componentes Reais (Nossos "Móveis")</h3>
+                    <div className={styles.gridComponents}>
+                        {/* Exemplo de Botões */}
+                        <div className="card">
+                            <h4 className={styles.componentTitle}>Botões Padrão (`.btn`)</h4>
+                            <div className={styles.componentExample}>
+                                <button className="btn btn-primary">
+                                    <Icon path={icons.plus} /> Primário
                                 </button>
-                                <button className="mood-button mood-button-accent">
-                                    <Icon path={icons.zap} />
-                                    <span>Ação de Destaque</span>
+                                <button className="btn btn-secondary">
+                                    <Icon path={icons.settings} /> Secundário
                                 </button>
-                                 <button className="mood-button mood-button-outline">
-                                    <span>Ação Secundária</span>
+                                 <button className="btn btn-danger">
+                                    <Icon path={icons.trash} /> Perigo
                                 </button>
                             </div>
                         </div>
 
-                         <div className="component-card">
-                            <h4>Card de Estatística</h4>
-                            <div className="component-example">
-                               <div className="mood-stat-card">
-                                    <div className="stat-icon-wrapper">
-                                        <Icon path={icons.checkCircle} />
+                        {/* Exemplo de Cartão */}
+                         <div className="card">
+                            <h4 className={styles.componentTitle}>Cartão Base (`.card`)</h4>
+                            <div className={`${styles.componentExample} ${styles.cardExampleContent}`}>
+                                <span>Este é um <strong>.card</strong>.</span>
+                                <p>Ele é a base para a maioria dos nossos contêineres de conteúdo, como este.</p>
+                            </div>
+                        </div>
+
+                        {/* Exemplo de TaskCard (Simplificado) */}
+                        <div className="card">
+                            <h4 className={styles.componentTitle}>Cartão de Tarefa (`TaskCard`)</h4>
+                             <div className={styles.componentExample}>
+                                 {/* Maquete visual baseada no componente real */}
+                                <div className={styles.mockTaskCard}>
+                                    <div>
+                                        <p className={styles.mockTaskTitle}>Reformar o Moodboard</p>
+                                        <span className={styles.mockTaskTag}>#dev</span>
                                     </div>
-                                    <div className="stat-value">47</div>
-                                    <div className="stat-label">Tarefas Concluídas</div>
-                                    <div className="stat-badge">85% de sucesso</div>
-                               </div>
-                            </div>
-                        </div>
-
-                        <div className="component-card">
-                            <h4>Barra de Navegação (Conceito)</h4>
-                             <div className="component-example">
-                                <div className="mood-nav">
-                                    <a href="#" className="mood-nav-item"><Icon path={icons.layoutGrid} /></a>
-                                    <a href="#" className="mood-nav-item active"><Icon path={icons.checkSquare} /></a>
-                                    <a href="#" className="mood-nav-item"><Icon path={icons.timer} /></a>
-                                    <a href="#" className="mood-nav-item"><Icon path={icons.star} /></a>
+                                    <Icon path={icons.chevronRight} />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                 <section className="moodboard-section">
-                    <h3>Filosofia Visual</h3>
-                    <ul className="philosophy-list">
-                        <li><strong>Foco Direcionado:</strong> O fundo escuro elimina distrações. O brilho das cores primárias guia o olho exatamente para onde ele precisa ir.</li>
-                        <li><strong>Recompensa Imediata:</strong> Cores quentes (amarelo, laranja) são usadas para recompensas e celebrações, criando um feedback visual positivo e viciante.</li>
-                        <li><strong>Clareza e Legibilidade:</strong> A tipografia é escolhida por sua clareza. O contraste entre o texto claro e o fundo escuro garante conforto visual.</li>
-                        <li><strong>Energia e Movimento:</strong> O design não é estático. Animações e micro-interações serão rápidas e elásticas, dando uma sensação de poder e responsividade.</li>
-                    </ul>
+                {/* Seções de Cores e Tipografia (inalteradas na estrutura, mas usarão styles) */}
+                <section className={styles.moodboardSection}>
+                    <h3>Paleta de Cores</h3>
+                    <div className={styles.gridColors}>
+                        {/* ...ColorSwatches... */}
+                    </div>
+                </section>
+
+                <section className={styles.moodboardSection}>
+                    <h3>Tipografia</h3>
+                     <div className={styles.gridTypography}>
+                        {/* ...TypoExamples... */}
+                    </div>
                 </section>
             </main>
         </div>

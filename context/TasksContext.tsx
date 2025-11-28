@@ -19,6 +19,7 @@ interface TasksContextType {
     handleCompleteTask: (taskId: string, subtaskId?: string) => void;
     handleToggleSubtask: (taskId: string, subtaskId: string) => void;
     setFrogTaskId: (id: string | null) => void;
+    handleUnsetFrog: () => void;
     handleSaveTag: (tag: Partial<Tag>) => void;
     handleDeleteTag: (tagId: number) => void;
     handleDuplicateTask: (taskId: string) => void;
@@ -74,7 +75,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
     const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
 
-    // Helper to get local YYYY-MM-DD to prevent timezone issues with toISOString()
     const getLocalTodayString = useCallback(() => {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -226,7 +226,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             onAction: handleUndoDelete,
         });
         
-        // Clear the undo option after some time
         setTimeout(() => {
             setLastDeletedTask(null);
         }, 5000);
@@ -236,7 +235,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
         setTasks(prev => prev.map(task => {
             if (task.id === taskId) {
-                // Handle subtask completion
                 if (subtaskId) {
                     let subtaskJustCompleted = false;
                     const updatedSubtasks = task.subtasks?.map(st => {
@@ -257,17 +255,16 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     if (allSubtasksDone && updatedSubtasks.length > 0) {
                         if(task.status !== 'done') {
                             addNotification('Todas as subtarefas concluídas!', '🎉');
-                            setPontosFoco(p => p + 10); // Extra points for finishing the whole task
+                            setPontosFoco(p => p + 10);
                         }
                         newStatus = 'done';
                     } else if (task.status === 'done' && !allSubtasksDone) {
-                        newStatus = 'todo'; // Revert parent status if it was done
+                        newStatus = 'todo';
                     }
                     
                     return { ...task, subtasks: updatedSubtasks, status: newStatus };
                 }
                 
-                // Handle main task completion
                 const newStatus = task.status === 'done' ? 'todo' : 'done';
                 if (newStatus === 'done') {
                     addNotification('Tarefa concluída!', '🎉');
@@ -341,7 +338,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, [setTaskTemplates, addNotification]);
     
     const handleAddTemplates = useCallback((templates: TaskTemplate[]) => {
-        // Use local date to ensure tasks appear on today's dashboard regardless of UTC time
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -353,7 +349,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             title: template.title,
             description: template.description,
             quadrant: template.quadrant || 'inbox',
-            pomodoroEstimate: template.pomodoroEstimate !== undefined ? template.pomodoroEstimate : 1, // Default to 1 if undefined, allows 0
+            pomodoroEstimate: template.pomodoroEstimate !== undefined ? template.pomodoroEstimate : 1,
             customDuration: template.customDuration,
             energyNeeded: template.energyNeeded,
             subtasks: template.subtasks?.map((st, subIndex) => ({
@@ -362,7 +358,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 completed: false
             })),
             status: 'todo',
-            dueDate: todayStr, // Force local today date so they appear on dashboard
+            dueDate: todayStr,
         }));
 
         setTasks(prev => [...prev, ...newTasks]);
@@ -398,6 +394,14 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             handleUpdateTask({ ...task, dueDate: todayString });
         }
     };
+    
+    const handleUnsetFrog = useCallback(() => {
+        if (window.confirm("Tem certeza de que deseja desmarcar este sapo?")) {
+            setFrogTaskId(null);
+            addNotification("Sapo desmarcado.", "🐸");
+        }
+    }, [setFrogTaskId, addNotification]);
+
     const handleReviewAction = (action: 'complete' | 'postpone' | 'remove_date', taskId: string) => {
         switch (action) {
             case 'complete':
@@ -431,6 +435,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleCompleteTask,
         handleToggleSubtask,
         setFrogTaskId,
+        handleUnsetFrog,
         handleSaveTag,
         handleDeleteTag,
         handleDuplicateTask,

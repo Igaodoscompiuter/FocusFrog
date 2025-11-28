@@ -10,24 +10,13 @@ import type { Task, Quadrant, TaskFilters } from '../types';
 import { quadrants } from '../constants';
 import { FilterPanel } from '../components/tasks/FilterPanel';
 import { TaskLibraryModal } from '../components/modals/TaskLibraryModal';
+import styles from './TasksScreen.module.css'; // Usaremos styles para as classes específicas
 
-const QuadrantColumn: React.FC<{
-  quadrant: Quadrant;
-  tasks: Task[];
-  onEdit: (task: Partial<Task>) => void;
-  onSubtaskClick: (taskId: string, subtaskId: string) => void;
-  onToggleSubtask: (taskId: string, subtaskId: string) => void;
-  draggingTask: Task | null;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, task: Task) => void;
-  onDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>, quadrant: Quadrant, displayOrder: number) => void;
-  isMaximized: boolean;
-  onToggleMaximize: () => void;
-}> = ({ quadrant, tasks, onEdit, onSubtaskClick, onToggleSubtask, draggingTask, onDragStart, onDragEnd, onDrop, isMaximized, onToggleMaximize }) => {
+// QuadrantColumn permanece funcionalmente o mesmo, mas o JSX interno será padronizado
+const QuadrantColumn: React.FC<any> = ({ quadrant, tasks, onEdit, onSubtaskClick, onToggleSubtask, draggingTask, onDragStart, onDragEnd, onDrop, isMaximized, onToggleMaximize }) => {
   const [isColumnDragOver, setIsColumnDragOver] = useState(false);
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null);
-
-  const quadrantInfo = quadrants.find(q => q.id === quadrant) || { title: 'Caixa de Entrada', subtitle: 'Para Organizar', icon: 'listChecks' as keyof typeof icons };
+  const quadrantInfo = quadrants.find(q => q.id === quadrant) || { title: 'Caixa de Entrada', subtitle: 'Para Organizar', icon: 'inbox' as keyof typeof icons };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
@@ -59,12 +48,12 @@ const QuadrantColumn: React.FC<{
 
   return (
     <div
-      className={`quadrant-column quadrant-${quadrant} ${isMaximized ? 'maximized' : ''}`}
+      className={`${styles.quadrantColumn} ${styles['quadrant-' + quadrant]} ${isMaximized ? styles.maximized : ''}`}
       onDragOver={(e) => { e.preventDefault(); setIsColumnDragOver(true); }}
       onDragLeave={handleDragLeave}
       onDrop={handleColumnDrop}
     >
-      <div className="quadrant-header">
+      <div className={styles.quadrantHeader}>
         <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
             <Icon path={icons[quadrantInfo.icon]} />
             <div>
@@ -72,19 +61,19 @@ const QuadrantColumn: React.FC<{
             <p>{quadrantInfo.subtitle}</p>
             </div>
         </div>
-        <button onClick={onToggleMaximize} className="icon-button" title={isMaximized ? "Restaurar" : "Focar Quadrante"}>
-            <Icon path={isMaximized ? "M4 14h6v6h-6v-6zM14 4h6v6h-6v-6z" : "M3 3h18v18H3V3z"} style={{ width: 18, height: 18 }} />
+        <button onClick={onToggleMaximize} className="btn btn-secondary btn-icon btn-small" title={isMaximized ? "Restaurar" : "Focar Quadrante"}>
+            <Icon path={isMaximized ? icons.minimize : icons.maximize} />
         </button>
       </div>
-      <div className={`task-list ${isColumnDragOver && tasks.length === 0 ? 'drag-over' : ''}`}>
+      <div className={`${styles.taskList} ${isColumnDragOver && tasks.length === 0 ? styles.dragOver : ''}`}>
         {tasks.map((task, index) => (
           <div
             key={task.id}
-            className="drop-zone"
+            className={styles.dropZone}
             onDragOver={(e) => handleDragOver(e, index)}
             onDrop={(e) => handleDrop(e, index)}
           >
-            <div className={`drop-indicator ${dropIndicatorIndex === index ? 'visible' : ''}`}></div>
+            <div className={`${styles.dropIndicator} ${dropIndicatorIndex === index ? styles.visible : ''}`}></div>
             <TaskCard
               task={task}
               onEdit={onEdit}
@@ -97,16 +86,16 @@ const QuadrantColumn: React.FC<{
           </div>
         ))}
         <div 
-          className="drop-zone"
+          className={styles.dropZone}
           style={{ height: tasks.length > 0 ? '1rem' : '100%' }}
           onDragOver={(e) => handleDragOver(e, tasks.length)}
           onDrop={(e) => handleDrop(e, tasks.length)}
         >
-          <div className={`drop-indicator ${dropIndicatorIndex === tasks.length ? 'visible' : ''}`} style={{top: '4px'}}></div>
+          <div className={`${styles.dropIndicator} ${dropIndicatorIndex === tasks.length ? styles.visible : ''}`} style={{top: '4px'}}></div>
         </div>
         
         {tasks.length === 0 && (
-           <div className="empty-quadrant-dropzone" onDrop={handleColumnDrop}>
+           <div className={styles.emptyQuadrantDropzone} onDrop={handleColumnDrop}>
             <p>Vazio! 🎉</p>
           </div>
         )}
@@ -125,7 +114,8 @@ export const TasksScreen: React.FC = () => {
     const [draggingTask, setDraggingTask] = useState<Task | null>(null);
     const [maximizedQuadrant, setMaximizedQuadrant] = useState<Quadrant | null>(null);
 
-    const filteredTasks = useMemo(() => {
+    // ... (lógica de filtro e memoização continua a mesma) ...
+     const filteredTasks = useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -183,80 +173,72 @@ export const TasksScreen: React.FC = () => {
     };
     
     return (
-        <main className="tasks-screen">
+        <main> {/* Removido .tasks-screen */}
             {editingTask && <TaskModal taskToEdit={editingTask} onClose={handleCloseTaskModal} />}
-            {isLibraryOpen && (
-                <TaskLibraryModal 
-                    routines={routines}
-                    onAddRoutine={handleAddRoutine}
-                    onAddTemplates={handleAddTemplates}
-                    onClose={() => setIsLibraryOpen(false)}
-                />
-            )}
+            {isLibraryOpen && <TaskLibraryModal routines={routines} onAddRoutine={handleAddRoutine} onAddTemplates={handleAddTemplates} onClose={() => setIsLibraryOpen(false)} />}
             <FilterPanel isOpen={isFilterPanelOpen} onClose={() => setIsFilterPanelOpen(false)} filters={filters} onFilterChange={setFilters} />
 
-            <div className="tasks-header">
-                <div className="tasks-title">
-                    <h2>Matriz de Prioridades</h2>
-                </div>
-                <div className="tasks-actions">
-                     {maximizedQuadrant && (
-                        <button className="control-button tertiary" onClick={() => setMaximizedQuadrant(null)}>
-                            Restaurar Visão
+            {/* Adicionando a classe screen-content para consistência */}
+            <div className="screen-content">
+                <div className={styles.tasksHeader}>
+                    <div className={styles.tasksTitle}>
+                        <h2>Matriz de Prioridades</h2>
+                    </div>
+                    <div className={styles.tasksActions}>
+                        {maximizedQuadrant && (
+                            <button className="btn btn-secondary" onClick={() => setMaximizedQuadrant(null)}>
+                                Restaurar Visão
+                            </button>
+                        )}
+                        <button className="btn btn-secondary btn-icon" onClick={() => setIsLibraryOpen(true)} title="Biblioteca">
+                            <Icon path={icons.bookOpen} />
                         </button>
-                    )}
-                    <button className="control-button secondary icon-only" onClick={() => setIsLibraryOpen(true)} title="Biblioteca">
-                        <Icon path={icons.bookOpen} />
-                    </button>
-                    <button className="control-button secondary icon-only" onClick={() => setIsFilterPanelOpen(true)} title="Filtros">
-                        <Icon path={icons.filter} />
-                    </button>
-                    <button className="control-button" onClick={() => handleOpenTaskModal({isDetailed: true})}>
-                        <Icon path={icons.plus} /> Nova
-                    </button>
+                        <button className="btn btn-secondary btn-icon" onClick={() => setIsFilterPanelOpen(true)} title="Filtros">
+                            <Icon path={icons.filter} />
+                        </button>
+                        <button className="btn btn-primary" onClick={() => handleOpenTaskModal({ isDetailed: true })}>
+                            <Icon path={icons.plus} /> Nova
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div className={`tasks-board ${maximizedQuadrant ? 'has-maximized' : ''}`}>
-                {/* Inbox - Always visible unless a matrix quadrant is maximized */}
-                {(!maximizedQuadrant || maximizedQuadrant === 'inbox') && (
-                    <QuadrantColumn
-                        quadrant="inbox"
-                        tasks={tasksByQuadrant.inbox}
-                        onEdit={handleOpenTaskModal}
-                        onSubtaskClick={() => {}}
-                        onToggleSubtask={handleToggleSubtask}
-                        draggingTask={draggingTask}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onDrop={handleDrop}
-                        isMaximized={maximizedQuadrant === 'inbox'}
-                        onToggleMaximize={() => setMaximizedQuadrant(maximizedQuadrant === 'inbox' ? null : 'inbox')}
-                    />
-                )}
-                
-                <div className="eisenhower-matrix" style={{ display: maximizedQuadrant === 'inbox' ? 'none' : 'grid' }}>
-                    {quadrants.filter(q => q.id !== 'inbox').map(q => {
-                        const isHidden = maximizedQuadrant && maximizedQuadrant !== q.id;
-                        if (isHidden) return null;
-
-                        return (
-                            <QuadrantColumn
-                                key={q.id}
-                                quadrant={q.id as Quadrant}
-                                tasks={tasksByQuadrant[q.id as Quadrant]}
-                                onEdit={handleOpenTaskModal}
-                                onSubtaskClick={() => {}}
-                                onToggleSubtask={handleToggleSubtask}
-                                draggingTask={draggingTask}
-                                onDragStart={handleDragStart}
-                                onDragEnd={handleDragEnd}
-                                onDrop={handleDrop}
-                                isMaximized={maximizedQuadrant === q.id}
-                                onToggleMaximize={() => setMaximizedQuadrant(maximizedQuadrant === q.id ? null : q.id as Quadrant)}
-                            />
-                        );
-                    })}
+                <div className={`${styles.tasksBoard} ${maximizedQuadrant ? styles.hasMaximized : ''}`}>
+                     {(!maximizedQuadrant || maximizedQuadrant === 'inbox') && (
+                        <QuadrantColumn
+                            quadrant="inbox"
+                            tasks={tasksByQuadrant.inbox}
+                            onEdit={handleOpenTaskModal}
+                            onSubtaskClick={() => {}} // Placeholder
+                            onToggleSubtask={handleToggleSubtask}
+                            draggingTask={draggingTask}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onDrop={handleDrop}
+                            isMaximized={maximizedQuadrant === 'inbox'}
+                            onToggleMaximize={() => setMaximizedQuadrant(maximizedQuadrant === 'inbox' ? null : 'inbox')}
+                        />
+                    )}
+                    <div className={styles.eisenhowerMatrix} style={{ display: maximizedQuadrant === 'inbox' ? 'none' : 'grid' }}>
+                        {quadrants.filter(q => q.id !== 'inbox').map(q => {
+                            if (maximizedQuadrant && maximizedQuadrant !== q.id) return null;
+                            return (
+                                <QuadrantColumn
+                                    key={q.id}
+                                    quadrant={q.id as Quadrant}
+                                    tasks={tasksByQuadrant[q.id as Quadrant]}
+                                    onEdit={handleOpenTaskModal}
+                                    onSubtaskClick={() => {}} // Placeholder
+                                    onToggleSubtask={handleToggleSubtask}
+                                    draggingTask={draggingTask}
+                                    onDragStart={handleDragStart}
+                                    onDragEnd={handleDragEnd}
+                                    onDrop={handleDrop}
+                                    isMaximized={maximizedQuadrant === q.id}
+                                    onToggleMaximize={() => setMaximizedQuadrant(maximizedQuadrant === q.id ? null : q.id as Quadrant)}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </main>

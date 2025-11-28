@@ -1,37 +1,60 @@
+
 import React from 'react';
-import type { Screen } from '../types';
-import { Icon } from './Icon';
-import { icons } from './Icons';
 import { useUI } from '../context/UIContext';
+// Importando o novo ícone
+import { FiGrid, FiCheckSquare, FiTarget, FiBarChart2, FiAward } from 'react-icons/fi';
+import type { Screen } from '../types';
+import styles from './BottomNav.module.css';
 
-export const BottomNav = () => {
-  const { activeScreen, handleNavigate } = useUI();
+const iconMap: Record<Screen, React.ElementType> = {
+  dashboard: FiGrid,
+  tasks: FiCheckSquare,
+  focus: FiTarget,
+  stats: FiBarChart2,
+  rewards: FiAward,
+  moodboard: FiGrid, // SUBSTITUÍDO: Usando FiGrid como teste
+};
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: icons.layoutGrid },
-    { id: 'tasks', label: 'Tarefas', icon: icons.checkSquare },
-    { id: 'focus', label: 'Foco', icon: icons.timer },
-    { id: 'stats', label: 'Estatísticas', icon: icons.barChart },
-    { id: 'rewards', label: 'Ajustes', icon: icons.sliders },
-  ] as const;
+// Definindo a ordem base da navegação
+const baseScreenOrder: Screen[] = ['dashboard', 'tasks', 'focus', 'stats', 'rewards'];
+
+export const BottomNav: React.FC = () => {
+  // Pegando o estado devModeEnabled do contexto
+  const { activeScreen, handleNavigate, devModeEnabled } = useUI();
+
+  // Construindo a ordem final das telas
+  const screenOrder = [...baseScreenOrder];
+  if (devModeEnabled) {
+    screenOrder.push('moodboard'); // Adiciona o Moodboard se o modo dev estiver ativo
+  }
+
+  const screenLabels: Record<Screen, string> = {
+    dashboard: 'Dashboard',
+    tasks: 'Tarefas',
+    focus: 'Foco',
+    stats: 'Estatísticas',
+    rewards: 'Personalizar',
+    moodboard: 'Dev', // Rótulo para o botão do Moodboard
+  };
 
   return (
-    <nav className="bottom-nav">
-      {navItems.map(item => (
-        <a 
-          key={item.id}
-          href="#" 
-          className={`nav-item ${activeScreen === item.id ? 'active' : ''}`}
-          onClick={(e) => {
-            e.preventDefault();
-            handleNavigate(item.id as Screen);
-          }}
-          aria-current={activeScreen === item.id ? 'page' : undefined}
-        >
-          <Icon path={item.icon} />
-          <span>{item.label}</span>
-        </a>
-      ))}
+    <nav className={styles.bottomNav}>
+      {screenOrder.map((screen) => {
+        const Icon = iconMap[screen];
+        const isActive = activeScreen === screen;
+        const itemClassName = `${styles.navItem} ${isActive ? styles.active : ''}`;
+
+        return (
+          <button 
+            key={screen} 
+            className={itemClassName}
+            onClick={() => handleNavigate(screen)}
+          >
+            <Icon className={styles.navIcon} />
+            <span>{screenLabels[screen]}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 };

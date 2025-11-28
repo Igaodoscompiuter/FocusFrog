@@ -1,5 +1,7 @@
+
 import React, { useEffect, createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { themes, Theme } from '../themes';
+import { baseTokens } from '../designTokens'; // Importando os tokens base
 
 const THEME_STORAGE_KEY = 'focusfrog_theme_data_v2';
 
@@ -54,12 +56,19 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     useEffect(() => {
         const theme: Theme = themes[themeData.activeThemeId] || themes['dark-theme'];
         const root = document.documentElement;
+
+        // 1. Aplica os tokens base primeiro
+        Object.entries(baseTokens).forEach(([key, value]) => {
+            root.style.setProperty(key, value);
+        });
+
+        // 2. Aplica as cores do tema ativo por cima
         Object.entries(theme.colors).forEach(([key, value]) => {
             root.style.setProperty(key, value);
         });
+
     }, [themeData.activeThemeId]);
 
-    // Explicitly define and memorize setters to ensure stability
     const updateField = useCallback(<K extends keyof ThemeData>(field: K, updater: any) => {
          setThemeData(prevData => {
             const oldValue = prevData[field];

@@ -1,0 +1,116 @@
+
+/* screens/TasksScreen.module.css */
+
+.tasksHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--sp-lg);
+}
+
+.tasksTitle h2 {
+    margin: 0;
+    font-size: 1.5rem; /* 24px */
+}
+
+.tasksActions {
+    display: flex;
+    gap: var(--sp-sm);
+}
+
+.tasksBoard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-lg);
+}
+
+.eisenhowerMatrix {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-rows: repeat(2, min-content);
+    gap: var(--sp-lg);
+}
+
+.tasksBoard.hasMaximized {
+    grid-template-columns: 1fr;
+}
+
+/* Estilos da Coluna do Quadrante */
+.quadrantColumn {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.quadrantColumn.maximized {
+    grid-column: 1 / -1; /* Ocupa a linha inteira */
+    grid-row: 1 / -1;    /* Ocupa a coluna inteira */
+}
+
+.quadrantHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--sp-md) var(--sp-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.quadrantHeader h4 {
+    margin: 0;
+}
+
+.quadrantHeader p {
+    font-size: 0.8rem;
+    color: var(--text-muted-color);
+    margin: 0;
+}
+
+.taskList {
+    padding: var(--sp-sm);
+    flex-grow: 1;
+    min-height: 150px; /* Altura mínima para áreas de drop */
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+}
+
+.dropZone {
+    position: relative;
+}
+
+.dropIndicator {
+    position: absolute;
+    top: -4px;
+    left: var(--sp-lg);
+    right: var(--sp-lg);
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 99px;
+    opacity: 0;
+    transform: scaleX(0.5);
+    transition: all 150ms ease-out;
+    z-index: 10;
+}
+
+.dropIndicator.visible {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.emptyQuadrantDropzone {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-lg);
+    border: 2px dashed var(--border-color);
+    color: var(--text-muted-color);
+    transition: background-color 150ms ease;
+}
+
+.taskList.dragOver .emptyQuadrantDropzone {
+    background-color: var(--surface-secondary-color);
+}

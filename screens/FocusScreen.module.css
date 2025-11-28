@@ -1,0 +1,234 @@
+
+/* screens/FocusScreen.module.css */
+
+.focusScreen {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    transition: background-color 0.5s ease;
+}
+
+.focusScreen .screen-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* Distribui o espaço */
+    height: 100%;
+    padding-bottom: var(--sp-lg); /* Menos padding inferior para acomodar os controles */
+}
+
+/* Cores de fundo para cada modo */
+.cycle-focus { background-color: var(--background-color); }
+.cycle-shortBreak { background-color: var(--success-bg-color); }
+.cycle-longBreak { background-color: var(--info-bg-color); }
+
+/* --- Cabeçalho --- */
+.focusHeaderControls {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.focusTaskInfo {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.focusTaskInfo p {
+    color: var(--text-muted-color);
+    margin: 0;
+}
+.focusTaskInfo h2 {
+    margin: 0 0 var(--sp-sm) 0;
+    font-size: 1.75rem;
+}
+.parentTaskName {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* --- Modo Imersivo --- */
+.immersive .focusHeaderControls,
+.immersive .focusTaskInfo,
+.immersive .distractionPadContainer,
+.immersive .focusControls {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.activeImmersive {
+    background-color: rgba(0,0,0,0.5) !important;
+    color: white !important;
+    backdrop-filter: blur(4px);
+}
+
+/* --- Timer --- */
+.timerDisplay {
+    position: relative;
+    margin: var(--sp-lg) 0;
+}
+
+.timerTimeDisplay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.timerTime {
+    font-size: 4.5rem; /* 72px */
+    font-weight: 700;
+    line-height: 1;
+}
+
+.timerCycle {
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-sm);
+    color: var(--text-muted-color);
+}
+
+.focusModeIndicator {
+    color: var(--primary-color);
+}
+
+.timerPausedOverlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-sm);
+    z-index: 5;
+}
+.timerPausedOverlay span {
+    font-weight: 600;
+    letter-spacing: 0.1em;
+}
+
+/* Anel de Progresso */
+.timerProgressRingBg, .timerProgressRingFg {
+    fill: none;
+}
+.timerProgressRingBg {
+    stroke: var(--surface-secondary-color);
+}
+.timerProgressRingFg {
+    stroke: var(--primary-color);
+    transition: stroke-dashoffset 0.5s linear, stroke 0.5s ease;
+}
+
+/* Cores do anel por modo */
+.cycle-shortBreak .timerProgressRingFg { stroke: var(--success-color); }
+.cycle-longBreak .timerProgressRingFg { stroke: var(--info-color); }
+
+@keyframes breathing {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+}
+.breathing {
+    animation: breathing 2.5s infinite ease-in-out;
+}
+
+/* Indicadores de Ciclo */
+.cycleIndicators {
+    display: flex;
+    gap: 8px;
+    margin-top: var(--sp-sm);
+    justify-content: center;
+}
+.cycleDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+.cycleDot.completed {
+    background-color: var(--primary-color);
+}
+
+/* --- Bloco de Distrações --- */
+.distractionPadContainer {
+    height: 110px; /* Altura fixa para evitar pulos de layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    transition: opacity 0.3s ease;
+}
+
+.distractionPadTrigger {
+    color: var(--text-muted-color);
+    padding: var(--sp-md);
+    border-radius: var(--border-radius-lg);
+    transition: background-color 150ms ease;
+}
+.distractionPadTrigger:hover {
+    background-color: var(--surface-color);
+}
+
+.distractionPad {
+    width: 100%;
+    padding: var(--sp-sm);
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+}
+.distractionPad textarea {
+    width: 100%;
+    height: 60px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-family: inherit;
+    resize: none;
+}
+.distractionPad textarea:focus {
+    outline: none;
+}
+
+/* --- Controles Principais --- */
+.focusControls {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.mainActions {
+    display: flex;
+    justify-content: center;
+}
+.mainActions .btn-primary {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    font-size: 2rem; /* Tamanho do ícone */
+}
+
+.secondaryActions {
+    display: flex;
+    justify-content: center;
+}
+.secondaryActions .btn-secondary {
+    gap: var(--sp-xs);
+    padding: var(--sp-sm) var(--sp-md);
+}

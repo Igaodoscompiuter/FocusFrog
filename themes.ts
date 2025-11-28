@@ -5,6 +5,9 @@ export interface Theme {
     '--secondary-color': string;
     '--accent-color': string;
     '--accent-color-hover': string;
+    '--accent-color-light'?: string;
+    '--accent-color-glow'?: string;
+    '--accent-color-dark'?: string;
     '--success-color': string;
     '--danger-color': string;
 
@@ -63,6 +66,9 @@ export const themes: { [key: string]: Theme } = {
       '--secondary-color': '#374151',
       '--accent-color': '#FBBF24',
       '--accent-color-hover': '#F59E0B',
+      '--accent-color-light': '#FCD34D',
+      '--accent-color-glow': 'rgba(251, 191, 36, 0.4)',
+      '--accent-color-dark': '#B45309',
       '--success-color': '#10B981',
       '--danger-color': '#EF4444',
       '--background-color': '#111827',

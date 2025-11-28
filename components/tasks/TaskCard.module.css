@@ -68,3 +68,217 @@
     background-color: rgba(239, 68, 68, 0.1);
 }
 
+/* === ESTILOS MIGRADOS DE APP.CSS === */
+
+.taskCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.taskCardTitleGroup {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.taskCardTitleGroup h4 {
+    line-height: 1.4;
+    margin-top: -2px;
+}
+
+.taskCardActions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.taskCompleteButton {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.taskCompleteButton.completed {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.taskCompleteButton svg {
+    width: 14px;
+    height: 14px;
+    color: var(--surface-color);
+}
+
+.taskCardDescription {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    margin: 0 0 1rem 2.25rem;
+    line-height: 1.5;
+}
+
+.taskCardFooter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-left: 2.25rem;
+}
+
+.taskCardBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 3px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.taskCardBadge svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.overdueBadge {
+    color: var(--danger-color);
+    border-color: transparent;
+    background-color: var(--danger-color-ultratranslucent);
+}
+
+.energyBadgeLow, .energyBadgeMedium, .energyBadgeHigh {
+    background-color: transparent;
+}
+
+.energyBadgeLow {
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+.energyBadgeMedium {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+.energyBadgeHigh {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tagBadge {
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 4px 10px;
+}
+
+.statusDone {
+    opacity: 0.6;
+}
+
+.statusDone .taskCardTitleGroup h4 {
+    text-decoration: line-through;
+}
+
+.subtasksSection { 
+    margin: 1rem 0 0 2.25rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+.subtasksHeader { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    cursor: pointer; 
+    color: var(--text-secondary-color); 
+    font-size: 0.8rem; 
+    font-weight: 600; 
+    margin-bottom: 0.75rem; 
+}
+.collapsibleChevron { 
+    transition: transform 0.2s ease; 
+}
+.subtasksSection.collapsed .collapsibleChevron { 
+    transform: rotate(-90deg); 
+}
+.subtasksContent { 
+    display: grid; 
+    gap: 0.6rem; 
+}
+.subtasksSection.collapsed .subtasksContent { 
+    display: none; 
+}
+.subtaskItem { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.6rem; 
+    font-size: 0.85rem; 
+    padding: 0.25rem; 
+    border-radius: 4px; 
+    transition: background-color 0.2s; 
+}
+.subtaskItem:hover { 
+    background-color: var(--surface-secondary-color); 
+}
+.subtaskItem.completed { 
+    opacity: 0.7; 
+}
+.subtaskItem.completed span { 
+    text-decoration: line-through; 
+}
+.subtaskCheckbox { 
+    width: 16px; 
+    height: 16px; 
+    border: 2px solid var(--border-color); 
+    border-radius: 50%; 
+    cursor: pointer; 
+    flex-shrink: 0; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.subtaskCheckbox.checked { 
+    border-color: var(--success-color); 
+    background-color: var(--success-color); 
+    color: white; 
+}
+.subtaskCheckbox svg { 
+    width: 10px; 
+    height: 10px; 
+}
+.subtasksProgress { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem; 
+    margin-top: 0.75rem; 
+}
+.subtasksProgressBarContainer { 
+    flex-grow: 1; 
+    height: 6px; 
+    background-color: var(--surface-secondary-color); 
+    border-radius: 3px; 
+    overflow: hidden; 
+}
+.subtasksProgressBar { 
+    height: 100%; 
+    background-color: var(--primary-color); 
+    border-radius: 3px; 
+    transition: width 0.3s ease; 
+}
+.subtasksProgressText { 
+    font-size: 0.7rem; 
+    color: var(--text-secondary-color); 
+    font-weight: 600;
+}

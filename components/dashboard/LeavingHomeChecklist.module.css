@@ -1,0 +1,110 @@
+/* LeavingHomeChecklist.module.css */
+
+.card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--sp-lg);
+    margin-bottom: var(--sp-lg);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--sp-lg);
+}
+
+.header h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: var(--sp-sm);
+}
+
+/* FIX: Garante que os botões no grupo (incluindo o primário 'Adicionar')
+   usem o mesmo border-radius para manter a consistência visual. */
+.buttonGroup > .btn {
+    border-radius: var(--border-radius-md);
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+}
+
+.checklistItem {
+    display: flex;
+    justify-content: space-between; /* Alinha o conteúdo e o botão */
+    align-items: center;
+    padding: var(--sp-sm);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.checklistItem:hover {
+    background-color: var(--surface-secondary-color);
+}
+
+.itemContent {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-md);
+    flex-grow: 1; /* Faz o conteúdo ocupar o espaço disponível */
+}
+
+/* Estilo para o modo de edição */
+.checklistItem.editing {
+    cursor: default; /* Remove o cursor de ponteiro */
+}
+
+.checklistItem.editing:hover {
+    background-color: transparent; /* Remove o hover no modo de edição */
+}
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--text-secondary-color);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.text {
+    flex-grow: 1;
+    color: var(--text-color);
+}
+
+.checklistItem.completed .checkbox {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    position: relative;
+}
+
+/* Adiciona o "check" */
+.checklistItem.completed .checkbox::after {
+    content: '\2713';
+    color: white;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+}
+
+.checklistItem.completed .text {
+    text-decoration: line-through;
+    color: var(--text-secondary-color);
+}

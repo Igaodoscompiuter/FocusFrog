@@ -1,0 +1,72 @@
+/* ChecklistModal.module.css */
+
+/* As classes .modalOverlay e .modal foram movidas para global-components.css */
+
+.modalHeader h3 {
+    margin-bottom: var(--sp-sm);
+    font-size: 1.2rem;
+}
+
+.modalHeader p {
+    color: var(--text-secondary-color);
+    font-size: 0.9rem;
+    margin-bottom: var(--sp-lg);
+}
+
+.modalBody {
+    margin-bottom: var(--sp-xl);
+}
+
+.itemList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-md);
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: var(--sp-lg);
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--surface-secondary-color);
+    padding: var(--sp-md);
+    border-radius: var(--border-radius-md);
+}
+
+.formGroup {
+    margin-top: var(--sp-lg);
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: var(--sp-sm);
+    font-weight: 500;
+    color: var(--text-secondary-color);
+    font-size: 0.8rem;
+}
+
+.inputGroup {
+    display: flex;
+    gap: var(--sp-sm);
+}
+
+.inputGroup input {
+    flex-grow: 1;
+    background-color: var(--surface-secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--sp-md);
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-md);
+}
