@@ -1,9 +1,11 @@
-
 import React, { useState, createContext, useContext, ReactNode, useEffect } from 'react';
 import type { Screen, Task, Notification } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export type Density = 'compact' | 'normal' | 'spaced';
+
+// Limite máximo de notificações visíveis na tela
+const MAX_NOTIFICATIONS = 3;
 
 interface UIContextType {
     activeScreen: Screen;
@@ -37,7 +39,6 @@ interface UIContextType {
     installPrompt: any;
     handleInstallApp: () => void;
 
-    // Novo estado para o modo de desenvolvedor
     devModeEnabled: boolean;
     setDevModeEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -61,8 +62,6 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [density, setDensity] = useLocalStorage<Density>('focusfrog_density', 'normal');
     const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>('focusfrog_sound_enabled', true);
     const [hapticsEnabled, setHapticsEnabled] = useLocalStorage<boolean>('focusfrog_haptics_enabled', true);
-    
-    // Novo estado persistido para o modo de desenvolvedor
     const [devModeEnabled, setDevModeEnabled] = useLocalStorage<boolean>('focusfrog_dev_mode', false);
 
     const [isImmersiveMode, setIsImmersiveMode] = useState(false);
@@ -92,7 +91,16 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     const addNotification = (message: string, icon: string, action?: Notification['action']) => {
         const newNotification: Notification = { id: Date.now(), message, icon, action };
-        setNotifications(prev => [...prev, newNotification]);
+        
+        setNotifications(prev => {
+            const updatedNotifications = [...prev, newNotification];
+            // Se exceder o limite, remove a mais antiga (a primeira da fila)
+            if (updatedNotifications.length > MAX_NOTIFICATIONS) {
+                return updatedNotifications.slice(1);
+            }
+            return updatedNotifications;
+        });
+
         if (hapticsEnabled && navigator.vibrate) {
             navigator.vibrate(50);
         }
@@ -138,7 +146,6 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setIsMorningReviewOpen,
         installPrompt,
         handleInstallApp,
-        // Incluindo o novo estado no provedor
         devModeEnabled,
         setDevModeEnabled
     };

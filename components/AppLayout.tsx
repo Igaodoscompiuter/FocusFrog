@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // Importa o useState
+import React, { useState } from 'react';
 import { BottomNav } from './BottomNav';
 import { Toast } from './Toast';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -9,7 +9,8 @@ import { StatsScreen } from '../screens/StatsScreen';
 import { useUI } from '../context/UIContext';
 import type { Screen } from '../types';
 import { MorningReviewModal } from './modals/MorningReviewModal';
-import { useTasks } from '../context/TasksContext'; // Importa o useTasks
+import { useTasks } from '../context/TasksContext';
+import styles from './Toast.module.css'; // Importando os estilos modulares
 
 const screenMap: Record<Screen, React.ComponentType> = {
     dashboard: DashboardScreen,
@@ -30,21 +31,20 @@ export const AppLayout: React.FC = () => {
         setIsMorningReviewOpen 
     } = useUI();
 
-    // Trazendo a lógica para o componente pai (AppLayout)
     const { tasks, setFrogTaskId } = useTasks();
     const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
     const handleConfirmFrog = () => {
         if (selectedTask) {
             setFrogTaskId(selectedTask);
-            setIsMorningReviewOpen(false); // Fecha a modal
-            setSelectedTask(null); // Reseta a seleção
+            setIsMorningReviewOpen(false);
+            setSelectedTask(null);
         }
     };
 
     const handleCloseModal = () => {
         setIsMorningReviewOpen(false);
-        setSelectedTask(null); // Reseta a seleção ao fechar
+        setSelectedTask(null);
     };
 
     const ActiveScreenComponent = screenMap[activeScreen];
@@ -56,20 +56,20 @@ export const AppLayout: React.FC = () => {
             </div>
             {!isImmersiveMode && <BottomNav />}
             
-            <div className="toast-container">
+            {/* Container de notificações agora usa o estilo modular */}
+            <div className={styles.toastContainer}>
                 {notifications.map(notification => (
                     <Toast key={notification.id} notification={notification} onDismiss={removeNotification} />
                 ))}
             </div>
 
-            {/* A Modal agora é controlada completamente pelo AppLayout */}
             {isMorningReviewOpen && (
                 <MorningReviewModal 
                     tasks={tasks.filter(t => t.status === 'todo')}
                     selectedTask={selectedTask}
-                    onSelectTask={setSelectedTask} // Passa a função de seleção
-                    onConfirm={handleConfirmFrog} // Passa a função de confirmação
-                    onClose={handleCloseModal} // Passa a função de fechamento
+                    onSelectTask={setSelectedTask}
+                    onConfirm={handleConfirmFrog}
+                    onClose={handleCloseModal}
                 />
             )}
         </div>

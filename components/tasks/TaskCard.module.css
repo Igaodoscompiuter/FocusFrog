@@ -1,74 +1,62 @@
-
 /*
- * CSS Module for the new TaskCard component
+ * CSS Module for the TaskCard component with Swipe Gestures
  */
 
 .cardWrapper {
     position: relative;
-    overflow: hidden; /* Crucial para o efeito de deslizar */
-    border-radius: 12px; /* Arredonda o wrapper, que vai conter tudo */
+    border-radius: 12px;
+    overflow: hidden; 
+    touch-action: none; 
+    user-select: none; 
 }
 
 .cardContent {
+    position: relative; 
+    z-index: 2;
     background-color: var(--surface-color);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animação suave */
     border: 1px solid var(--border-color);
     border-radius: 12px;
+    padding: 1rem;
 }
 
-.actionsPanel {
+.swipeBackground {
     position: absolute;
     top: 0;
+    left: 0;
     right: 0;
-    height: 100%;
-    width: 80px; /* Largura do painel de ações */
-    background-color: var(--surface-secondary-color);
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+}
+
+/* --- CORREÇÃO DEFINITIVA COM CORES RGBA HARDCODED --- */
+.completeBackground {
+    justify-content: flex-start;
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.8) 20%, transparent 80%);
+}
+
+.deleteBackground {
+    justify-content: flex-end;
+    background: linear-gradient(to left, rgba(220, 38, 38, 0.8) 20%, transparent 80%);
+}
+
+.swipeIcon {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
-    padding: 0.5rem;
-    border-left: 1px solid var(--border-color);
+    padding: 0 2rem;
 }
 
-.actionsPanelVisible .cardContent {
-    transform: translateX(-80px); /* Desliza o conteúdo para a esquerda */
-    box-shadow: -10px 0px 20px rgba(0,0,0,0.1);
+.swipeIcon svg {
+    width: 28px;
+    height: 28px;
 }
 
-.actionButton {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 0.5rem;
-    border-radius: 8px;
-    width: 100%;
-    font-size: 0.7rem;
-    color: var(--text-secondary-color);
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.actionButton:hover {
-    background-color: var(--surface-secondary-hover-color);
-    color: var(--text-color);
-}
-
-.actionButton svg {
-    width: 20px;
-    height: 20px;
-}
-
-.actionButton.danger {
-    color: var(--danger-color);
-}
-.actionButton.danger:hover {
-    background-color: rgba(239, 68, 68, 0.1);
-}
-
-/* === ESTILOS MIGRADOS DE APP.CSS === */
 
 .taskCardHeader {
     display: flex;
@@ -87,7 +75,7 @@
 
 .taskCardTitleGroup h4 {
     line-height: 1.4;
-    margin-top: -2px;
+    margin-top: 0;
 }
 
 .taskCardActions {
@@ -160,30 +148,6 @@
     background-color: var(--danger-color-ultratranslucent);
 }
 
-.energyBadgeLow, .energyBadgeMedium, .energyBadgeHigh {
-    background-color: transparent;
-}
-
-.energyBadgeLow {
-    color: #3b82f6;
-    border-color: rgba(59, 130, 246, 0.3);
-}
-.energyBadgeMedium {
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.3);
-}
-.energyBadgeHigh {
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.tagBadge {
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 4px 10px;
-}
-
 .statusDone {
     opacity: 0.6;
 }
@@ -192,11 +156,12 @@
     text-decoration: line-through;
 }
 
-.subtasksSection { 
+.subtasksSection {
     margin: 1rem 0 0 2.25rem;
     border-top: 1px solid var(--border-color);
     padding-top: 1rem;
 }
+
 .subtasksHeader { 
     display: flex; 
     justify-content: space-between; 
@@ -217,26 +182,11 @@
     display: grid; 
     gap: 0.6rem; 
 }
-.subtasksSection.collapsed .subtasksContent { 
-    display: none; 
-}
 .subtaskItem { 
     display: flex; 
     align-items: center; 
     gap: 0.6rem; 
     font-size: 0.85rem; 
-    padding: 0.25rem; 
-    border-radius: 4px; 
-    transition: background-color 0.2s; 
-}
-.subtaskItem:hover { 
-    background-color: var(--surface-secondary-color); 
-}
-.subtaskItem.completed { 
-    opacity: 0.7; 
-}
-.subtaskItem.completed span { 
-    text-decoration: line-through; 
 }
 .subtaskCheckbox { 
     width: 16px; 
@@ -244,41 +194,4 @@
     border: 2px solid var(--border-color); 
     border-radius: 50%; 
     cursor: pointer; 
-    flex-shrink: 0; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-.subtaskCheckbox.checked { 
-    border-color: var(--success-color); 
-    background-color: var(--success-color); 
-    color: white; 
-}
-.subtaskCheckbox svg { 
-    width: 10px; 
-    height: 10px; 
-}
-.subtasksProgress { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.75rem; 
-    margin-top: 0.75rem; 
-}
-.subtasksProgressBarContainer { 
-    flex-grow: 1; 
-    height: 6px; 
-    background-color: var(--surface-secondary-color); 
-    border-radius: 3px; 
-    overflow: hidden; 
-}
-.subtasksProgressBar { 
-    height: 100%; 
-    background-color: var(--primary-color); 
-    border-radius: 3px; 
-    transition: width 0.3s ease; 
-}
-.subtasksProgressText { 
-    font-size: 0.7rem; 
-    color: var(--text-secondary-color); 
-    font-weight: 600;
 }

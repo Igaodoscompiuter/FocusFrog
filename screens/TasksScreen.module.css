@@ -1,6 +1,3 @@
-
-/* screens/TasksScreen.module.css */
-
 .tasksHeader {
     display: flex;
     justify-content: space-between;
@@ -10,7 +7,6 @@
 
 .tasksTitle h2 {
     margin: 0;
-    font-size: 1.5rem; /* 24px */
 }
 
 .tasksActions {
@@ -21,96 +17,111 @@
 .tasksBoard {
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr; /* Caixa de entrada e depois a matriz */
     gap: var(--sp-lg);
 }
 
 .eisenhowerMatrix {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-template-rows: repeat(2, min-content);
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, minmax(300px, auto)); /* Altura mínima para as colunas */
     gap: var(--sp-lg);
 }
 
-.tasksBoard.hasMaximized {
+/* Modo Maximizado */
+.hasMaximized .quadrantColumn:not(.maximized) {
+    display: none;
+}
+.hasMaximized .eisenhowerMatrix {
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
 }
 
-/* Estilos da Coluna do Quadrante */
 .quadrantColumn {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-xl);
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
-}
-
-.quadrantColumn.maximized {
-    grid-column: 1 / -1; /* Ocupa a linha inteira */
-    grid-row: 1 / -1;    /* Ocupa a coluna inteira */
+    gap: var(--sp-sm);
+    height: 100%;
 }
 
 .quadrantHeader {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: var(--sp-md) var(--sp-lg);
+    align-items: flex-start;
+    margin-bottom: var(--sp-sm);
+    color: var(--text-secondary-color);
+    padding-bottom: var(--sp-md);
     border-bottom: 1px solid var(--border-color);
+
 }
 
 .quadrantHeader h4 {
     margin: 0;
+    font-size: 1.1rem;
 }
-
 .quadrantHeader p {
-    font-size: 0.8rem;
-    color: var(--text-muted-color);
     margin: 0;
+    font-size: 0.9rem;
 }
 
+
+/* --- A CORREÇÃO ESTÁ AQUI --- */
 .taskList {
-    padding: var(--sp-sm);
-    flex-grow: 1;
-    min-height: 150px; /* Altura mínima para áreas de drop */
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-sm);
+    flex-grow: 1; /* Ocupa o espaço restante */
+    position: relative;
+    display: flex;         /* <<< ATIVANDO FLEXBOX */
+    flex-direction: column; /* <<< EMPILHANDO CARTÕES */
+    gap: var(--sp-sm);    /* <<< ESPAÇAMENTO AUTOMÁTICO */
 }
 
+.emptyQuadrantDropzone {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--text-tertiary-color);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius-lg);
+    min-height: 100px;
+}
+
+.taskList.dragOver {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* Lógica de arrastar e soltar (Drag and Drop) */
 .dropZone {
     position: relative;
 }
 
 .dropIndicator {
     position: absolute;
-    top: -4px;
-    left: var(--sp-lg);
-    right: var(--sp-lg);
+    top: -4px; /* Metade da altura para centralizar entre os itens */
+    left: 10px;
+    right: 10px;
     height: 3px;
     background-color: var(--primary-color);
-    border-radius: 99px;
+    border-radius: 2px;
     opacity: 0;
-    transform: scaleX(0.5);
-    transition: all 150ms ease-out;
+    transition: opacity 0.2s ease;
     z-index: 10;
 }
 
 .dropIndicator.visible {
     opacity: 1;
-    transform: scaleX(1);
 }
 
-.emptyQuadrantDropzone {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--border-radius-lg);
-    border: 2px dashed var(--border-color);
-    color: var(--text-muted-color);
-    transition: background-color 150ms ease;
+/* Estilos específicos para cada quadrante */
+.quadrant-do .quadrantHeader {
+    color: #4A90E2; /* Azul para "Fazer" */
 }
-
-.taskList.dragOver .emptyQuadrantDropzone {
-    background-color: var(--surface-secondary-color);
+.quadrant-schedule .quadrantHeader {
+    color: #50E3C2; /* Verde para "Agendar" */
+}
+.quadrant-delegate .quadrantHeader {
+    color: #F5A623; /* Laranja para "Delegar" */
+}
+.quadrant-eliminate .quadrantHeader {
+    color: #D0021B; /* Vermelho para "Eliminar" */
 }
