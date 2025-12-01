@@ -1,13 +1,10 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { usePomodoro } from '../context/PomodoroContext';
 import { useUI } from '../context/UIContext';
-import { useTasks } from '../context/TasksContext';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
 import { FocusTip } from '../components/focus/FocusTip';
-import { FocusCompletionModal } from '../components/modals/FocusCompletionModal';
-import styles from './FocusScreen.module.css'; // Usando CSS Modules
+import styles from './FocusScreen.module.css';
 
 const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -21,7 +18,6 @@ const CYCLE_LABELS: Record<ReturnType<typeof usePomodoro>['timerMode'], string> 
     longBreak: 'Pausa Longa',
 };
 
-// Componente interno agora usa CSS Modules
 const CycleIndicators = ({ completedCount }: { completedCount: number }) => {
     return (
         <div className={styles.cycleIndicators}>
@@ -37,78 +33,34 @@ const CycleIndicators = ({ completedCount }: { completedCount: number }) => {
 };
 
 export const FocusScreen: React.FC = () => {
-    const { taskInFocus, subtaskInFocusId, isImmersiveMode, setIsImmersiveMode } = useUI();
-    const { handleCompleteTask } = useTasks();
-    const { 
+    const { isImmersiveMode, setIsImmersiveMode } = useUI();
+    const {
         timerMode, 
         status,
         isActive,
         timeRemaining, 
+        sessionDuration, // OBTIDO
         pomodorosInCycle,
+        activeTaskTitle, // OBTIDO
         startCycle, 
         pauseCycle,
         resumeCycle, 
         stopCycle,
-        setFocusDuration,
         distractionNotes,
         setDistractionNotes
     } = usePomodoro();
     
-    const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
-    const [breakModalShown, setBreakModalShown] = useState(false);
     const [showDistractionPad, setShowDistractionPad] = useState(false);
 
-    const subtaskInFocus = useMemo(() => {
-        if (!taskInFocus || !subtaskInFocusId) return null;
-        return taskInFocus.subtasks?.find(st => st.id === subtaskInFocusId);
-    }, [taskInFocus, subtaskInFocusId]);
-
-    const taskTitle = subtaskInFocus ? subtaskInFocus.text : taskInFocus?.title;
-    
-    // ... (lógica de useEffect e duration continua a mesma)
-
-    const totalDuration = useMemo(() => {
-        if (timerMode === 'shortBreak') return 5 * 60;
-        if (timerMode === 'longBreak') return 15 * 60;
-        if (taskInFocus?.customDuration) return taskInFocus.customDuration * 60;
-        return 25 * 60;
-    }, [timerMode, taskInFocus]);
-
-    const progress = Math.min(100, Math.max(0, (totalDuration - timeRemaining) / totalDuration * 100));
-
-    useEffect(() => {
-        if (timerMode !== 'focus' && status === 'idle' && !breakModalShown && timeRemaining === totalDuration) {
-            if (taskInFocus) {
-                setIsCompletionModalOpen(true);
-            }
-            setBreakModalShown(true);
-        }
-        if (timerMode === 'focus') {
-            setBreakModalShown(false);
-        }
-    }, [timerMode, status, breakModalShown, timeRemaining, totalDuration, taskInFocus]);
-
-
-    const handleConfirmCompletion = () => {
-        if (taskInFocus) {
-            handleCompleteTask(taskInFocus.id, subtaskInFocusId || undefined);
-        }
-        setIsCompletionModalOpen(false);
-    };
+    // CÁLCULO DE PROGRESSO CORRIGIDO
+    const progress = useMemo(() => {
+        if (sessionDuration === 0) return 0;
+        return Math.min(100, Math.max(0, (sessionDuration - timeRemaining) / sessionDuration * 100));
+    }, [timeRemaining, sessionDuration]);
 
     return (
         <>
-            {isCompletionModalOpen && taskInFocus && (
-                <FocusCompletionModal
-                    task={taskInFocus}
-                    subtaskId={subtaskInFocusId}
-                    onConfirm={handleConfirmCompletion}
-                    onDismiss={() => setIsCompletionModalOpen(false)}
-                />
-            )}
-            
             <main className={`${styles.focusScreen} ${styles['cycle-' + timerMode]} ${isImmersiveMode ? styles.immersive : ''}`}>
-                {/* Aderindo ao layout global com screen-content */}
                 <div className="screen-content">
 
                     <div className={styles.focusHeaderControls}>
@@ -122,12 +74,12 @@ export const FocusScreen: React.FC = () => {
                         </button>
                     </div>
 
+                    {/* TÍTULO CORRIGIDO */}
                     <div className={styles.focusTaskInfo}>
-                         {taskInFocus ? (
+                         {activeTaskTitle ? (
                         <>
                             <p>Focando em:</p>
-                            <h2>{taskTitle}</h2>
-                            {subtaskInFocus && <p className={styles.parentTaskName}>de: {taskInFocus.title}</p>}
+                            <h2>{activeTaskTitle}</h2>
                         </>
                     ) : (
                         <>
@@ -202,7 +154,7 @@ export const FocusScreen: React.FC = () => {
                                     <Icon path={icons.pause} />
                                 </button>
                             ) : (
-                                <button className="btn btn-primary" onClick={isActive ? resumeCycle : startCycle}>
+                                <button className="btn btn-primary" onClick={status === 'paused' ? resumeCycle : startCycle}>
                                     <Icon path={icons.play} />
                                 </button>
                             )}

@@ -20,7 +20,7 @@ const energyLevelMap: Record<any, any> = { low: { label: 'Baixa', icon: 'battery
 
 export const TaskCard: React.FC<any> = ({ task, onEdit, onSubtaskClick, onToggleSubtask }) => {
     const { tags, handleCompleteTask, setFrogTaskId, frogTaskId, handleDeleteTask } = useTasks();
-    const { startFocusOnTask } = usePomodoro();
+    const { startFocusOnTask, activeTaskId, status } = usePomodoro(); // OBTIDO
 
     const [subtasksVisible, setSubtasksVisible] = useState(true);
     const [isTooltipActive, setIsTooltipActive] = useState(false);
@@ -77,6 +77,8 @@ export const TaskCard: React.FC<any> = ({ task, onEdit, onSubtaskClick, onToggle
     const isQuickAction = (task.pomodoroEstimate ?? 0) === 0;
     const energyInfo = task.energyNeeded ? energyLevelMap[task.energyNeeded] : null;
 
+    const isCurrentlyFocused = activeTaskId === task.id && status !== 'idle'; // NOVO
+
     const rightBgOpacity = x.to(val => (hasPendingSubtasks ? 0 : Math.max(0, val / swipeThreshold)));
     const leftBgOpacity = x.to(val => Math.max(0, -val / swipeThreshold));
 
@@ -95,7 +97,7 @@ export const TaskCard: React.FC<any> = ({ task, onEdit, onSubtaskClick, onToggle
                             onMouseLeave={() => hasPendingSubtasks && setIsTooltipActive(false)}
                             onTouchStart={handleTouchStart}
                             onTouchEnd={handleTouchEnd}
-                            onTouchMove={handleTouchEnd} // Cancela se o dedo se mover
+                            onTouchMove={handleTouchEnd}
                         >
                             <div 
                                 className={`${styles.taskCompleteButton} ${task.status === 'done' ? styles.completed : ''} ${hasPendingSubtasks ? styles.disabled : ''}`}
@@ -107,7 +109,15 @@ export const TaskCard: React.FC<any> = ({ task, onEdit, onSubtaskClick, onToggle
                     </div>
                     <div className={styles.taskCardActions}>
                         {task.status !== 'done' && !isQuickAction && (
-                            <button title="Iniciar Pomodoro" onClick={(e) => {e.stopPropagation(); startFocusOnTask(task.id, task.title);}} className="icon-button focus-task-button"><Icon path={icons.play} /></button>
+                            // BOTÃO CORRIGIDO
+                            <button 
+                                title={isCurrentlyFocused ? "Focando nesta tarefa" : "Iniciar Pomodoro"} 
+                                onClick={(e) => {e.stopPropagation(); startFocusOnTask(task.id, task.title, task.customDuration);}}
+                                className={`icon-button focus-task-button ${isCurrentlyFocused ? styles.activeFocus : ''}`}
+                                disabled={isCurrentlyFocused}
+                            >
+                                <Icon path={isCurrentlyFocused ? icons.zap : icons.play} />
+                            </button>
                         )}
                         <button title={isFrog ? "Desmarcar Sapo do Dia" : "Marcar como Sapo do Dia"} onClick={(e) => {e.stopPropagation(); setFrogTaskId(isFrog ? null : task.id);}} className="icon-button"><Icon path={icons.frog} className={isFrog ? styles.frogIconActive : ''} /></button>
                         <button title="Editar Tarefa" onClick={(e) => {e.stopPropagation(); onEdit(task);}} className="icon-button"><Icon path={icons.pencil} /></button>

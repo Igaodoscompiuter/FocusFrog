@@ -72,8 +72,9 @@ export interface TaskTemplate {
     customDuration?: number;
     energyNeeded?: EnergyLevel;
     category: string;
-    subtasks?: Omit<Subtask, 'id' | 'completed'>[];
+    subtasks?: { text: string; isTimerTrigger?: boolean; }[];
     timeOfDay?: TimeOfDay;
+    timerCompletionMode?: 'completeTask' | 'endSession';
 }
 
 export interface Routine {

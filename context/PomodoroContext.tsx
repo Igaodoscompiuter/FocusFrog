@@ -17,11 +17,12 @@ interface PomodoroContextType {
     status: PomodoroStatus;
     isActive: boolean;
     timeRemaining: number;
+    sessionDuration: number; // NOVO: Duração total da sessão atual
     distractionNotes: string;
     setDistractionNotes: (notes: string) => void;
-    activeTaskId: string | null; // New: Track the task being focused on
-    activeTaskTitle: string | null; // New: Display the task title
-    startFocusOnTask: (taskId: string, taskTitle: string) => void; // New: Specific action
+    activeTaskId: string | null;
+    activeTaskTitle: string | null;
+    startFocusOnTask: (taskId: string, taskTitle: string, duration?: number) => void;
     startCycle: () => void;
     pauseCycle: () => void;
     resumeCycle: () => void;
@@ -50,6 +51,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [timerMode, setTimerMode] = useState<TimerMode>('focus');
     const [status, setStatus] = useState<PomodoroStatus>('idle');
     const [timeRemaining, setTimeRemaining] = useState(DEFAULT_FOCUS_DURATION);
+    const [sessionDuration, setSessionDuration] = useLocalStorage<number>('focusfrog_sessionDuration', DEFAULT_FOCUS_DURATION);
     const [distractionNotes, setDistractionNotes] = useState('');
     const [activeTaskId, setActiveTaskId] = useLocalStorage<string | null>('focusfrog_activeTaskId', null);
     const [activeTaskTitle, setActiveTaskTitle] = useLocalStorage<string | null>('focusfrog_activeTaskTitle', null);
@@ -61,7 +63,6 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const isActive = status === 'running';
 
-    // --- Audio Logic ---
     const getAudioContext = useCallback(() => {
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
         if (!AudioContextClass) return null;
@@ -93,9 +94,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             }
             oscillator.start(now);
             oscillator.stop(now + 0.3);
-        } catch (e) {
-            console.error("Audio play failed", e);
-        }
+        } catch (e) { console.error("Audio play failed", e); }
     }, [getAudioContext]);
 
     const stopBackgroundSound = useCallback((fade = false) => {
@@ -109,9 +108,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                     gainNode.gain.cancelScheduledValues(now);
                     gainNode.gain.setValueAtTime(gainNode.gain.value, now);
                     gainNode.gain.linearRampToValueAtTime(0, now + 1.0);
-                    setTimeout(() => {
-                        try { source.stop(); } catch(e){}
-                    }, 1100);
+                    setTimeout(() => { try { source.stop(); } catch (e) { } }, 1100);
                 } else {
                     source.stop();
                 }
@@ -143,7 +140,6 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     }, [activeSoundId, stopBackgroundSound, getAudioContext]);
 
-    // --- Service Worker Communication ---
     const postCommandToSW = useCallback((type: string, payload?: any) => {
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage({ type, payload });
@@ -177,6 +173,10 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         const handleSWMessage = (event: MessageEvent) => {
             const { type, timeRemaining: swTime, timerMode: swMode, status: swStatus, pomodorosInCycle: swPoms } = event.data;
             if (type === 'TIMER_STATE') {
+                // Captura a duração total da sessão quando o modo do timer muda.
+                if (timerMode !== swMode) {
+                    setSessionDuration(swTime);
+                }
                 setTimerMode(swMode);
                 setStatus(swStatus);
                 setPomodorosInCycle(swPoms);
@@ -197,7 +197,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 navigator.serviceWorker.removeEventListener('message', handleSWMessage);
             }
         };
-    }, [postCommandToSW, timerMode]);
+    }, [postCommandToSW, timerMode]); // A dependência timerMode é crucial aqui
 
     useEffect(() => {
         if (status === 'running') {
@@ -220,8 +220,12 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             setActiveTaskId(null);
             setActiveTaskTitle(null);
         }
+        const newDurationInSeconds = DEFAULT_FOCUS_DURATION;
+        setTimeRemaining(newDurationInSeconds);
+        setSessionDuration(newDurationInSeconds);
+
         const ctx = getAudioContext();
-        if(ctx && ctx.state === 'suspended') ctx.resume();
+        if (ctx && ctx.state === 'suspended') ctx.resume();
         playSound('start');
         playBackgroundSound(true);
         setStatus('running');
@@ -236,7 +240,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const resumeCycle = useCallback(() => {
         const ctx = getAudioContext();
-        if(ctx && ctx.state === 'suspended') ctx.resume();
+        if (ctx && ctx.state === 'suspended') ctx.resume();
         playSound('start');
         playBackgroundSound(true);
         setStatus('running');
@@ -247,21 +251,33 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         stopBackgroundSound();
         setStatus('idle');
         setTimeRemaining(DEFAULT_FOCUS_DURATION);
+        setSessionDuration(DEFAULT_FOCUS_DURATION);
         postCommandToSW('STOP_TIMER');
         setActiveTaskId(null);
         setActiveTaskTitle(null);
     }, [stopBackgroundSound, postCommandToSW, setActiveTaskId, setActiveTaskTitle]);
 
-    const startFocusOnTask = useCallback((taskId: string, taskTitle: string) => {
+    const startFocusOnTask = useCallback((taskId: string, taskTitle: string, duration?: number) => {
         stopBackgroundSound(false);
         postCommandToSW('STOP_TIMER');
+
+        const newDurationInMinutes = duration || (DEFAULT_FOCUS_DURATION / 60);
+        const newDurationInSeconds = newDurationInMinutes * 60;
+
+        postCommandToSW('SET_FOCUS_DURATION', newDurationInMinutes);
+        setTimeRemaining(newDurationInSeconds);
+        setSessionDuration(newDurationInSeconds); // Define a duração da sessão
+
         setActiveTaskId(taskId);
         setActiveTaskTitle(taskTitle);
         addNotification(`Focando em: ${taskTitle}`, '🎯', 'success');
-        setStatus('running');
+
         setTimerMode('focus');
+        setStatus('running');
+
         const ctx = getAudioContext();
-        if(ctx && ctx.state === 'suspended') ctx.resume();
+        if (ctx && ctx.state === 'suspended') ctx.resume();
+
         playSound('start');
         playBackgroundSound(true);
         postCommandToSW('START_TIMER');
@@ -278,10 +294,12 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, [stopBackgroundSound, postCommandToSW]);
 
     const setFocusDuration = useCallback((minutes: number) => {
+        const newDurationInSeconds = minutes * 60;
         postCommandToSW('SET_FOCUS_DURATION', minutes);
         setStatus('idle');
         setTimerMode('focus');
-        setTimeRemaining(minutes * 60);
+        setTimeRemaining(newDurationInSeconds);
+        setSessionDuration(newDurationInSeconds); // Define a duração da sessão
     }, [postCommandToSW]);
 
     const value = {
@@ -291,6 +309,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         status,
         isActive,
         timeRemaining,
+        sessionDuration, // Exposto
         distractionNotes,
         setDistractionNotes,
         activeTaskId,

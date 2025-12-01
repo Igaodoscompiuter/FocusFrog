@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTasks } from '../context/TasksContext';
 import { useUI } from '../context/UIContext';
+import { usePomodoro } from '../context/PomodoroContext';
 import { TaskModal } from '../components/modals/TaskModal';
 import { MorningReviewModal } from '../components/modals/MorningReviewModal';
 import { Icon } from '../components/Icon';
@@ -21,6 +22,8 @@ const getGreeting = () => {
 export const DashboardScreen: React.FC = () => {
     const { tasks, frogTaskId, setFrogTaskId, handleCompleteTask, handleAddTask, handleUnsetFrog, handleToggleLeavingHomeItem, leavingHomeItems, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification } = useUI();
+    // OBTENDO DADOS COMPLETOS DO POMODORO
+    const { startFocusOnTask, activeTaskId, status } = usePomodoro(); 
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
     const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
@@ -30,6 +33,12 @@ export const DashboardScreen: React.FC = () => {
     const greeting = getGreeting();
     const frogTask = useMemo(() => tasks.find(t => t.id === frogTaskId && t.status !== 'done'), [tasks, frogTaskId]);
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
+    
+    // VARIÁVEL DE CONTROLE
+    const isFrogFocused = useMemo(() => {
+        if (!frogTask) return false;
+        return frogTask.id === activeTaskId && status !== 'idle';
+    }, [frogTask, activeTaskId, status]);
 
     const handleBrainDumpSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,6 +54,7 @@ export const DashboardScreen: React.FC = () => {
             handleCompleteTask(task.id);
             return;
         }
+        startFocusOnTask(task.id, task.title, task.customDuration);
         handleNavigate('focus');
     };
 
@@ -89,7 +99,7 @@ export const DashboardScreen: React.FC = () => {
                 </button>
             </form>
 
-            <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''}`}>
+            <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
                 <div className={styles.frogCardHeader}>
                     <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
                     {frogTask && (
@@ -106,8 +116,16 @@ export const DashboardScreen: React.FC = () => {
                 {frogTask ? (
                     <div>
                         <p className={styles.frogTaskTitle}>{frogTask.title}</p>
-                        <button className="btn btn-primary" style={{width: '100%'}} onClick={() => handleFrogTaskClick(frogTask)}>
-                            Comer o Sapo!
+                        {/* BOTÃO CORRIGIDO E DESABILITADO */}
+                        <button 
+                            className="btn btn-primary" 
+                            style={{width: '100%'}} 
+                            onClick={() => handleFrogTaskClick(frogTask)}
+                            disabled={isFrogFocused}
+                        >
+                            {isFrogFocused ? (
+                                <><Icon path={icons.zap} /> Focando no Sapo...</>
+                            ) : 'Comer o Sapo!'}
                         </button>
                     </div>
                 ) : (
