@@ -17,12 +17,17 @@ interface PomodoroContextType {
     status: PomodoroStatus;
     isActive: boolean;
     timeRemaining: number;
-    sessionDuration: number; // NOVO: Duração total da sessão atual
+    sessionDuration: number;
     distractionNotes: string;
     setDistractionNotes: (notes: string) => void;
     activeTaskId: string | null;
     activeTaskTitle: string | null;
-    startFocusOnTask: (taskId: string, taskTitle: string, duration?: number) => void;
+    activeSubtaskId: string | null;
+    activeSubtaskTitle: string | null;
+    lastCompletedFocus: { taskId: string | null; subtaskId: string | null; } | null;
+    clearLastCompletedFocus: () => void;
+    startFocusOnTask: (taskId: string, taskTitle: string, duration?: number, subtaskId?: string | null, subtaskTitle?: string | null) => void;
+    clearActiveSubtask: () => void; // NOVO
     startCycle: () => void;
     pauseCycle: () => void;
     resumeCycle: () => void;
@@ -55,11 +60,16 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [distractionNotes, setDistractionNotes] = useState('');
     const [activeTaskId, setActiveTaskId] = useLocalStorage<string | null>('focusfrog_activeTaskId', null);
     const [activeTaskTitle, setActiveTaskTitle] = useLocalStorage<string | null>('focusfrog_activeTaskTitle', null);
+    const [activeSubtaskId, setActiveSubtaskId] = useLocalStorage<string | null>('focusfrog_activeSubtaskId', null);
+    const [activeSubtaskTitle, setActiveSubtaskTitle] = useLocalStorage<string | null>('focusfrog_activeSubtaskTitle', null);
+    const [lastCompletedFocus, setLastCompletedFocus] = useState<{taskId: string | null, subtaskId: string | null} | null>(null);
 
     const audioContextRef = useRef<AudioContext | null>(null);
     const backgroundSoundSourceRef = useRef<AudioScheduledSourceNode | null>(null);
     const gainNodeRef = useRef<GainNode | null>(null);
     const localTimerRef = useRef<number | null>(null);
+    const activeSubtaskIdRef = useRef(activeSubtaskId);
+    useEffect(() => { activeSubtaskIdRef.current = activeSubtaskId; }, [activeSubtaskId]);
 
     const isActive = status === 'running';
 
@@ -156,15 +166,22 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             setPomodorosCompleted(p => p + 1);
             setPontosFoco(p => p + 25);
             addNotification(`Sessão de Foco concluída!${completedTaskTitle}`, '🏆', 'victory');
+            
+            if (activeTaskId && activeSubtaskIdRef.current) {
+                setLastCompletedFocus({ taskId: activeTaskId, subtaskId: activeSubtaskIdRef.current });
+            }
+
             setDistractionNotes('');
             setActiveTaskId(null);
             setActiveTaskTitle(null);
+            setActiveSubtaskId(null);
+            setActiveSubtaskTitle(null);
         } else {
             addNotification('Pausa concluída! Hora de focar.', '💪', 'success');
         }
         playSound('end');
         stopBackgroundSound(true);
-    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound, activeTaskTitle, setActiveTaskId, setActiveTaskTitle]);
+    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound, activeTaskTitle, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
 
     const uiCallbackRef = useRef(handleCycleCompletionUI);
     useEffect(() => { uiCallbackRef.current = handleCycleCompletionUI; }, [handleCycleCompletionUI]);
@@ -173,16 +190,11 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         const handleSWMessage = (event: MessageEvent) => {
             const { type, timeRemaining: swTime, timerMode: swMode, status: swStatus, pomodorosInCycle: swPoms } = event.data;
             if (type === 'TIMER_STATE') {
-                // Captura a duração total da sessão quando o modo do timer muda.
-                if (timerMode !== swMode) {
-                    setSessionDuration(swTime);
-                }
+                if (timerMode !== swMode) setSessionDuration(swTime);
                 setTimerMode(swMode);
                 setStatus(swStatus);
                 setPomodorosInCycle(swPoms);
-                if (swStatus !== 'running' || Math.abs(swTime - timeRemaining) > 1) {
-                    setTimeRemaining(swTime);
-                }
+                if (swStatus !== 'running' || Math.abs(swTime - timeRemaining) > 1) setTimeRemaining(swTime);
             } else if (type === 'CYCLE_END') {
                 uiCallbackRef.current(timerMode);
             }
@@ -192,33 +204,32 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             postCommandToSW('SYNC_STATE');
             postCommandToSW('SET_CYCLE_COUNT', pomodorosInCycle);
         }
-        return () => {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.removeEventListener('message', handleSWMessage);
-            }
-        };
-    }, [postCommandToSW, timerMode]); // A dependência timerMode é crucial aqui
+        return () => { if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', handleSWMessage); };
+    }, [postCommandToSW, timerMode, pomodorosInCycle]);
 
     useEffect(() => {
         if (status === 'running') {
-            localTimerRef.current = window.setInterval(() => {
-                setTimeRemaining(prev => Math.max(0, prev - 1));
-            }, 1000);
+            localTimerRef.current = window.setInterval(() => setTimeRemaining(prev => Math.max(0, prev - 1)), 1000);
         } else {
-            if (localTimerRef.current) {
-                clearInterval(localTimerRef.current);
-                localTimerRef.current = null;
-            }
-        }
-        return () => {
             if (localTimerRef.current) clearInterval(localTimerRef.current);
-        };
+        }
+        return () => { if (localTimerRef.current) clearInterval(localTimerRef.current); };
     }, [status]);
+
+    const clearLastCompletedFocus = useCallback(() => setLastCompletedFocus(null), []);
+
+    // NOVO: Função para limpar apenas a subtarefa ativa
+    const clearActiveSubtask = useCallback(() => {
+        setActiveSubtaskId(null);
+        setActiveSubtaskTitle(null);
+    }, [setActiveSubtaskId, setActiveSubtaskTitle]);
 
     const startCycle = useCallback(() => {
         if (activeTaskId) {
             setActiveTaskId(null);
             setActiveTaskTitle(null);
+            setActiveSubtaskId(null);
+            setActiveSubtaskTitle(null);
         }
         const newDurationInSeconds = DEFAULT_FOCUS_DURATION;
         setTimeRemaining(newDurationInSeconds);
@@ -230,7 +241,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         playBackgroundSound(true);
         setStatus('running');
         postCommandToSW('START_TIMER');
-    }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext, activeTaskId, setActiveTaskId, setActiveTaskTitle]);
+    }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
 
     const pauseCycle = useCallback(() => {
         stopBackgroundSound(true);
@@ -255,9 +266,11 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         postCommandToSW('STOP_TIMER');
         setActiveTaskId(null);
         setActiveTaskTitle(null);
-    }, [stopBackgroundSound, postCommandToSW, setActiveTaskId, setActiveTaskTitle]);
+        setActiveSubtaskId(null);
+        setActiveSubtaskTitle(null);
+    }, [stopBackgroundSound, postCommandToSW, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
 
-    const startFocusOnTask = useCallback((taskId: string, taskTitle: string, duration?: number) => {
+    const startFocusOnTask = useCallback((taskId: string, taskTitle: string, duration?: number, subtaskId: string | null = null, subtaskTitle: string | null = null) => {
         stopBackgroundSound(false);
         postCommandToSW('STOP_TIMER');
 
@@ -266,11 +279,15 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         postCommandToSW('SET_FOCUS_DURATION', newDurationInMinutes);
         setTimeRemaining(newDurationInSeconds);
-        setSessionDuration(newDurationInSeconds); // Define a duração da sessão
+        setSessionDuration(newDurationInSeconds);
 
         setActiveTaskId(taskId);
         setActiveTaskTitle(taskTitle);
-        addNotification(`Focando em: ${taskTitle}`, '🎯', 'success');
+        setActiveSubtaskId(subtaskId);
+        setActiveSubtaskTitle(subtaskTitle);
+        
+        const notificationTitle = subtaskTitle ? `${taskTitle}: ${subtaskTitle}` : taskTitle;
+        addNotification(`Focando em: ${notificationTitle}`, '🎯', 'success');
 
         setTimerMode('focus');
         setStatus('running');
@@ -281,7 +298,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         playSound('start');
         playBackgroundSound(true);
         postCommandToSW('START_TIMER');
-    }, [addNotification, getAudioContext, playBackgroundSound, playSound, postCommandToSW, stopBackgroundSound, setActiveTaskId, setActiveTaskTitle]);
+    }, [addNotification, getAudioContext, playBackgroundSound, playSound, postCommandToSW, stopBackgroundSound, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
 
     const skipBreak = useCallback(() => {
         stopBackgroundSound();
@@ -299,7 +316,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setStatus('idle');
         setTimerMode('focus');
         setTimeRemaining(newDurationInSeconds);
-        setSessionDuration(newDurationInSeconds); // Define a duração da sessão
+        setSessionDuration(newDurationInSeconds);
     }, [postCommandToSW]);
 
     const value = {
@@ -309,12 +326,17 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         status,
         isActive,
         timeRemaining,
-        sessionDuration, // Exposto
+        sessionDuration,
         distractionNotes,
         setDistractionNotes,
         activeTaskId,
         activeTaskTitle,
+        activeSubtaskId,
+        activeSubtaskTitle,
+        lastCompletedFocus,
+        clearLastCompletedFocus,
         startFocusOnTask,
+        clearActiveSubtask, // NOVO
         startCycle,
         pauseCycle,
         resumeCycle,

@@ -44,11 +44,11 @@ export const initialTaskTemplates: TaskTemplate[] = [
     // --- Limpeza: Tarefas de Manutenção Diária ---
     { id: 20, title: "Calçar sapatos para ativar", description: "Truque psicológico poderoso: calçar sapatos sinaliza para o cérebro que é 'hora de agir'.", category: "Casa", energyNeeded: 'low', quadrant: 'do', pomodoroEstimate: 0, timeOfDay: 'any' },
     { id: 21, title: "Ligar uma playlist animada ou podcast", description: "O estímulo auditivo (Temptation Bundling) ajuda a tolerar tarefas tediantes e a manter o ritmo.", category: "Casa", energyNeeded: 'low', quadrant: 'do', pomodoroEstimate: 0, timeOfDay: 'any' },
-    { id: 22, title: "Corrida de Limpeza de 15 minutos", description: "Ative o modo turbo. O objetivo é progresso, não perfeição. Pare quando o tempo acabar. Vitória!", category: "Casa", pomodoroEstimate: 1, customDuration: 15, energyNeeded: 'medium', quadrant: 'do', timeOfDay: 'any', timerCompletionMode: 'endSession' },
+    { id: 22, title: "Corrida de Limpeza de 15 minutos", description: "Ative o modo turbo. O objetivo é progresso, não perfeição. Pare quando o tempo acabar. Vitória!", category: "Casa", pomodoroEstimate: 1, customDuration: 15, energyNeeded: 'medium', quadrant: 'do', timeOfDay: 'any', timerCompletionMode: 'completeTask' },
     { id: 23, title: "Caçar e recolher o lixo da casa", description: "Missão de caça ao tesouro: andar pela casa com uma sacola e capturar apenas o lixo visível.", category: "Casa", energyNeeded: 'low', quadrant: 'do', pomodoroEstimate: 0, timeOfDay: 'any' },
     { id: 24, title: "Lavar louça até encher o escorredor", description: "Sua tarefa de manutenção diária. O objetivo não é zerar a pia, é apenas impedir que ela transborde. Isso já é uma vitória.", category: "Casa", energyNeeded: 'medium', quadrant: 'schedule', pomodoroEstimate: 0, timeOfDay: 'any' },
-    { id: 25, title: "Resetar uma superfície plana", description: "Missão de impacto visual: deixe UMA superfície (mesa, balcão) visivelmente limpa. A recompensa é imediata.", category: "Casa", energyNeeded: 'low', quadrant: 'do', pomodoroEstimate: 0, customDuration: 10, timeOfDay: 'any'},
-    { id: 26, title: "Varrer ou aspirar um cômodo", description: "Escolha UM cômodo e limpe apenas o caminho principal. O objetivo não é a perfeição, é um ambiente visivelmente melhor.", category: "Casa", energyNeeded: 'medium', quadrant: 'schedule', pomodoroEstimate: 0, customDuration: 10, timeOfDay: 'any'},
+    { id: 25, title: "Resetar uma superfície plana", description: "Missão de impacto visual: deixe UMA superfície (mesa, balcão) visivelmente limpa. A recompensa é imediata.", category: "Casa", energyNeeded: 'low', quadrant: 'do', pomodoroEstimate: 0, customDuration: 10, timeOfDay: 'any' },
+    { id: 26, title: "Varrer ou aspirar um cômodo", description: "Escolha UM cômodo e limpe apenas o caminho principal. O objetivo não é a perfeição, é um ambiente visivelmente melhor.", category: "Casa", energyNeeded: 'medium', quadrant: 'schedule', pomodoroEstimate: 0, customDuration: 10, timeOfDay: 'any' },
     
     // --- Limpeza: Missões de Faxina Pesada ---
     { 
@@ -183,7 +183,7 @@ export const initialRoutines: Routine[] = [
     {
         id: 'routine-shutdown',
         name: 'Desligamento Noturno',
-        description: 'ESTRATÉGIA: Facilite a vida do seu "Eu do Futuro". Reduza a ansiedade de decisão da manhã seguinte.',
+        description: 'ESTRATÉGIA: Facilite a vida do seu \'Eu do Futuro\'. Reduza a ansiedade de decisão da manhã seguinte.',
         icon: 'moon',
         taskTemplateIds: [10, 11, 12, 13],
     },

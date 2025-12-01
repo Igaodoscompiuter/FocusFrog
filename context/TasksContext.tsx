@@ -4,23 +4,18 @@ import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
+import { usePomodoro } from './PomodoroContext';
 import { initialRoutines, initialTaskTemplates } from '../constants';
 
 const generateUniqueId = () => {
     return crypto.randomUUID();
 };
 
-// Função de formatação de título robusta e definitiva
 const formatTaskTitle = (title: string) => {
-    // Remove qualquer prefixo antes de uma vírgula ou dois-pontos usando regex
     const newTitle = title.replace(/^[^,:]*[,:]\s*/, '').trim();
-
-    // Capitaliza a primeira letra do resultado e retorna
     if (newTitle && newTitle.length > 0) {
         return newTitle.charAt(0).toUpperCase() + newTitle.slice(1);
     }
-
-    // Se não houver prefixo ou o título ficar vazio, retorna o título original capitalizado
     return title.charAt(0).toUpperCase() + title.slice(1);
 };
 
@@ -71,11 +66,18 @@ const defaultLeavingHomeItems: ChecklistItem[] = [
     { id: 'item-1', text: 'Chaves', completed: false, isDefault: true },
     { id: 'item-2', text: 'Carteira', completed: false, isDefault: true },
     { id: 'item-3', text: 'Celular', completed: false, isDefault: true },
-]
+];
 
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { addNotification } = useUI();
     const { setPontosFoco } = useTheme();
+    const { 
+        lastCompletedFocus, 
+        clearLastCompletedFocus, 
+        activeTaskId: pomodoroActiveTaskId, 
+        activeSubtaskId: pomodoroActiveSubtaskId,
+        stopCycle: pomodoroStopCycle 
+    } = usePomodoro();
 
     const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', [{ id: 1, name: 'Trabalho', color: '#3B82F6' }]);
@@ -89,25 +91,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [overdueTasksForReview, setOverdueTasksForReview] = useState<Task[]>([]);
     const [needsOverdueReview, setNeedsOverdueReview] = useState(false);
     
-    // Efeito para migração de dados de títulos antigos (executa uma única vez)
-    useEffect(() => {
-        let hasChanged = false;
-        const migratedTasks = tasks.map(task => {
-            const newTitle = formatTaskTitle(task.title);
-            if (newTitle !== task.title) {
-                hasChanged = true;
-                return { ...task, title: newTitle };
-            }
-            return task;
-        });
-
-        if (hasChanged) {
-            setTasks(migratedTasks);
-            console.log('Migração de títulos de tarefas existentes concluída.');
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const getLocalTodayString = useCallback(() => {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -149,7 +132,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 const currentQuadrantCount = prevTasks.filter(t => t.quadrant === taskData.quadrant).length;
                 return {
                     ...taskData,
-                    title: formatTaskTitle(taskData.title), // Formatação definitiva
+                    title: formatTaskTitle(taskData.title),
                     id: generateUniqueId(),
                     status: 'todo' as 'todo',
                     displayOrder: currentQuadrantCount + index,
@@ -163,10 +146,15 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleAddTasks([taskData]);
     }, [handleAddTasks]);
 
+    useEffect(() => {
+        if (lastCompletedFocus && lastCompletedFocus.taskId && lastCompletedFocus.subtaskId) {
+            handleToggleSubtask(lastCompletedFocus.taskId, lastCompletedFocus.subtaskId);
+            clearLastCompletedFocus();
+        }
+    }, [lastCompletedFocus, clearLastCompletedFocus]);
+
     const handleUpdateTask = useCallback((updatedTask: Task) => {
-        setTasks(prevTasks => {
-            return prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task);
-        });
+        setTasks(prevTasks => prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task));
         addNotification('Tarefa atualizada!', '✏️', 'success');
     }, [setTasks, addNotification]);
 
@@ -174,70 +162,40 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTasks(prevTasks => {
             const taskToMove = prevTasks.find(t => t.id === taskId);
             if (!taskToMove) return prevTasks;
-    
-            const oldQuadrant = taskToMove.quadrant;
-    
             const tasksWithoutMoved = prevTasks.filter(t => t.id !== taskId);
-            
             const updatedTask = { ...taskToMove, quadrant: newQuadrant };
-            
             const newQuadrantTasks = tasksWithoutMoved.filter(t => t.quadrant === newQuadrant);
             newQuadrantTasks.splice(newIndex, 0, updatedTask);
-
-            const updatedNewQuadrantTasks = newQuadrantTasks.map((t, index) => ({ ...t, displayOrder: index }));
-
-            const updatedOldQuadrantTasks = tasksWithoutMoved
-                .filter(t => t.quadrant === oldQuadrant)
-                .map((t, index) => ({ ...t, displayOrder: index }));
-
-            const unaffectedTasks = tasksWithoutMoved.filter(
-                t => t.quadrant !== oldQuadrant && t.quadrant !== newQuadrant
-            );
-            
-            return [...unaffectedTasks, ...updatedOldQuadrantTasks, ...updatedNewQuadrantTasks];
+            const updatedNewQuadrantTasks = newQuadrantTasks.map((t, i) => ({ ...t, displayOrder: i }));
+            const otherQuadrants = tasksWithoutMoved.filter(t => t.quadrant !== newQuadrant).reduce((acc, task) => {
+                acc[task.quadrant] = (acc[task.quadrant] || []).concat(task);
+                return acc;
+            }, {} as Record<Quadrant, Task[]>);
+            const reorderedOtherQuadrants = Object.values(otherQuadrants).flat().map((t, i) => ({ ...t, displayOrder: i }));
+            return [...updatedNewQuadrantTasks, ...reorderedOtherQuadrants];
         });
     }, [setTasks]);
 
     const handleDeleteTask = useCallback((taskId: string) => {
+        // CORREÇÃO: Para o timer se a tarefa excluída estiver em foco.
+        if (taskId === pomodoroActiveTaskId) {
+            pomodoroStopCycle();
+        }
         setTasks(prev => prev.filter(t => t.id !== taskId));
         addNotification('Tarefa excluída!', '🗑️', 'info');
-    }, [setTasks, addNotification]);
+    }, [setTasks, addNotification, pomodoroActiveTaskId, pomodoroStopCycle]);
 
-    const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
+    const handleCompleteTask = useCallback((taskId: string) => {
         setTasks(prev => prev.map(task => {
             if (task.id === taskId) {
-                if (subtaskId) {
-                    let subtaskJustCompleted = false;
-                    const updatedSubtasks = task.subtasks?.map(st => {
-                        if (st.id === subtaskId) {
-                            if (!st.completed) subtaskJustCompleted = true;
-                            return { ...st, completed: !st.completed };
-                        }
-                        return st;
-                    }) || [];
-                    
-                    if (subtaskJustCompleted) {
-                        setPontosFoco(p => p + 5);
-                    }
+                const isCompleting = task.status !== 'done';
+                const newStatus = isCompleting ? 'done' : 'todo';
 
-                    const allSubtasksDone = updatedSubtasks.every(st => st.completed);
-                    let newStatus = task.status;
-                    
-                    if (allSubtasksDone && updatedSubtasks.length > 0) {
-                        if(task.status !== 'done') {
-                            addNotification('Todas as subtarefas concluídas!', '🎉', 'victory');
-                            setPontosFoco(p => p + 10);
-                        }
-                        newStatus = 'done';
-                    } else if (task.status === 'done' && !allSubtasksDone) {
-                        newStatus = 'todo';
+                if (isCompleting) {
+                     // CORREÇÃO: Para o timer apenas ao completar a tarefa em foco.
+                    if (taskId === pomodoroActiveTaskId) {
+                        pomodoroStopCycle();
                     }
-                    
-                    return { ...task, subtasks: updatedSubtasks, status: newStatus };
-                }
-                
-                const newStatus = task.status === 'done' ? 'todo' : 'done';
-                if (newStatus === 'done') {
                     if (taskId === frogTaskId) {
                         addNotification('Você engoliu o sapo! Conquista épica!', '🐸👑', 'victory');
                         setPontosFoco(p => p + 25); 
@@ -250,12 +208,41 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             }
             return task;
         }));
-    }, [setTasks, addNotification, setPontosFoco, frogTaskId]);
+    }, [setTasks, addNotification, setPontosFoco, frogTaskId, pomodoroActiveTaskId, pomodoroStopCycle]);
     
     const handleToggleSubtask = useCallback((taskId: string, subtaskId: string) => {
-        handleCompleteTask(taskId, subtaskId);
-    }, [handleCompleteTask]);
+        setTasks(prev => prev.map(task => {
+            if (task.id === taskId) {
+                let subtaskJustCompleted = false;
+                const updatedSubtasks = task.subtasks?.map(st => {
+                    if (st.id === subtaskId) {
+                        if (!st.completed) {
+                             subtaskJustCompleted = true;
+                             // CORREÇÃO: Para o timer apenas ao completar a subtarefa em foco.
+                             if (taskId === pomodoroActiveTaskId && subtaskId === pomodoroActiveSubtaskId) {
+                                pomodoroStopCycle();
+                            }
+                        }
+                        return { ...st, completed: !st.completed };
+                    }
+                    return st;
+                }) || [];
+                
+                if (subtaskJustCompleted) {
+                    setPontosFoco(p => p + 5);
+                    const allSubtasksDone = updatedSubtasks.every(st => st.completed);
+                    if (allSubtasksDone) {
+                        addNotification(`Todas as subtarefas de "${task.title}" concluídas!`, '🎉', 'victory');
+                        setPontosFoco(p => p + 10);
+                    }
+                }
+                return { ...task, subtasks: updatedSubtasks };
+            }
+            return task;
+        }));
+    }, [setTasks, addNotification, setPontosFoco, pomodoroActiveTaskId, pomodoroActiveSubtaskId, pomodoroStopCycle]);
 
+    // ... (O resto das funções permanece igual)
     const handleSaveTag = useCallback((tag: Partial<Tag>) => {
         setTags(prev => {
             if (tag.id) {
@@ -287,7 +274,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleCreateTemplateFromTask = useCallback((task: Task) => {
         const newTemplate: TaskTemplate = {
             id: Date.now(),
-            title: formatTaskTitle(task.title), // Formatação definitiva
+            title: formatTaskTitle(task.title),
             description: task.description,
             quadrant: task.quadrant,
             pomodoroEstimate: task.pomodoroEstimate,
@@ -383,4 +370,4 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;
-};
+}
