@@ -5,193 +5,115 @@
 .cardWrapper {
     position: relative;
     border-radius: 12px;
-    overflow: hidden; 
-    touch-action: none; 
-    user-select: none; 
+    overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+    transition: z-index 0.3s, overflow 0.3s;
 }
 
-.cardContent {
-    position: relative; 
-    z-index: 2;
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1rem;
+.cardWrapper.tooltipActive {
+    overflow: visible;
+    z-index: 10;
 }
 
-.swipeBackground {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    border-radius: 12px;
-    color: white;
-    font-weight: 600;
-}
+.cardContent { position: relative; z-index: 2; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; }
 
-/* --- CORREÇÃO DEFINITIVA COM CORES RGBA HARDCODED --- */
-.completeBackground {
-    justify-content: flex-start;
-    background: linear-gradient(to right, rgba(16, 185, 129, 0.8) 20%, transparent 80%);
-}
+.swipeBackground { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; align-items: center; border-radius: 12px; color: white; font-weight: 600; }
+.completeBackground { justify-content: flex-start; background: linear-gradient(to right, rgba(16, 185, 129, 0.8) 20%, transparent 80%); }
+.deleteBackground { justify-content: flex-end; background: linear-gradient(to left, rgba(220, 38, 38, 0.8) 20%, transparent 80%); }
 
-.deleteBackground {
-    justify-content: flex-end;
-    background: linear-gradient(to left, rgba(220, 38, 38, 0.8) 20%, transparent 80%);
-}
+.swipeIcon { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0 2rem; }
+.swipeIcon svg { width: 28px; height: 28px; }
 
-.swipeIcon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0 2rem;
-}
+.taskCardHeader { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.taskCardTitleGroup { display: flex; align-items: center; gap: 0.75rem; flex-grow: 1; }
+.taskCardTitleGroup h4 { line-height: 1.4; }
 
-.swipeIcon svg {
-    width: 28px;
-    height: 28px;
-}
+.taskCardActions { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
 
+.taskCardActions .icon-button { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background-color: rgba(128, 128, 128, 0.2); transition: background-color 0.2s ease; }
+.taskCardActions .icon-button:hover { background-color: rgba(128, 128, 128, 0.3); }
 
-.taskCardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
+.frogIconActive { color: var(--accent-color); filter: drop-shadow(0 0 5px var(--accent-color-glow)); }
 
-.taskCardTitleGroup {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    flex-grow: 1;
-}
-
-.taskCardTitleGroup h4 {
-    line-height: 1.4;
-    margin-top: 0;
-}
-
-.taskCardActions {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    flex-shrink: 0;
-}
-
-.taskCompleteButton {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--border-color);
-    flex-shrink: 0;
-    margin-top: 2px;
+/* --- Tooltip (Solução Definitiva) --- */
+.tooltipContainer {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    /* Adicionado para otimizar para toque */
+    -webkit-touch-callout: none; /* Impede o menu de contexto do iOS */
+    user-select: none; /* Impede a seleção de texto */
 }
 
-.taskCompleteButton.completed {
-    background-color: var(--success-color);
-    border-color: var(--success-color);
-}
-
-.taskCompleteButton svg {
-    width: 14px;
-    height: 14px;
-    color: var(--surface-color);
-}
-
-.taskCardDescription {
-    font-size: 0.9rem;
-    color: var(--text-secondary-color);
-    margin: 0 0 1rem 2.25rem;
-    line-height: 1.5;
-}
-
-.taskCardFooter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    padding-left: 2.25rem;
-}
-
-.taskCardBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 3px 8px;
-    border: 1px solid var(--border-color);
+.tooltipText {
+    visibility: hidden;
+    opacity: 0;
+    width: max-content;
+    background-color: var(--tooltip-bg-color, #2d3748);
+    color: var(--tooltip-text-color, #fff);
+    text-align: center;
     border-radius: 6px;
-    font-size: 0.75rem;
+    padding: 6px 12px;
+    position: absolute;
+    z-index: 15;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 12px;
+    transition: opacity 0.2s ease;
+    font-size: 0.8rem;
     font-weight: 600;
-    line-height: 1.5;
+    pointer-events: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
-.taskCardBadge svg {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
+.tooltipText::after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-top: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent var(--tooltip-bg-color, #2d3748) transparent transparent;
 }
 
-.overdueBadge {
-    color: var(--danger-color);
-    border-color: transparent;
-    background-color: var(--danger-color-ultratranslucent);
-}
+.tooltipContainer:hover .tooltipText { visibility: visible; opacity: 1; }
+/* --- Fim da Tooltip --- */
 
-.statusDone {
-    opacity: 0.6;
-}
 
-.statusDone .taskCardTitleGroup h4 {
-    text-decoration: line-through;
-}
+.taskCompleteButton { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border-color); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; cursor: pointer; position: relative; }
 
-.subtasksSection {
-    margin: 1rem 0 0 2.25rem;
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-}
+.taskCompleteButton:hover { border-color: var(--primary-color); }
+.taskCompleteButton.completed { background-color: var(--success-color); border-color: var(--success-color); }
 
-.subtasksHeader { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    cursor: pointer; 
-    color: var(--text-secondary-color); 
-    font-size: 0.8rem; 
-    font-weight: 600; 
-    margin-bottom: 0.75rem; 
-}
-.collapsibleChevron { 
-    transition: transform 0.2s ease; 
-}
-.subtasksSection.collapsed .collapsibleChevron { 
-    transform: rotate(-90deg); 
-}
-.subtasksContent { 
-    display: grid; 
-    gap: 0.6rem; 
-}
-.subtaskItem { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.6rem; 
-    font-size: 0.85rem; 
-}
-.subtaskCheckbox { 
-    width: 16px; 
-    height: 16px; 
-    border: 2px solid var(--border-color); 
-    border-radius: 50%; 
-    cursor: pointer; 
-}
+.taskCompleteButton.completed::after { content: '\2713'; color: var(--text-on-primary); font-size: 14px; font-weight: bold; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+.taskCompleteButton.disabled { cursor: not-allowed; background-color: var(--surface-secondary-color); border-color: var(--border-subtle-color); }
+.taskCompleteButton.disabled:hover { border-color: var(--border-subtle-color); }
+
+.taskCardDescription { font-size: 0.9rem; color: var(--text-secondary-color); margin: 0 0 1rem 2.5rem; line-height: 1.5; }
+.taskCardFooter { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; padding-left: 2.5rem; }
+.taskCardBadge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 3px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.75rem; font-weight: 600; line-height: 1.5; }
+.taskCardBadge svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+.statusDone { opacity: 0.6; }
+.statusDone .taskCardTitleGroup h4 { text-decoration: line-through; }
+
+.subtasksSection { margin: 1rem 0 0 2.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; }
+.subtasksHeader { display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: var(--text-secondary-color); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.75rem; }
+.collapsibleChevron { transition: transform 0.2s ease; }
+.subtasksSection.collapsed .collapsibleChevron { transform: rotate(-90deg); }
+.subtasksContent { display: grid; gap: 0.6rem; }
+
+.subtaskItem { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; cursor: pointer; padding: 4px; border-radius: 6px; transition: background-color 0.2s ease; }
+.subtaskItem:hover { background-color: var(--surface-secondary-color); }
+
+.subtaskCheckbox { width: 16px; height: 16px; border: 2px solid var(--text-secondary-color); border-radius: 50%; cursor: pointer; flex-shrink: 0; position: relative; transition: all 0.2s ease; }
+.subtaskItem.completed .subtaskCheckbox { background-color: var(--primary-color); border-color: var(--primary-color); }
+
+.subtaskItem.completed .subtaskCheckbox::after { content: '\2713'; color: var(--text-on-primary); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: bold; }
+
+.subtaskItem.completed span { text-decoration: line-through; color: var(--text-secondary-color); }

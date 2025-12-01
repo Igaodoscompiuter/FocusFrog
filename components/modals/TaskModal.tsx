@@ -5,9 +5,8 @@ import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import type { Task, Subtask, Quadrant, TimeOfDay, EnergyLevel } from '../../types';
 import { quadrants } from '../../constants';
-import styles from './TaskModal.module.css'; // Módulo de estilo para componentes internos
-
-// --- Helper Functions e Constantes ---
+import styles from './TaskModal.module.css'; 
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 const getInitialTaskState = (taskToEdit: Partial<Task> | null): Partial<Task> => {
     if (taskToEdit && Object.keys(taskToEdit).length > 0) {
@@ -33,13 +32,13 @@ const timeOfDayOptions: { id: TimeOfDay | '', label: string }[] = [
     { id: '', label: 'Nenhum' },
 ];
 
-// --- Componente Principal ---
-
 export const TaskModal: React.FC<{ taskToEdit: Partial<Task> | null; onClose: () => void; }> = ({ taskToEdit, onClose }) => {
     const { handleAddTask, handleUpdateTask, handleDeleteTask, handleCreateTemplateFromTask } = useTasks();
     const [task, setTask] = useState<Partial<Task>>({});
     const [newSubtask, setNewSubtask] = useState('');
     const [isDetailedView, setIsDetailedView] = useState(false);
+
+    const modalRef = useClickOutside(onClose);
 
     const isQuickTask = task.pomodoroEstimate === 0;
 
@@ -82,8 +81,8 @@ export const TaskModal: React.FC<{ taskToEdit: Partial<Task> | null; onClose: ()
     if (!taskToEdit) return null;
 
     return (
-        <div className="g-modal-overlay" onClick={onClose}>
-            <div className="g-modal" onClick={e => e.stopPropagation()}>
+        <div className="g-modal-overlay">
+            <div className="g-modal" ref={modalRef}>
                 <header className="g-modal-header">
                     <h3><Icon path={icons.edit3} /> {task.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3>
                     <button onClick={onClose} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button>
@@ -195,7 +194,6 @@ export const TaskModal: React.FC<{ taskToEdit: Partial<Task> | null; onClose: ()
     );
 };
 
-// --- Sub-componente para a Matriz (continua o mesmo) ---
 
 const MatrixSelector: React.FC<{ task: Partial<Task>, setTask: React.Dispatch<React.SetStateAction<Partial<Task>>> }> = ({ task, setTask }) => {
     const [urgency, setUrgency] = useState<'urgent' | 'not-urgent' | null>(null);

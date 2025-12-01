@@ -3,6 +3,7 @@ import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import { useUI } from '../../context/UIContext';
 import { useTasks } from '../../context/TasksContext';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 export const EndDayReviewModal: React.FC = () => {
   const { isReviewModalOpen, setIsReviewModalOpen } = useUI();
@@ -12,6 +13,15 @@ export const EndDayReviewModal: React.FC = () => {
     handleReviewAction(action, taskId);
   }
 
+  const handleClose = () => {
+    // If the user closes without action, we still need to clear the state
+    // so the prompt doesn't re-appear until the next day.
+    clearOverdueReview();
+    setIsReviewModalOpen(false);
+  }
+
+  const modalRef = useClickOutside(handleClose);
+
   const handlePostponeAllAndClose = async () => {
     const taskIds = overdueTasksForReview.map(t => t.id);
     if (taskIds.length > 0) {
@@ -20,19 +30,13 @@ export const EndDayReviewModal: React.FC = () => {
     setIsReviewModalOpen(false);
   }
   
-  const handleClose = () => {
-    // If the user closes without action, we still need to clear the state
-    // so the prompt doesn't re-appear until the next day.
-    clearOverdueReview();
-    setIsReviewModalOpen(false);
-  }
 
   if (!isReviewModalOpen || overdueTasksForReview.length === 0) return null;
   const tasks = overdueTasksForReview;
 
   return (
     <div className="modal-overlay">
-      <div className="modal review-modal">
+      <div className="modal review-modal" ref={modalRef}>
         <div className="modal-header">
           <h3>Hora de Revisar o Dia</h3>
           <p>Parece que {tasks.length} {tasks.length === 1 ? 'tarefa ficou' : 'tarefas ficaram'} pendente{tasks.length > 1 ? 's' : ''}. Sem problemas, vamos organizar!</p>

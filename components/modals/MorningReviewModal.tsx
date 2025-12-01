@@ -1,9 +1,10 @@
 import React from 'react';
 import type { Task } from '../../types';
 import styles from './MorningReviewModal.module.css';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface MorningReviewModalProps {
-  isOpen: boolean; // ADICIONADO: Prop para controlar a visibilidade
+  isOpen: boolean; 
   tasks?: Task[];
   selectedTask: string | null; 
   onSelectTask: (taskId: string) => void; 
@@ -12,7 +13,7 @@ interface MorningReviewModalProps {
 }
 
 export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({ 
-  isOpen, // ADICIONADO
+  isOpen,
   tasks = [],
   selectedTask,
   onSelectTask,
@@ -20,15 +21,15 @@ export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({
   onClose
 }) => {
 
-  // ADICIONADO: Lógica para não renderizar o modal se ele não estiver aberto
+  const modalRef = useClickOutside(onClose);
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    // O overlay agora chama onClose para fechar o modal ao clicar fora
-    <div className="g-modal-overlay" onClick={onClose}> 
-      <div className="g-modal" onClick={(e) => e.stopPropagation()}> 
+    <div className="g-modal-overlay"> 
+      <div className="g-modal" ref={modalRef}> 
         
         <header className={`g-modal-header ${styles.centeredHeader}`}>
           <h3>🐸 Qual sapo você vai engolir hoje?</h3>

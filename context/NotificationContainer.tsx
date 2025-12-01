@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUI } from '../context/UIContext';
 import { Aura } from '../components/Aura';
-import styles from './NotificationContainer.module.css';
+import styles from '../components/NotificationContainer.module.css';
 
 export const NotificationContainer: React.FC = () => {
     const { notifications, clearAllNotifications } = useUI();
@@ -12,7 +11,7 @@ export const NotificationContainer: React.FC = () => {
     const activeNotification = notifications.length > 0 ? notifications[0] : null;
 
     return (
-        <div className={styles.container}>
+        <div className={styles.notificationContainer}>
             <AnimatePresence mode='wait'>
                 {
                     /* 

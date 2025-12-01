@@ -3,6 +3,7 @@ import { useTasks } from '../../context/TasksContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import type { Tag } from '../../types';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 const colorPalette = [
     '#EF4444', '#F97316', '#FBBF24', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'
@@ -11,6 +12,7 @@ const colorPalette = [
 export const TagEditorModal = ({ onClose }: { onClose: () => void }) => {
     const { tags, handleSaveTag, handleDeleteTag } = useTasks();
     const [editingTag, setEditingTag] = useState<Partial<Tag>>({ name: '', color: colorPalette[0] });
+    const modalRef = useClickOutside(onClose);
 
     const handleSelectTagForEdit = (tag: Tag) => {
         setEditingTag(tag);
@@ -36,7 +38,7 @@ export const TagEditorModal = ({ onClose }: { onClose: () => void }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal tag-editor-modal">
+            <div className="modal tag-editor-modal" ref={modalRef}>
                 <div className="modal-header">
                     <h3>Gerenciar Tags</h3>
                      <button onClick={onClose} className="icon-button close-button" aria-label="Fechar modal">

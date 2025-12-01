@@ -73,6 +73,7 @@ export interface TaskTemplate {
     energyNeeded?: EnergyLevel;
     category: string;
     subtasks?: Omit<Subtask, 'id' | 'completed'>[];
+    timeOfDay?: TimeOfDay;
 }
 
 export interface Routine {

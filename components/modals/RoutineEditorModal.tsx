@@ -4,6 +4,7 @@ import { icons } from '../Icons';
 import type { Routine } from '../../types';
 import { useTasks } from '../../context/TasksContext';
 import { routineIcons } from '../../constants';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: {
     routineToEdit: Routine | null;
@@ -13,6 +14,8 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: {
     const { taskTemplates } = useTasks();
     const [routine, setRoutine] = useState<Routine>(routineToEdit || { id: '', name: '', description: '', icon: 'zap', taskTemplateIds: [] });
     const [searchTerm, setSearchTerm] = useState('');
+
+    const modalRef = useClickOutside(onClose);
 
     const handleFieldChange = (field: keyof Routine, value: string) => {
         setRoutine(prev => ({ ...prev, [field]: value }));
@@ -38,7 +41,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: {
 
     return (
         <div className="modal-overlay">
-            <div className="modal routine-editor-modal">
+            <div className="modal routine-editor-modal" ref={modalRef}>
                 <div className="modal-header">
                     <h3>{routineToEdit ? 'Editar Rotina' : 'Criar Nova Rotina'}</h3>
                 </div>

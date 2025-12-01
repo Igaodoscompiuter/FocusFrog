@@ -10,6 +10,20 @@ const generateUniqueId = () => {
     return crypto.randomUUID();
 };
 
+// Função de formatação de título robusta e definitiva
+const formatTaskTitle = (title: string) => {
+    // Remove qualquer prefixo antes de uma vírgula ou dois-pontos usando regex
+    const newTitle = title.replace(/^[^,:]*[,:]\s*/, '').trim();
+
+    // Capitaliza a primeira letra do resultado e retorna
+    if (newTitle && newTitle.length > 0) {
+        return newTitle.charAt(0).toUpperCase() + newTitle.slice(1);
+    }
+
+    // Se não houver prefixo ou o título ficar vazio, retorna o título original capitalizado
+    return title.charAt(0).toUpperCase() + title.slice(1);
+};
+
 interface TasksContextType {
     tasks: Task[];
     tags: Tag[];
@@ -17,6 +31,7 @@ interface TasksContextType {
     routines: Routine[];
     taskTemplates: TaskTemplate[];
     handleAddTask: (task: Omit<Task, 'id' | 'status'>) => void;
+    handleAddTasks: (tasks: Omit<Task, 'id' | 'status'>[]) => void;
     handleUpdateTask: (updatedTask: Task) => void;
     handleUpdateTaskQuadrant: (taskId: string, newQuadrant: Quadrant, newIndex: number) => void;
     handleDeleteTask: (taskId: string) => void;
@@ -74,6 +89,25 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [overdueTasksForReview, setOverdueTasksForReview] = useState<Task[]>([]);
     const [needsOverdueReview, setNeedsOverdueReview] = useState(false);
     
+    // Efeito para migração de dados de títulos antigos (executa uma única vez)
+    useEffect(() => {
+        let hasChanged = false;
+        const migratedTasks = tasks.map(task => {
+            const newTitle = formatTaskTitle(task.title);
+            if (newTitle !== task.title) {
+                hasChanged = true;
+                return { ...task, title: newTitle };
+            }
+            return task;
+        });
+
+        if (hasChanged) {
+            setTasks(migratedTasks);
+            console.log('Migração de títulos de tarefas existentes concluída.');
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const getLocalTodayString = useCallback(() => {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -109,18 +143,25 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return !frogForToday;
     }, [tasks, frogTaskId, todayString]);
 
-    const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status'>) => {
+    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
         setTasks(prevTasks => {
-            const newTask: Task = {
-                ...taskData,
-                id: generateUniqueId(),
-                status: 'todo',
-                displayOrder: prevTasks.filter(t => t.quadrant === taskData.quadrant).length,
-            };
-            return [...prevTasks, newTask];
+            const newTasks = tasksData.map((taskData, index) => {
+                const currentQuadrantCount = prevTasks.filter(t => t.quadrant === taskData.quadrant).length;
+                return {
+                    ...taskData,
+                    title: formatTaskTitle(taskData.title), // Formatação definitiva
+                    id: generateUniqueId(),
+                    status: 'todo' as 'todo',
+                    displayOrder: currentQuadrantCount + index,
+                };
+            });
+            return [...prevTasks, ...newTasks];
         });
-        // A notificação de adição será tratada na UI para mais contexto
     }, [setTasks]);
+
+    const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status'>) => {
+        handleAddTasks([taskData]);
+    }, [handleAddTasks]);
 
     const handleUpdateTask = useCallback((updatedTask: Task) => {
         setTasks(prevTasks => {
@@ -195,7 +236,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     return { ...task, subtasks: updatedSubtasks, status: newStatus };
                 }
                 
-                // Lógica para tarefa principal
                 const newStatus = task.status === 'done' ? 'todo' : 'done';
                 if (newStatus === 'done') {
                     if (taskId === frogTaskId) {
@@ -246,8 +286,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const handleCreateTemplateFromTask = useCallback((task: Task) => {
         const newTemplate: TaskTemplate = {
-            id: Date.now(), 
-            title: task.title,
+            id: Date.now(),
+            title: formatTaskTitle(task.title), // Formatação definitiva
             description: task.description,
             quadrant: task.quadrant,
             pomodoroEstimate: task.pomodoroEstimate,
@@ -316,6 +356,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         routines,
         taskTemplates,
         handleAddTask,
+        handleAddTasks,
         handleUpdateTask,
         handleUpdateTaskQuadrant,
         handleDeleteTask,

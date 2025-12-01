@@ -6,6 +6,7 @@ import { defaultCategories } from '../../constants';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import styles from './TaskLibraryModal.module.css';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface TaskLibraryModalProps {
     routines: Routine[];
@@ -19,6 +20,8 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<number[]>([]);
     const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'routines' | 'templates'>('routines');
+    
+    const modalRef = useClickOutside(onClose);
 
     const categories = useMemo(() => {
         const allCategories = Array.from(new Set(taskTemplates.map(t => t.category)));
@@ -50,8 +53,8 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
     };
 
     return (
-        <div className="g-modal-overlay" onClick={onClose}>
-            <div className="g-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="g-modal-overlay">
+            <div className="g-modal" ref={modalRef}>
                 <header className="g-modal-header">
                     <div>
                         <h3><Icon path={icons.bookOpen} /> Biblioteca</h3>

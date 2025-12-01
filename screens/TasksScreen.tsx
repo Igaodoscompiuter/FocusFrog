@@ -6,7 +6,7 @@ import { TaskCard } from '../components/tasks/TaskCard';
 import { TaskModal } from '../components/modals/TaskModal';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
-import type { Task, Quadrant, TaskFilters } from '../types';
+import type { Task, Quadrant, TaskFilters, TaskTemplate, Routine } from '../types';
 import { quadrants } from '../constants';
 import { FilterPanel } from '../components/tasks/FilterPanel';
 import { TaskLibraryModal } from '../components/modals/TaskLibraryModal';
@@ -45,7 +45,6 @@ const QuadrantColumn: React.FC<any> = ({ quadrant, tasks, onEdit, onSubtaskClick
     setIsColumnDragOver(false);
   }
 
-  // FIX: Adicionada a classe global .card para padronizar a aparência das colunas.
   return (
     <div
       className={`card ${styles.quadrantColumn} ${styles['quadrant-' + quadrant]} ${isMaximized ? styles.maximized : ''}`}
@@ -106,7 +105,8 @@ const QuadrantColumn: React.FC<any> = ({ quadrant, tasks, onEdit, onSubtaskClick
 
 
 export const TasksScreen: React.FC = () => {
-    const { tasks, handleUpdateTaskQuadrant, handleToggleSubtask, routines, handleAddRoutine, handleAddTemplates } = useTasks();
+    const { tasks, handleUpdateTaskQuadrant, handleToggleSubtask, routines, taskTemplates, handleAddTasks } = useTasks();
+    const { addNotification } = useUI();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -171,6 +171,42 @@ export const TasksScreen: React.FC = () => {
         }
     };
     
+    const handleAddTemplates = (templates: TaskTemplate[]) => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayString = `${yyyy}-${mm}-${dd}`;
+
+        const newTasks = templates.map(template => {
+            const newTask: Omit<Task, 'id' | 'status'> = {
+                title: template.title,
+                description: template.description || '',
+                quadrant: template.quadrant || 'inbox',
+                pomodoroEstimate: template.pomodoroEstimate !== undefined ? template.pomodoroEstimate : 1,
+                customDuration: template.customDuration,
+                energyNeeded: template.energyNeeded || 'medium',
+                subtasks: template.subtasks ? template.subtasks.map(st => ({ id: `sub-${Date.now()}-${Math.random()}`, ...st, completed: false })) : [],
+                dueDate: todayString,
+                timeOfDay: template.timeOfDay, // Adicionado aqui
+            };
+            return newTask;
+        });
+
+        if (newTasks.length > 0) {
+            handleAddTasks(newTasks);
+            addNotification(`${newTasks.length} tarefa(s) adicionada(s) à sua lista!`, '✨', 'success');
+        }
+    };
+
+    const handleAddRoutine = (routine: Routine) => {
+        const templatesToAdd = taskTemplates.filter(t => routine.taskTemplateIds.includes(t.id));
+        if (templatesToAdd.length > 0) {
+            handleAddTemplates(templatesToAdd);
+            addNotification(`Rotina '${routine.name}' adicionada!`, '🚀', 'success');
+        }
+    };
+
     return (
         <main>
             {editingTask && <TaskModal taskToEdit={editingTask} onClose={handleCloseTaskModal} />}

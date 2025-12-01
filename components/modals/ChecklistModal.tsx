@@ -3,6 +3,7 @@ import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import type { ChecklistItem } from '../../types';
 import styles from './ChecklistModal.module.css'; 
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface ChecklistModalProps {
   items: ChecklistItem[];
@@ -14,6 +15,8 @@ interface ChecklistModalProps {
 export const ChecklistModal: React.FC<ChecklistModalProps> = ({ items, onAddItem, onRemoveItem, onClose }) => {
     const [newItemText, setNewItemText] = useState('');
 
+    const modalRef = useClickOutside(onClose);
+
     const handleAddItem = () => {
         if (!newItemText.trim()) return;
         onAddItem(newItemText);
@@ -22,7 +25,7 @@ export const ChecklistModal: React.FC<ChecklistModalProps> = ({ items, onAddItem
 
     return (
         <div className="g-modal-overlay"> 
-            <div className="g-modal"> {/* <-- Classe local removida */}
+            <div className="g-modal" ref={modalRef}> 
                 <div className={styles.modalHeader}>
                     <h3>Gerenciar Itens de Saída</h3>
                     <p>Adicione ou remova itens da sua lista pessoal.</p>

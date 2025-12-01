@@ -17,9 +17,7 @@
     position: relative;
     /* 2. Ocupa a largura para centralizar o filho absoluto */
     width: 100%;
-    /* 3. Garante a altura fixa para que nunca colapse */
-    min-height: 84px; /* Altura generosa para caber a notificação + margens */
-    /* 4. Permite que as notificações sejam clicáveis */
+    /* 3. Permite que as notificações sejam clicáveis */
     pointer-events: auto; 
 }
 
