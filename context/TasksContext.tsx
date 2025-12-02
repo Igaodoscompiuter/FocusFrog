@@ -4,20 +4,7 @@ import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
-import { usePomodoro } from './PomodoroContext';
 import { initialRoutines, initialTaskTemplates } from '../constants';
-
-const generateUniqueId = () => {
-    return crypto.randomUUID();
-};
-
-const formatTaskTitle = (title: string) => {
-    const newTitle = title.replace(/^[^,:]*[,:]\s*/, '').trim();
-    if (newTitle && newTitle.length > 0) {
-        return newTitle.charAt(0).toUpperCase() + newTitle.slice(1);
-    }
-    return title.charAt(0).toUpperCase() + title.slice(1);
-};
 
 interface TasksContextType {
     tasks: Task[];
@@ -26,16 +13,15 @@ interface TasksContextType {
     routines: Routine[];
     taskTemplates: TaskTemplate[];
     handleAddTask: (task: Omit<Task, 'id' | 'status'>) => void;
-    handleAddTasks: (tasks: Omit<Task, 'id' | 'status'>[]) => void;
     handleUpdateTask: (updatedTask: Task) => void;
     handleUpdateTaskQuadrant: (taskId: string, newQuadrant: Quadrant, newIndex: number) => void;
     handleDeleteTask: (taskId: string) => void;
     handleCompleteTask: (taskId: string, subtaskId?: string) => void;
     handleToggleSubtask: (taskId: string, subtaskId: string) => void;
     setFrogTaskId: (id: string | null) => void;
-    handleUnsetFrog: () => void;
     handleSaveTag: (tag: Partial<Tag>) => void;
     handleDeleteTag: (tagId: number) => void;
+    handleDuplicateTask: (taskId: string) => void;
     handlePostponeTask: (taskId: string, days: number) => void;
     needsMorningPlan: boolean;
     needsOverdueReview: boolean;
@@ -45,6 +31,8 @@ interface TasksContextType {
     handlePostponeAllOverdue: (taskIds: string[]) => Promise<void>;
     clearOverdueReview: () => void;
     handleCreateTemplateFromTask: (task: Task) => void;
+    handleAddRoutine: (routine: Routine) => void;
+    handleAddTemplates: (templates: TaskTemplate[]) => void;
     leavingHomeItems: ChecklistItem[];
     handleToggleLeavingHomeItem: (itemId: string) => void;
     handleAddLeavingHomeItem: (text: string) => void;
@@ -66,18 +54,11 @@ const defaultLeavingHomeItems: ChecklistItem[] = [
     { id: 'item-1', text: 'Chaves', completed: false, isDefault: true },
     { id: 'item-2', text: 'Carteira', completed: false, isDefault: true },
     { id: 'item-3', text: 'Celular', completed: false, isDefault: true },
-];
+]
 
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { addNotification } = useUI();
     const { setPontosFoco } = useTheme();
-    const { 
-        lastCompletedFocus, 
-        clearLastCompletedFocus, 
-        activeTaskId: pomodoroActiveTaskId, 
-        activeSubtaskId: pomodoroActiveSubtaskId,
-        stopCycle: pomodoroStopCycle 
-    } = usePomodoro();
 
     const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', [{ id: 1, name: 'Trabalho', color: '#3B82F6' }]);
@@ -91,6 +72,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [overdueTasksForReview, setOverdueTasksForReview] = useState<Task[]>([]);
     const [needsOverdueReview, setNeedsOverdueReview] = useState(false);
     
+    const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
+
+    // Helper to get local YYYY-MM-DD to prevent timezone issues with toISOString()
     const getLocalTodayString = useCallback(() => {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -126,123 +110,179 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return !frogForToday;
     }, [tasks, frogTaskId, todayString]);
 
-    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
-        setTasks(prevTasks => {
-            const newTasks = tasksData.map((taskData, index) => {
-                const currentQuadrantCount = prevTasks.filter(t => t.quadrant === taskData.quadrant).length;
-                return {
-                    ...taskData,
-                    title: formatTaskTitle(taskData.title),
-                    id: generateUniqueId(),
-                    status: 'todo' as 'todo',
-                    displayOrder: currentQuadrantCount + index,
-                };
-            });
-            return [...prevTasks, ...newTasks];
-        });
-    }, [setTasks]);
 
     const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status'>) => {
-        handleAddTasks([taskData]);
-    }, [handleAddTasks]);
-
-    useEffect(() => {
-        if (lastCompletedFocus && lastCompletedFocus.taskId && lastCompletedFocus.subtaskId) {
-            handleToggleSubtask(lastCompletedFocus.taskId, lastCompletedFocus.subtaskId);
-            clearLastCompletedFocus();
-        }
-    }, [lastCompletedFocus, clearLastCompletedFocus]);
+        setTasks(prev => {
+            const newTask: Task = {
+                ...taskData,
+                id: `task-${Date.now()}`,
+                status: 'todo',
+                displayOrder: prev.filter(t => t.quadrant === taskData.quadrant).length,
+            };
+            return [...prev, newTask];
+        });
+        addNotification('Tarefa adicionada!', '✅');
+    }, [setTasks, addNotification]);
 
     const handleUpdateTask = useCallback((updatedTask: Task) => {
-        setTasks(prevTasks => prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task));
-        addNotification('Tarefa atualizada!', '✏️', 'success');
+        setTasks(prevTasks => {
+            const oldTask = prevTasks.find(t => t.id === updatedTask.id);
+            if (!oldTask) return prevTasks;
+    
+            if (oldTask.quadrant === updatedTask.quadrant) {
+                return prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task);
+            }
+
+            const otherTasks = prevTasks.filter(task => task.id !== updatedTask.id);
+            
+            const oldQuadrantTasks = otherTasks
+                .filter(t => t.quadrant === oldTask.quadrant)
+                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                .map((task, index) => ({ ...task, displayOrder: index }));
+
+            const updatedTaskWithOrder = { ...updatedTask, displayOrder: otherTasks.filter(t => t.quadrant === updatedTask.quadrant).length };
+
+            const newQuadrantTasks = [...otherTasks.filter(t => t.quadrant === updatedTask.quadrant), updatedTaskWithOrder]
+                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                .map((task, index) => ({ ...task, displayOrder: index }));
+
+            const unaffectedTasks = otherTasks.filter(t => t.quadrant !== oldTask.quadrant && t.quadrant !== updatedTask.quadrant);
+            
+            return [...unaffectedTasks, ...oldQuadrantTasks, ...newQuadrantTasks];
+        });
+        addNotification('Tarefa atualizada!', '✏️');
     }, [setTasks, addNotification]);
 
     const handleUpdateTaskQuadrant = useCallback((taskId: string, newQuadrant: Quadrant, newIndex: number) => {
         setTasks(prevTasks => {
             const taskToMove = prevTasks.find(t => t.id === taskId);
             if (!taskToMove) return prevTasks;
+    
+            const oldQuadrant = taskToMove.quadrant;
+    
+            if (oldQuadrant === newQuadrant) {
+                const quadrantTasks = prevTasks
+                    .filter(t => t.quadrant === oldQuadrant && t.id !== taskId)
+                    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    
+                quadrantTasks.splice(newIndex, 0, taskToMove);
+    
+                const updatedQuadrantTasks = quadrantTasks.map((t, index) => ({
+                    ...t,
+                    displayOrder: index
+                }));
+    
+                const otherTasks = prevTasks.filter(t => t.quadrant !== oldQuadrant);
+                return [...otherTasks, ...updatedQuadrantTasks];
+            }
+    
             const tasksWithoutMoved = prevTasks.filter(t => t.id !== taskId);
-            const updatedTask = { ...taskToMove, quadrant: newQuadrant };
-            const newQuadrantTasks = tasksWithoutMoved.filter(t => t.quadrant === newQuadrant);
-            newQuadrantTasks.splice(newIndex, 0, updatedTask);
-            const updatedNewQuadrantTasks = newQuadrantTasks.map((t, i) => ({ ...t, displayOrder: i }));
-            const otherQuadrants = tasksWithoutMoved.filter(t => t.quadrant !== newQuadrant).reduce((acc, task) => {
-                acc[task.quadrant] = (acc[task.quadrant] || []).concat(task);
-                return acc;
-            }, {} as Record<Quadrant, Task[]>);
-            const reorderedOtherQuadrants = Object.values(otherQuadrants).flat().map((t, i) => ({ ...t, displayOrder: i }));
-            return [...updatedNewQuadrantTasks, ...reorderedOtherQuadrants];
+            
+            const oldQuadrantTasks = tasksWithoutMoved
+                .filter(t => t.quadrant === oldQuadrant)
+                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                .map((t, index) => ({ ...t, displayOrder: index }));
+    
+            const newQuadrantTasksRaw = tasksWithoutMoved
+                .filter(t => t.quadrant === newQuadrant)
+                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    
+            const movedTask = { ...taskToMove, quadrant: newQuadrant };
+            newQuadrantTasksRaw.splice(newIndex, 0, movedTask);
+            
+            const newQuadrantTasks = newQuadrantTasksRaw.map((t, index) => ({
+                ...t,
+                displayOrder: index
+            }));
+            
+            const unaffectedTasks = tasksWithoutMoved.filter(t => t.quadrant !== oldQuadrant && t.quadrant !== newQuadrant);
+    
+            return [...unaffectedTasks, ...oldQuadrantTasks, ...newQuadrantTasks];
         });
     }, [setTasks]);
 
-    const handleDeleteTask = useCallback((taskId: string) => {
-        // CORREÇÃO: Para o timer se a tarefa excluída estiver em foco.
-        if (taskId === pomodoroActiveTaskId) {
-            pomodoroStopCycle();
+    const handleUndoDelete = useCallback(() => {
+        if (lastDeletedTask) {
+            setTasks(prev => {
+                const newTasks = [...prev];
+                newTasks.splice(lastDeletedTask.index, 0, lastDeletedTask.task);
+                return newTasks;
+            });
+            setLastDeletedTask(null);
         }
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-        addNotification('Tarefa excluída!', '🗑️', 'info');
-    }, [setTasks, addNotification, pomodoroActiveTaskId, pomodoroStopCycle]);
+    }, [lastDeletedTask, setTasks]);
 
-    const handleCompleteTask = useCallback((taskId: string) => {
+    const handleDeleteTask = useCallback((taskId: string) => {
+        const taskIndex = tasks.findIndex(t => t.id === taskId);
+        if (taskIndex === -1) return;
+
+        const taskToDelete = tasks[taskIndex];
+        setLastDeletedTask({ task: taskToDelete, index: taskIndex });
+        
+        setTasks(prev => prev.filter(t => t.id !== taskId));
+
+        addNotification('Tarefa excluída!', '🗑️', {
+            label: 'Desfazer',
+            onAction: handleUndoDelete,
+        });
+        
+        // Clear the undo option after some time
+        setTimeout(() => {
+            setLastDeletedTask(null);
+        }, 5000);
+
+    }, [tasks, setTasks, addNotification, handleUndoDelete]);
+
+    const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
         setTasks(prev => prev.map(task => {
             if (task.id === taskId) {
-                const isCompleting = task.status !== 'done';
-                const newStatus = isCompleting ? 'done' : 'todo';
+                // Handle subtask completion
+                if (subtaskId) {
+                    let subtaskJustCompleted = false;
+                    const updatedSubtasks = task.subtasks?.map(st => {
+                        if (st.id === subtaskId) {
+                            if (!st.completed) subtaskJustCompleted = true;
+                            return { ...st, completed: !st.completed };
+                        }
+                        return st;
+                    }) || [];
+                    
+                    if (subtaskJustCompleted) {
+                        setPontosFoco(p => p + 5);
+                    }
 
-                if (isCompleting) {
-                     // CORREÇÃO: Para o timer apenas ao completar a tarefa em foco.
-                    if (taskId === pomodoroActiveTaskId) {
-                        pomodoroStopCycle();
+                    const allSubtasksDone = updatedSubtasks.every(st => st.completed);
+                    let newStatus = task.status;
+                    
+                    if (allSubtasksDone && updatedSubtasks.length > 0) {
+                        if(task.status !== 'done') {
+                            addNotification('Todas as subtarefas concluídas!', '🎉');
+                            setPontosFoco(p => p + 10); // Extra points for finishing the whole task
+                        }
+                        newStatus = 'done';
+                    } else if (task.status === 'done' && !allSubtasksDone) {
+                        newStatus = 'todo'; // Revert parent status if it was done
                     }
-                    if (taskId === frogTaskId) {
-                        addNotification('Você engoliu o sapo! Conquista épica!', '🐸👑', 'victory');
-                        setPontosFoco(p => p + 25); 
-                    } else {
-                        addNotification('Tarefa concluída!', '🎉', 'victory');
-                        setPontosFoco(p => p + 10);
-                    }
+                    
+                    return { ...task, subtasks: updatedSubtasks, status: newStatus };
+                }
+                
+                // Handle main task completion
+                const newStatus = task.status === 'done' ? 'todo' : 'done';
+                if (newStatus === 'done') {
+                    addNotification('Tarefa concluída!', '🎉');
+                    setPontosFoco(p => p + 10);
                 }
                 return { ...task, status: newStatus };
             }
             return task;
         }));
-    }, [setTasks, addNotification, setPontosFoco, frogTaskId, pomodoroActiveTaskId, pomodoroStopCycle]);
+    }, [setTasks, addNotification, setPontosFoco]);
     
     const handleToggleSubtask = useCallback((taskId: string, subtaskId: string) => {
-        setTasks(prev => prev.map(task => {
-            if (task.id === taskId) {
-                let subtaskJustCompleted = false;
-                const updatedSubtasks = task.subtasks?.map(st => {
-                    if (st.id === subtaskId) {
-                        if (!st.completed) {
-                             subtaskJustCompleted = true;
-                             // CORREÇÃO: Para o timer apenas ao completar a subtarefa em foco.
-                             if (taskId === pomodoroActiveTaskId && subtaskId === pomodoroActiveSubtaskId) {
-                                pomodoroStopCycle();
-                            }
-                        }
-                        return { ...st, completed: !st.completed };
-                    }
-                    return st;
-                }) || [];
-                
-                if (subtaskJustCompleted) {
-                    setPontosFoco(p => p + 5);
-                    const allSubtasksDone = updatedSubtasks.every(st => st.completed);
-                    if (allSubtasksDone) {
-                        addNotification(`Todas as subtarefas de "${task.title}" concluídas!`, '🎉', 'victory');
-                        setPontosFoco(p => p + 10);
-                    }
-                }
-                return { ...task, subtasks: updatedSubtasks };
-            }
-            return task;
-        }));
-    }, [setTasks, addNotification, setPontosFoco, pomodoroActiveTaskId, pomodoroActiveSubtaskId, pomodoroStopCycle]);
+        handleCompleteTask(taskId, subtaskId);
+    }, [handleCompleteTask]);
 
-    // ... (O resto das funções permanece igual)
     const handleSaveTag = useCallback((tag: Partial<Tag>) => {
         setTags(prev => {
             if (tag.id) {
@@ -258,6 +298,19 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTasks(prev => prev.map(t => t.tagId === tagId ? { ...t, tagId: null } : t));
     }, [setTags, setTasks]);
     
+    const handleDuplicateTask = useCallback((taskId: string) => {
+        const taskToDuplicate = tasks.find(t => t.id === taskId);
+        if (taskToDuplicate) {
+            const duplicatedTask = {
+                ...taskToDuplicate,
+                id: `task-${Date.now()}`,
+                title: `${taskToDuplicate.title} (Cópia)`,
+                status: 'todo' as 'todo',
+            };
+            handleAddTask(duplicatedTask as Omit<Task, 'id' | 'status'>);
+        }
+    }, [tasks, handleAddTask]);
+    
     const handlePostponeTask = useCallback((taskId: string, days: number) => {
         setTasks(prev => prev.map(task => {
             if (task.id === taskId) {
@@ -268,13 +321,13 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             }
             return task;
         }));
-        addNotification(`Tarefa adiada por ${days} dia(s)!`, '🗓️', 'info');
+        addNotification(`Tarefa adiada por ${days} dia(s)!`, '🗓️');
     }, [setTasks, addNotification]);
 
     const handleCreateTemplateFromTask = useCallback((task: Task) => {
         const newTemplate: TaskTemplate = {
             id: Date.now(),
-            title: formatTaskTitle(task.title),
+            title: task.title,
             description: task.description,
             quadrant: task.quadrant,
             pomodoroEstimate: task.pomodoroEstimate,
@@ -284,15 +337,48 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             subtasks: task.subtasks?.map(st => ({ text: st.text })),
         };
         setTaskTemplates(prev => [...prev, newTemplate]);
-        addNotification("Modelo salvo na biblioteca!", '📚', 'info');
+        addNotification("Modelo salvo na biblioteca!", '📚');
     }, [setTaskTemplates, addNotification]);
     
-    const handleAddLeavingHomeItem = (text: string) => {
-        setLeavingHomeItems(prev => [...prev, { id: generateUniqueId(), text, completed: false, isDefault: false }]);
-    };
+    const handleAddTemplates = useCallback((templates: TaskTemplate[]) => {
+        // Use local date to ensure tasks appear on today's dashboard regardless of UTC time
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
 
+        const newTasks: Task[] = templates.map((template, index) => ({
+            id: `task-${Date.now()}-${index}`,
+            title: template.title,
+            description: template.description,
+            quadrant: template.quadrant || 'inbox',
+            pomodoroEstimate: template.pomodoroEstimate !== undefined ? template.pomodoroEstimate : 1, // Default to 1 if undefined, allows 0
+            customDuration: template.customDuration,
+            energyNeeded: template.energyNeeded,
+            subtasks: template.subtasks?.map((st, subIndex) => ({
+                id: `sub-${Date.now()}-${index}-${subIndex}`,
+                text: st.text,
+                completed: false
+            })),
+            status: 'todo',
+            dueDate: todayStr, // Force local today date so they appear on dashboard
+        }));
+
+        setTasks(prev => [...prev, ...newTasks]);
+        addNotification(`${newTasks.length} tarefa(s) adicionada(s) para hoje!`, '📚');
+    }, [setTasks, addNotification]);
+    
+    const handleAddRoutine = useCallback((routine: Routine) => {
+        const templatesToAdd = taskTemplates.filter(t => routine.taskTemplateIds.includes(t.id));
+        handleAddTemplates(templatesToAdd);
+    }, [taskTemplates, handleAddTemplates]);
+    
     const handleToggleLeavingHomeItem = (itemId: string) => {
         setLeavingHomeItems(prev => prev.map(item => item.id === itemId ? { ...item, completed: !item.completed } : item));
+    };
+    const handleAddLeavingHomeItem = (text: string) => {
+        setLeavingHomeItems(prev => [...prev, { id: `item-${Date.now()}`, text, completed: false }]);
     };
     const handleRemoveLeavingHomeItem = (itemId: string) => {
         setLeavingHomeItems(prev => prev.filter(item => item.id !== itemId));
@@ -300,6 +386,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleResetLeavingHomeItems = () => {
         setLeavingHomeItems(prev => prev.map(item => ({ ...item, completed: false })));
     };
+    
     const clearOverdueReview = () => {
         setNeedsOverdueReview(false);
         setOverdueTasksForReview([]);
@@ -311,14 +398,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             handleUpdateTask({ ...task, dueDate: todayString });
         }
     };
-
-    const handleUnsetFrog = useCallback(() => {
-        setFrogTaskId(null);
-        addNotification("Sapo desmarcado.", "🐸", 'info');
-    }, [setFrogTaskId, addNotification]);
-
     const handleReviewAction = (action: 'complete' | 'postpone' | 'remove_date', taskId: string) => {
-        setOverdueTasksForReview(prev => prev.filter(t => t.id !== taskId));
         switch (action) {
             case 'complete':
                 handleCompleteTask(taskId);
@@ -330,11 +410,13 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setTasks(prev => prev.map(t => t.id === taskId ? { ...t, dueDate: undefined } : t));
                 break;
         }
+        setOverdueTasksForReview(prev => prev.filter(t => t.id !== taskId));
     };
     const handlePostponeAllOverdue = async (taskIds: string[]) => {
         taskIds.forEach(id => handlePostponeTask(id, 1));
         clearOverdueReview();
     };
+
 
     const value: TasksContextType = {
         tasks,
@@ -343,16 +425,15 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         routines,
         taskTemplates,
         handleAddTask,
-        handleAddTasks,
         handleUpdateTask,
         handleUpdateTaskQuadrant,
         handleDeleteTask,
         handleCompleteTask,
         handleToggleSubtask,
         setFrogTaskId,
-        handleUnsetFrog,
         handleSaveTag,
         handleDeleteTag,
+        handleDuplicateTask,
         handlePostponeTask,
         needsMorningPlan,
         needsOverdueReview,
@@ -362,6 +443,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handlePostponeAllOverdue,
         clearOverdueReview,
         handleCreateTemplateFromTask,
+        handleAddRoutine,
+        handleAddTemplates,
         leavingHomeItems,
         handleToggleLeavingHomeItem,
         handleAddLeavingHomeItem,
@@ -370,4 +453,4 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;
-}
+};
