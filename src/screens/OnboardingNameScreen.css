@@ -1,0 +1,50 @@
+
+.onboarding-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--background-color);
+  padding: var(--sp-lg);
+}
+
+.onboarding-card {
+  background-color: var(--surface-color);
+  padding: var(--sp-xl);
+  border-radius: var(--border-radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.onboarding-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: var(--sp-md);
+}
+
+.onboarding-title {
+  font-size: 1.5rem; /* Ajustado para h2 */
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.onboarding-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary-color);
+  margin-bottom: var(--sp-lg);
+}
+
+.onboarding-input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}

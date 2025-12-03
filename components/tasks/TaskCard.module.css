@@ -38,20 +38,6 @@
 .taskCardTitleGroup { display: flex; align-items: center; gap: 0.85rem; flex-grow: 1; min-width: 0; }
 .taskCardTitleGroup h4 { line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.mainActionContainer { width: 28px; height: 28px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; }
-
-.mainPlayButton { width: 100%; height: 100%; border-radius: 50%; background-color: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); display: flex; justify-content: center; align-items: center; transition: all 0.2s ease; cursor: pointer; }
-.mainPlayButton svg { width: 16px; height: 16px; transform: translateX(1px); }
-.mainPlayButton:hover:not(:disabled) { background-color: var(--accent-color); color: var(--surface-color); transform: scale(1.1); }
-.mainPlayButton:disabled { border-color: var(--border-subtle-color); color: var(--border-subtle-color); cursor: not-allowed; }
-.mainPlayButton.activeFocus { background-color: var(--accent-color); color: var(--surface-color); animation: pulse 1.5s infinite; }
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0.6); }
-  70% { box-shadow: 0 0 0 8px rgba(var(--accent-color-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0); }
-}
-
 .actionPlaceholder { width: 28px; height: 28px; flex-shrink: 0; }
 
 .checkbox { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border-color); flex-shrink: 0; transition: all 0.2s ease; cursor: pointer; position: relative; background-color: var(--surface-color); }
@@ -62,44 +48,56 @@
 .checkbox.disabled:hover { border-color: var(--border-subtle-color); transform: none; }
 
 .taskCardActions { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
-.taskCardActions .icon-button { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background-color: rgba(128, 128, 128, 0.2); transition: background-color 0.2s ease; }
-.taskCardActions .icon-button:hover { background-color: rgba(128, 128, 128, 0.3); }
+
+.taskCardActions .icon-button { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background-color: transparent; transition: background-color 0.2s ease; }
+.taskCardActions .icon-button:hover { background-color: var(--surface-secondary-color); }
+
+/* FIX: Tornando o botão de play sempre visível */
+.headerPlayButton {
+    color: var(--accent-color);
+    /* opacity, transform e hover foram removidos para garantir visibilidade constante */
+}
+
+.headerPlayButton.activeFocus { 
+    color: var(--accent-color);
+    animation: pulse 1.5s infinite;
+}
+
+.headerPlayButton:disabled {
+    color: var(--border-subtle-color);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+@keyframes pulse {
+  0% { filter: drop-shadow(0 0 0 rgba(var(--accent-color-rgb), 0.6)); }
+  70% { filter: drop-shadow(0 0 6px rgba(var(--accent-color-rgb), 0)); }
+  100% { filter: drop-shadow(0 0 0 rgba(var(--accent-color-rgb), 0)); }
+}
 
 .frogIconActive { color: var(--accent-color); filter: drop-shadow(0 0 5px var(--accent-color-glow)); }
 
 .taskCardDescription { font-size: 0.9rem; color: var(--text-secondary-color); margin: 0 0 1rem 3.6rem; line-height: 1.5; }
 .taskCardFooter { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; padding-left: 3.6rem; }
 .footerTag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 4px 10px; border-radius: 16px; font-size: 0.75rem; font-weight: 600; line-height: 1.5; }
-.pomodoroTag { background-color: var(--surface-secondary-color); }
-.pomodoroTag svg { width: 12px; height: 12px; }
 .energyTag { background-color: var(--surface-secondary-color); }
 .energyTag svg { width: 14px; height: 14px; }
 
 .statusDone { opacity: 0.6; }
 .statusDone .taskCardTitleGroup h4 { text-decoration: line-through; }
 
-/* --- Seção de Subtarefas (COM AJUSTES) --- */
+/* --- Seção de Subtarefas --- */
 .subtasksSection { margin: 1rem 0 0 3.6rem; border-top: 1px solid var(--border-color); padding-top: 1rem; }
 .subtasksHeader { display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: var(--text-secondary-color); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.75rem; }
 .collapsibleChevron { transition: transform 0.2s ease; }
 .subtasksSection.collapsed .collapsibleChevron { transform: rotate(-90deg); }
 .subtasksContent { display: grid; gap: 0.6rem; }
 
-/* AJUSTE: .subtaskItem não tem mais cursor ou hover */
 .subtaskItem { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; padding: 4px; border-radius: 6px; transition: background-color 0.2s ease; }
-
-/* NOVO: Classe para subtarefas normais clicáveis */
 .subtaskItem.clickable { cursor: pointer; }
 .subtaskItem.clickable:hover { background-color: var(--surface-secondary-color); }
-
-/* NOVO: Classe para o texto clicável de subtarefas com timer */
-.clickableText {
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.clickableText:hover {
-    color: var(--text-primary-color);
-}
+.clickableText { cursor: pointer; transition: color 0.2s ease; }
+.clickableText:hover { color: var(--text-primary-color); }
 
 .subtaskItem.disabled { cursor: not-allowed; color: var(--text-tertiary-color); }
 .subtaskItem.disabled:hover { background-color: transparent; }
@@ -111,6 +109,13 @@
 .subtaskItem.completed .subtaskCheckbox { background-color: var(--primary-color); border-color: var(--primary-color); }
 .subtaskItem.completed .subtaskCheckbox::after { content: '\2713'; color: var(--text-on-primary); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: bold; }
 
-.subtaskPlayButton { color: var(--accent-color); cursor: pointer; }
+/* FIX: Garantindo que o botão de play da subtarefa esteja sempre visível */
+.subtaskPlayButton { 
+    color: var(--accent-color); 
+    cursor: pointer; 
+    display: flex; /* Adicionado para garantir renderização */
+    align-items: center; /* Adicionado para garantir renderização */
+    justify-content: center; /* Adicionado para garantir renderização */
+}
 .subtaskPlayButton.activeFocus { filter: drop-shadow(0 0 4px var(--accent-color-glow)); }
 .subtaskItem.disabled .subtaskPlayButton, .subtaskPlayButton.disabled { color: var(--border-subtle-color); cursor: not-allowed; }

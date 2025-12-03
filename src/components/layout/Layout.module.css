@@ -1,0 +1,9 @@
+/* Layout.module.css */
+
+.container {
+    width: 100%;
+    max-width: 800px; /* Largura máxima para o conteúdo */
+    margin: 0 auto; /* Centraliza o container na página */
+    padding: 0 var(--sp-lg); /* Adiciona espaçamento nas laterais */
+    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+}

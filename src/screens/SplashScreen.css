@@ -1,0 +1,54 @@
+
+.splash-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--background-color);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000; /* Garante que fique acima de tudo */
+  opacity: 1;
+  transition: opacity 0.8s ease-out;
+}
+
+.splash-container.fade-out {
+  opacity: 0;
+  pointer-events: none; /* Impede interação durante o fade-out */
+}
+
+.splash-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-lg);
+  animation: fadeIn 0.8s ease-in;
+}
+
+.splash-logo {
+  width: 144px; /* Tamanho maior para destaque */
+  height: 144px;
+  border-radius: var(--border-radius-xl); /* Bordas arredondadas */
+  box-shadow: var(--shadow-lg);
+}
+
+.splash-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

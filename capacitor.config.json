@@ -1,0 +1,7 @@
+
+{
+  "appId": "com.focusfrog.app",
+  "appName": "FocusFrog",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

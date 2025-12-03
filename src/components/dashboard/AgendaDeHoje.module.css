@@ -1,0 +1,32 @@
+/* AgendaDeHoje.module.css */
+
+.card {
+  background-color: var(--surface-color);
+  padding: var(--sp-lg);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-md);
+}
+
+.header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--text-secondary-color);
+  padding: var(--sp-md) 0;
+}

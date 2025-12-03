@@ -1,0 +1,87 @@
+/* components/FocusFrogCharacter.module.css */
+
+.frogContainer {
+    position: relative;
+}
+
+.frogSvg {
+    width: 100%;
+    height: 100%;
+    overflow: visible; /* Garante que as animações não sejam cortadas */
+}
+
+.frogBody {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* FIX: Todos os grupos de olhos agora são controlados por opacidade e transformação
+   para permitir animações suaves entre os estados. */
+.frogEyes {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.frogEyes.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.frogMouth {
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.3s ease-out 0.2s, transform 0.3s ease-out 0.2s;
+}
+.frogMouth.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- ANIMAÇÕES DE ESTADO --- */
+
+/* ANIMAÇÃO 1: "Despertar" (Awaken) para o estado de meditação */
+@keyframes awaken {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Quando o sapo está meditando, os olhos de meditação aparecem com a animação "awaken" */
+.status--meditating .eyesMeditating.visible {
+    animation: awaken 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+
+/* ANIMAÇÃO 2: "Balanço Suave" (Idle Bob) para o estado ocioso */
+@keyframes idle-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.status--idle .frogBody {
+    animation: idle-bob 4s infinite ease-in-out;
+}
+
+/* ANIMAÇÃO 3: "Salto de Alegria" (Happy Bounce) para o estado feliz */
+@keyframes happy-bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.05); }
+}
+
+.status--happy .frogBody {
+    animation: happy-bounce 0.8s cubic-bezier(0.5, 2, 0.5, 1) forwards;
+}
+
+.status--happy .eyesIdle.visible {
+    /* Um piscar de olhos rápido e feliz */
+    animation: awaken 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

@@ -1,0 +1,44 @@
+/* Tooltip.module.css (Versão Simplificada e Corrigida) */
+
+.tooltipContainer {
+  position: relative;
+  display: inline-block;
+}
+
+/* 
+  A REGRA MAIS IMPORTANTE:
+  Isso faz com que qualquer filho direto que esteja desabilitado
+  seja "ignorado" pelo mouse. O evento de hover passará para o pai,
+  que é o .tooltipContainer.
+*/
+.tooltipContainer > :disabled {
+  pointer-events: none;
+}
+
+.tooltipText {
+  visibility: hidden;
+  width: 160px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* 
+  A REGRA DE EXIBIÇÃO SIMPLES:
+  Se o mouse está sobre o container, o texto do tooltip dentro dele aparece.
+  Isso funciona porque a regra de `pointer-events` acima garante que o hover
+  seja registrado no container, mesmo se o botão estiver desabilitado.
+*/
+.tooltipContainer:hover .tooltipText {
+  visibility: visible;
+  opacity: 1;
+}

@@ -1,0 +1,143 @@
+/* screens/FocusScreen.module.css - FINAL, ADJUSTED DISTRIBUTION */
+
+.focusScreen {
+    height: 100%;
+    display: flex;
+    transition: background-color 0.5s ease;
+}
+
+.screenContent {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* FIX: Distribui os blocos pelo espaço disponível, em vez de os centrar juntos */
+    justify-content: space-around;
+    flex: 1;
+    padding: var(--sp-xl) var(--sp-lg);
+}
+
+.cycle-focus { background-color: var(--background-color); }
+.cycle-shortBreak { background-color: var(--success-bg-color); }
+.cycle-longBreak { background-color: var(--info-bg-color); }
+
+/* --- Bloco 1: Título (com container) --- */
+.titleContainer {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    background-color: rgba(var(--surface-rgb, 0, 0, 0), 0.15);
+    padding: var(--sp-md) var(--sp-lg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--surface-highlight-color);
+}
+
+.titleContainer p {
+    color: var(--text-muted-color);
+    margin: 0 0 var(--sp-xs) 0;
+    font-size: 1rem;
+}
+
+.titleContainer h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.subtaskTitle {
+    margin-top: var(--sp-sm);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary-color);
+}
+
+/* --- Bloco 2: Santuário Zen --- */
+.zenSanctuary {
+    display: grid;
+    place-items: center;
+    position: relative;
+}
+
+.zenSanctuary > * {
+    grid-area: 1 / 1;
+}
+
+.zenElements {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.characterContainer {
+    margin-bottom: var(--sp-sm);
+}
+
+.timerTime {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* --- Bloco 3: Painel de Controles (com container) --- */
+.controlsContainer {
+    width: 100%;
+    max-width: 400px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    justify-items: center;
+    height: 90px;
+    background-color: rgba(var(--surface-rgb, 0, 0, 0), 0.15);
+    padding: 0 var(--sp-md);
+    border-radius: var(--border-radius-xl);
+    border: 1px solid var(--surface-highlight-color);
+}
+
+.mainActions { /* Botão Play/Pause no centro da grid */ }
+
+.mainActionButton {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    font-size: 2.2rem;
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    place-items: center;
+}
+
+.footerActionLeft, .footerActionRight {
+    display: flex;
+    justify-content: center;
+}
+
+.footerActionLeft { justify-self: start; padding-left: var(--sp-sm);}
+.footerActionRight { justify-self: end; padding-right: var(--sp-sm); }
+
+.secondaryActionButton {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--surface-color);
+    border: 1px solid var(--surface-highlight-color);
+    color: var(--text-secondary-color);
+    font-size: 1.5rem;
+    display: grid;
+    place-items: center;
+    transition: all 150ms ease;
+}
+
+.secondaryActionButton:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: var(--text-on-primary-color);
+    transform: scale(1.05);
+}
+
+.timerCycle {
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    font-size: 0.9rem;
+    text-align: center;
+}

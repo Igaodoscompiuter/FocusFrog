@@ -1,0 +1,47 @@
+/* components/Aura.module.css - NEW TICK-BASED DESIGN */
+
+.auraContainer {
+    position: relative;
+}
+
+.auraSvg {
+    width: 100%;
+    height: 100%;
+    /* FIX: Roda o SVG para que o primeiro tick comece exatamente no topo */
+    transform: rotate(-0.5deg);
+}
+
+.tick {
+    stroke-width: 5; /* Espessura dos traços */
+    stroke-linecap: round; /* Pontas arredondadas para um look mais suave */
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave de fade-out */
+}
+
+/* Estado Inativo: Quase invisível */
+.tickInactive {
+    opacity: 0.08;
+    stroke: var(--text-muted-color); /* Cor base para todos os traços inativos */
+}
+
+/* Estado Ativo: Totalmente visível com a cor do modo */
+.tickActive {
+    opacity: 1;
+}
+
+/* Cores para os traços ativos dependendo do modo */
+.tick.aura--focus {
+    stroke: var(--primary-color);
+}
+
+.tick.aura--shortBreak {
+    stroke: var(--success-color);
+}
+
+.tick.aura--longBreak {
+    stroke: var(--info-color);
+}
+
+/* --- ESTILOS ANTIGOS (REMOVIDOS) ---
+ * Foram removidos os estilos .auraFg, .breathing e a animação @keyframes breathe
+ * que controlavam o anel antigo baseado em stroke-dashoffset.
+ */
