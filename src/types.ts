@@ -1,94 +1,59 @@
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-export type Screen = 'dashboard' | 'tasks' | 'focus' | 'rewards' | 'stats';
-
-export type Quadrant = 'do' | 'schedule' | 'delegate' | 'inbox';
-
-export type TimeOfDay = 'morning' | 'afternoon' | 'night';
-
-export type EnergyLevel = 'low' | 'medium' | 'high';
-
-export interface Subtask {
-    id: string;
-    text: string;
-    completed: boolean;
-}
+// [CORREÇÃO] Adicionado 'someday' para o quadrante de Ideias & Projetos
+export type Quadrant = 'inbox' | 'do' | 'schedule' | 'delegate' | 'someday';
 
 export interface Task {
-    id: string;
-    title: string;
-    description?: string;
-    status: 'todo' | 'in_progress' | 'done';
-    quadrant: Quadrant;
-    subtasks?: Subtask[];
-    dueDate?: string; // YYYY-MM-DD
-    completedAt?: string; // ISO Date String
-    timeOfDay?: TimeOfDay;
-    tagId?: number | null;
-    startTime?: string; // HH:MM
-    endTime?: string; // HH:MM
-    pomodoroEstimate?: number;
-    customDuration?: number; // Duração personalizada em minutos (opcional)
-    energyNeeded?: EnergyLevel;
-    displayOrder?: number;
-    isDetailed?: boolean;
+  id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'done' | 'doing';
+  quadrant: Quadrant;
+  displayOrder: number;
+  pomodoroEstimate?: number;
+  pomodorosDone?: number;
+  dueDate?: string;
+  tagId?: number;
+  subtasks?: Subtask[];
+  energyNeeded?: number;
+  customDuration?: number; 
 }
 
-export interface TaskFilters {
-    tags: number[];
-    status: ('overdue' | 'frog')[];
-    energy: EnergyLevel[];
+export interface Subtask {
+  id: string;
+  text: string;
+  completed: boolean;
 }
-
 
 export interface Tag {
-    id: number;
-    name: string;
-    color: string;
-}
-
-export interface Notification {
-    id: number;
-    message: string;
-    icon: string;
-    action?: {
-        label: string;
-        onAction: () => void;
-    };
-}
-
-export interface ChecklistItem {
-    id: string;
-    text: string;
-    completed: boolean;
-    isDefault?: boolean;
+  id: number;
+  name: string;
+  color: string;
 }
 
 export interface TaskTemplate {
-    id: number;
-    title: string;
-    description?: string;
-    quadrant?: Quadrant;
-    pomodoroEstimate?: number;
-    customDuration?: number;
-    energyNeeded?: EnergyLevel;
-    category: string;
-    subtasks?: { text: string; isTimerTrigger?: boolean; }[];
-    timeOfDay?: TimeOfDay;
-    timerCompletionMode?: 'completeTask' | 'endSession';
+  id: number;
+  title: string;
+  category: string;
+  description?: string;
+  quadrant?: Quadrant;
+  pomodoroEstimate?: number;
+  energyNeeded?: number;
+  customDuration?: number;
+  subtasks?: { text: string }[];
 }
 
 export interface Routine {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    taskTemplateIds: number[];
+  id: number;
+  name: string;
+  icon: string | IconDefinition;
+  description: string;
+  taskTemplateIds: number[];
 }
 
-export interface Reward {
-    id: string;
-    name: string;
-    description: string;
-    type: 'theme' | 'sound' | 'icon';
-    cost: number;
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  isDefault?: boolean;
 }

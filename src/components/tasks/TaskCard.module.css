@@ -38,7 +38,6 @@
 }
 
 .taskCard {
-    /* [CORRIGIDO] Usando a variável correta do guia de estilos */
     background-color: var(--color-card);
     border-radius: 12px;
     padding: 1rem;
@@ -143,8 +142,9 @@
     transform: scale(1.1);
 }
 
+/* [CORREÇÃO] - Usando a cor de aviso (amarelo) para destaque consistente */
 .frogIconActive {
-    color: var(--color-accent-frog);
+    color: var(--color-warning);
     transform: scale(1.1);
 }
 

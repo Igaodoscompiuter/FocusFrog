@@ -65,7 +65,7 @@ export const HomeScreen: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className={styles.container}> {/* [CORREÇÃO] Adicionado o container que faltava */}
             {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} />}
             
             <MorningReviewModal 

@@ -1,10 +1,8 @@
-/* TasksScreen.module.css */
-
 .tasksHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--sp-lg);
+    margin-bottom: var(--sp-xl);
 }
 
 .tasksTitle h2 {
@@ -16,101 +14,93 @@
     gap: var(--sp-sm);
 }
 
-/* --- LAYOUT PRINCIPAL DOS QUADRANTES --- */
 .tasksBoard {
-    display: flex;      /* Usa Flexbox para o layout */
-    flex-wrap: wrap;    /* Permite que os quadrantes quebrem a linha */
-    gap: var(--sp-lg);  /* Espaçamento entre os quadrantes */
+    display: grid;
+    grid-template-areas:
+        "inbox    inbox"
+        "do       schedule"
+        "someday  someday";
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-lg);
 }
+
+.quadrant-inbox { grid-area: inbox; }
+.quadrant-do { grid-area: do; }
+.quadrant-schedule { grid-area: schedule; }
+.quadrant-someday { grid-area: someday; }
 
 .quadrantColumn {
     display: flex;
     flex-direction: column;
-    gap: var(--sp-sm);
+    gap: var(--sp-md);
     height: 100%;
-    /* --- MÁGICA DA RESPONSIVIDADE --- */
-    flex: 1 1 320px; /* Cresce, encolhe, com base de 320px */
-    min-width: 320px;  /* Largura mínima para evitar que o conteúdo seja espremido */
-}
-
-/* Modo Maximizado: Esconde os outros quadrantes */
-.hasMaximized .quadrantColumn:not(.maximized) {
-    display: none;
-}
-
-/* O quadrante maximizado ocupa todo o espaço */
-.hasMaximized .quadrantColumn.maximized {
-    flex-basis: 100%;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--sp-lg);
+    overflow: hidden;
 }
 
 .quadrantHeader {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--sp-sm);
-    color: var(--text-secondary-color);
-    padding-bottom: var(--sp-md);
-    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.1rem;
 }
-
-.quadrantHeader h4 { margin: 0; font-size: 1.1rem; }
-.quadrantHeader p { margin: 0; font-size: 0.9rem; }
 
 .taskList {
-    flex-grow: 1;
-    position: relative;
     display: flex;
     flex-direction: column;
-    gap: var(--sp-sm);
-}
-
-.emptyQuadrantDropzone {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: var(--text-tertiary-color);
-    border: 2px dashed var(--border-color);
-    border-radius: var(--border-radius-lg);
+    gap: var(--sp-md);
     min-height: 100px;
+    height: 100%;
+    overflow-y: auto;
 }
 
-.taskList.dragOver { background-color: rgba(var(--primary-color-rgb), 0.1); }
-
-.dropZone { position: relative; }
-
-.dropIndicator {
-    position: absolute;
-    top: -4px;
-    left: 10px;
-    right: 10px;
-    height: 3px;
-    background-color: var(--primary-color);
-    border-radius: 2px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 10;
+/* [NOVO] Para a vista recolhida (2 tarefas) do Inbox e Someday, força 2 colunas */
+.collapsedHorizontalList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-lg); /* Aumentando o espaço para um look mais limpo */
+    align-items: start;
 }
 
-.dropIndicator.visible { opacity: 1; }
+/* [NOVO] Para a vista expandida do Inbox e Someday, usa uma grade flexível */
+.expandedHorizontalList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--sp-md);
+    padding: 2px;
+}
 
-/* Cores dos Quadrantes */
-.quadrant-do .quadrantHeader { color: #4A90E2; }
-.quadrant-schedule .quadrantHeader { color: #50E3C2; }
-.quadrant-delegate .quadrantHeader { color: #F5A623; }
-.quadrant-eliminate .quadrantHeader { color: #D0021B; }
+.inboxShowMore {
+    margin-top: var(--sp-md);
+    width: 100%;
+}
 
+@media (max-width: 950px) {
+    .tasksBoard {
+        grid-template-areas:
+            "inbox"
+            "do"
+            "schedule"
+            "someday";
+        grid-template-columns: 1fr;
+    }
 
-@media (max-width: 768px) {
     .tasksHeader {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--sp-md);
+        gap: var(--sp-lg);
     }
+
     .tasksActions {
         width: 100%;
-        flex-wrap: wrap;
-        justify-content: flex-start;
+        justify-content: space-between;
+    }
+    
+    .collapsedHorizontalList,
+    .expandedHorizontalList {
+        grid-template-columns: 1fr; /* Força coluna única em telas pequenas */
     }
 }

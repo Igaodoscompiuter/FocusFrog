@@ -4,7 +4,7 @@ import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
-import { usePomodoro } from './PomodoroContext'; // IMPORTADO
+import { usePomodoro } from './PomodoroContext';
 import { initialRoutines, initialTaskTemplates } from '../constants';
 
 interface TasksContextType {
@@ -41,6 +41,13 @@ interface TasksContextType {
     handleAddLeavingHomeItem: (text: string) => void;
     handleRemoveLeavingHomeItem: (itemId: string) => void;
     handleResetLeavingHomeItems: () => void;
+
+    // [NOVO] Lógica de Triagem
+    triageQueue: Task[];
+    isTriageActive: boolean;
+    startTriage: () => void;
+    processTriage: (quadrant: Quadrant) => void;
+    endTriage: () => void;
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -62,7 +69,7 @@ const defaultLeavingHomeItems: ChecklistItem[] = [
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { addNotification } = useUI();
     const { setPontosFoco } = useTheme();
-    const { activeTaskId, stopCycle } = usePomodoro(); // ADICIONADO
+    const { activeTaskId, stopCycle } = usePomodoro(); 
 
     const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', [{ id: 1, name: 'Trabalho', color: '#3B82F6' }]);
@@ -77,6 +84,10 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [needsOverdueReview, setNeedsOverdueReview] = useState(false);
     
     const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
+
+    // [NOVO] Estado para a fila de triagem
+    const [triageQueue, setTriageQueue] = useState<Task[]>([]);
+    const isTriageActive = useMemo(() => triageQueue.length > 0, [triageQueue]);
 
     const getLocalTodayString = useCallback(() => {
         const today = new Date();
@@ -224,7 +235,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, [lastDeletedTask, setTasks, addNotification]);
 
     const handleDeleteTask = useCallback((taskId: string) => {
-        // LÓGICA ADICIONADA
         if (taskId === activeTaskId) {
             stopCycle();
         }
@@ -245,13 +255,11 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTimeout(() => {
             setLastDeletedTask(null);
         }, 5000); 
-    // DEPENDÊNCIAS ATUALIZADAS
     }, [tasks, setTasks, addNotification, handleUndoDelete, activeTaskId, stopCycle]);
 
     const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
         const taskToComplete = tasks.find(t => t.id === taskId);
         
-        // LÓGICA ADICIONADA
         if (taskToComplete && taskToComplete.status !== 'done' && taskId === activeTaskId) {
             stopCycle();
         }
@@ -298,14 +306,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             }
             return task;
         }));
-    // DEPENDÊNCIAS ATUALIZADAS
     }, [tasks, setTasks, addNotification, setPontosFoco, activeTaskId, stopCycle]);
     
     const handleToggleSubtask = useCallback((taskId: string, subtaskId: string) => {
         handleCompleteTask(taskId, subtaskId);
     }, [handleCompleteTask]);
     
-    // LÓGICA ATUALIZADA
     const handleSetFrog = useCallback((id: string | null) => {
         if (frogTaskId === activeTaskId && frogTaskId !== id) {
             stopCycle();
@@ -465,6 +471,36 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         clearOverdueReview();
     };
 
+    // [NOVO] Funções de Controle de Triagem
+    const startTriage = useCallback(() => {
+        const inboxTasks = tasks.filter(t => t.quadrant === 'inbox');
+        setTriageQueue(inboxTasks);
+        if (inboxTasks.length === 0) {
+            addNotification("Sua caixa de entrada está limpa!", '🎉', 'success');
+        }
+    }, [tasks, addNotification]);
+
+    const endTriage = useCallback(() => {
+        setTriageQueue([]);
+    }, []);
+
+    const processTriage = useCallback((quadrant: Quadrant) => {
+        if (triageQueue.length === 0) return;
+
+        const taskToTriage = triageQueue[0];
+        const newIndex = tasks.filter(t => t.quadrant === quadrant).length;
+        
+        handleUpdateTaskQuadrant(taskToTriage.id, quadrant, newIndex);
+        
+        setTriageQueue(prev => prev.slice(1));
+
+        if (triageQueue.length === 1) {
+            addNotification("Triagem concluída!", '✅', 'success');
+            endTriage();
+        }
+
+    }, [triageQueue, tasks, handleUpdateTaskQuadrant, endTriage, addNotification]);
+
     const value: TasksContextType = {
         tasks,
         tags,
@@ -478,8 +514,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleDeleteTask,
         handleCompleteTask,
         handleToggleSubtask,
-        handleSetFrog, // ATUALIZADO
-        handleUnsetFrog, // ATUALIZADO
+        handleSetFrog,
+        handleUnsetFrog,
         handleSaveTag,
         handleDeleteTag,
         handleDuplicateTask,
@@ -499,6 +535,13 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleAddLeavingHomeItem,
         handleRemoveLeavingHomeItem,
         handleResetLeavingHomeItems,
+
+        // [NOVO] Expondo a lógica de triagem
+        triageQueue,
+        isTriageActive,
+        startTriage,
+        processTriage,
+        endTriage,
     };
 
     return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

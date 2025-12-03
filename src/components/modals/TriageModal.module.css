@@ -1,42 +1,92 @@
-.triageContainer {
+/* 
+    src/components/modals/TriageModal.module.css
+*/
+
+.centeredHeader {
+    text-align: center;
+    justify-content: center;
+    border-bottom: none; /* Remove a linha do header */
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.subtitle {
+    width: 100%;
+    text-align: center;
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem; /* Aumenta o espaço antes dos botões */
+    font-size: 0.95rem;
+}
+
+.optionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    padding-top: 0.5rem; /* [CORREÇÃO] Adiciona espaço para a animação de hover */
+}
+
+.optionButton {
+    background-color: var(--color-background-hover);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-large);
+    padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1rem;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    gap: 0.5rem;
 }
 
-.questionBlock {
-    animation: fadeIn 0.5s ease-in-out;
+.optionButton:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--color-border-hover);
 }
 
-.questionBlock h4 {
-    margin-bottom: 0.25rem;
-    font-size: 1.1rem;
+.optionButton svg {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0.5rem;
 }
 
-.questionBlock p {
-    margin-bottom: 0.75rem;
+.optionTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.optionSubtitle {
+    font-size: 0.8rem;
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
 }
 
-.buttonGroup {
-    display: flex;
-    gap: 0.75rem;
+/* Cores específicas para cada quadrante */
+.do svg { color: #845ef7; } /* Roxo */
+.schedule svg { color: #22b8cf; } /* Ciano */
+.someday svg { color: #ff922b; } /* Laranja */
+
+.footerButton {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-medium);
+    transition: background-color 0.2s ease;
 }
 
-.buttonGroup .btn {
-    flex-grow: 1;
-    transition: all 0.2s ease;
+.footerButton:hover {
+    background-color: var(--color-background-hover);
+    color: var(--color-text-primary);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Ajuste para o rodapé do g-modal */
+:global(.g-modal-footer) {
+    justify-content: center !important;
+    margin-top: 1.5rem;
 }

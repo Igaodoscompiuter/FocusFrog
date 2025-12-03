@@ -19,30 +19,6 @@ interface TaskModalProps {
     tags: Tag[];
 }
 
-const getInitialTaskState = (taskToEdit: Partial<Task> | null): Partial<Task> => {
-    if (taskToEdit && Object.keys(taskToEdit).length > 0) {
-        return { ...taskToEdit, subtasks: taskToEdit.subtasks ? [...taskToEdit.subtasks] : [], pomodoroEstimate: taskToEdit.pomodoroEstimate !== undefined ? taskToEdit.pomodoroEstimate : 1 };
-    }
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, energyNeeded: 'medium', dueDate: `${yyyy}-${mm}-${dd}` };
-};
-
-const energyLevels: { id: EnergyLevel, label: string, icon: keyof typeof icons }[] = [
-    { id: 'low', label: 'Baixa', icon: 'batteryLow' },
-    { id: 'medium', label: 'Média', icon: 'batteryMedium' },
-    { id: 'high', label: 'Alta', icon: 'battery' },
-];
-
-const timeOfDayOptions: { id: TimeOfDay | '', label: string }[] = [
-    { id: 'morning', label: 'Manhã' },
-    { id: 'afternoon', label: 'Tarde' },
-    { id: 'night', label: 'Noite' },
-    { id: '', label: 'Nenhum' },
-];
-
 export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags }) => {
     const { handleAddTask, handleUpdateTask, handleDeleteTask, handleCreateTemplateFromTask } = useTasks();
     const { startFocusOnTask } = usePomodoro();
@@ -57,6 +33,17 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     const isQuickTask = task.pomodoroEstimate === 0;
 
     useEffect(() => {
+        const getInitialTaskState = (taskToEdit: Partial<Task> | null): Partial<Task> => {
+            if (taskToEdit && Object.keys(taskToEdit).length > 0) {
+                return { ...taskToEdit, subtasks: taskToEdit.subtasks ? [...taskToEdit.subtasks] : [], pomodoroEstimate: taskToEdit.pomodoroEstimate !== undefined ? taskToEdit.pomodoroEstimate : 1 };
+            }
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, energyNeeded: 'medium', dueDate: `${yyyy}-${mm}-${dd}` };
+        };
+
         const initialState = getInitialTaskState(taskToEdit);
         setTask(initialState);
         setCurrentView('task');
@@ -88,7 +75,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
 
     const handleSubmit = () => {
         if (!task.title?.trim()) return alert('O título da tarefa é obrigatório.');
-        const { isDetailed, ...taskToSave } = task;
+        const { ...taskToSave } = task;
         if (taskToSave.id) handleUpdateTask(taskToSave as Task);
         else handleAddTask(taskToSave as Omit<Task, 'id' | 'status'>);
         onClose();
@@ -104,6 +91,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     if (!taskToEdit || !modalRoot) {
         return null;
     }
+    
+    const energyLevels: { id: any, label: string, icon: keyof typeof icons }[] = [
+        { id: 'low', label: 'Baixa', icon: 'batteryLow' },
+        { id: 'medium', label: 'Média', icon: 'batteryMedium' },
+        { id: 'high', label: 'Alta', icon: 'battery' },
+    ];
+    
+    const timeOfDayOptions: { id: any | '', label: string }[] = [
+        { id: 'morning', label: 'Manhã' },
+        { id: 'afternoon', label: 'Tarde' },
+        { id: 'night', label: 'Noite' },
+        { id: '', label: 'Nenhum' },
+    ];
 
     const renderTaskForm = () => (
         <>
@@ -176,7 +176,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                         <div className={styles.buttonSelector}>
                             {energyLevels.map(level => (
                                 <button key={level.id} className={task.energyNeeded === level.id ? styles.selected : ''} onClick={() => handleChange('energyNeeded', level.id)}>
-                                    <Icon path={level.icon} /> {level.label}
+                                    <Icon path={icons[level.icon]} /> {level.label}
                                 </button>
                             ))}
                         </div>
@@ -205,12 +205,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                     </div>
                 </div>
             </main>
+            {/* [CORREÇÃO] O rodapé agora agrupa corretamente as ações */}
             <footer className="g-modal-footer">
-                <div style={{ marginRight: 'auto' }}> 
+                <div className={styles.footerActions}> 
                     {task.id && <button className="btn btn-tertiary btn-danger" onClick={handleDelete}><Icon path={icons.trash} /> Excluir</button>}
                     {task.id && <button className="btn btn-tertiary" onClick={() => handleCreateTemplateFromTask(task as Task)}><Icon path={icons.bookOpen} /> Salvar como Modelo</button>}
                 </div>
-                <div>
+                <div className={styles.footerActions}>
                     <button className="btn btn-primary" onClick={handleSubmit}><Icon path={icons.check} /> Salvar</button>
                 </div>
             </footer>
@@ -231,25 +232,26 @@ const MatrixSelector: React.FC<{ task: Partial<Task>, setTask: React.Dispatch<Re
     const [urgency, setUrgency] = useState<'urgent' | 'not-urgent' | null>(null);
     const [importance, setImportance] = useState<'important' | 'not-important' | null>(null);
     
-    const currentQuadrantInfo = quadrants.find(q => q.id === task.quadrant) || { title: 'Caixa de Entrada', subtitle: 'Defina a prioridade', icon: 'inbox' as keyof typeof icons, id: 'inbox' };
+    const currentQuadrantInfo = quadrants.find(q => q.id === task.quadrant) || quadrants.find(q => q.id === 'inbox');
 
     useEffect(() => {
         const q = task.quadrant;
         if (q === 'do') { setUrgency('urgent'); setImportance('important'); } 
         else if (q === 'schedule') { setUrgency('not-urgent'); setImportance('important'); } 
-        else if (q === 'delegate') { setUrgency('urgent'); setImportance('not-important'); } 
-        else if (q === 'eliminate') { setUrgency('not-urgent'); setImportance('not-important'); } 
+        else if (q === 'someday') { setUrgency('not-urgent'); setImportance('not-important'); } 
         else { setUrgency(null); setImportance(null); }
     }, [task.quadrant]);
 
     const updateMatrix = (u: typeof urgency, i: typeof importance) => {
-        setUrgency(u); setImportance(i);
+        setUrgency(u); 
+        setImportance(i);
         if (u && i) {
              let newQ: Quadrant = 'inbox';
              if (u === 'urgent' && i === 'important') newQ = 'do';
-             if (u === 'not-urgent' && i === 'important') newQ = 'schedule';
-             if (u === 'urgent' && i === 'not-important') newQ = 'delegate';
-             if (u === 'not-urgent' && i === 'not-important') newQ = 'eliminate';
+             else if (u === 'not-urgent' && i === 'important') newQ = 'schedule';
+             else if (u === 'not-urgent' && i === 'not-important') newQ = 'someday';
+             else if (u === 'urgent' && i === 'not-important') newQ = 'do';
+
              setTask(prev => ({ ...prev, quadrant: newQ }));
         }
     };
@@ -272,13 +274,15 @@ const MatrixSelector: React.FC<{ task: Partial<Task>, setTask: React.Dispatch<Re
                         <button className={`${styles.matrixToggleBtn} ${importance === 'important' ? styles.active : ''}`} onClick={() => updateMatrix(urgency, 'important')}>Alto impacto</button>
                     </div>
                 </div>
-                <div className={`${styles.matrixResult} ${styles[`quadrant-${currentQuadrantInfo.id}`]}`}>
-                    <div className={styles.resultIcon}><Icon path={icons[currentQuadrantInfo.icon]} /></div>
-                    <div className={styles.resultText}>
-                        <span className={styles.resultTitle}>{currentQuadrantInfo.title}</span>
-                        <span className={styles.resultSubtitle}>{currentQuadrantInfo.subtitle}</span>
+                {currentQuadrantInfo &&
+                    <div className={`${styles.matrixResult} ${styles[`quadrant-${currentQuadrantInfo.id}`]}`}>
+                        <div className={styles.resultIcon}><Icon path={icons[currentQuadrantInfo.icon]} /></div>
+                        <div className={styles.resultText}>
+                            <span className={styles.resultTitle}>{currentQuadrantInfo.title}</span>
+                            <span className={styles.resultSubtitle}>{currentQuadrantInfo.subtitle}</span>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         </div>
     );

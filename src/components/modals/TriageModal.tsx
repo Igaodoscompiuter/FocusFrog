@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useTasks } from '../../context/TasksContext';
 import type { Task, Quadrant } from '../../types';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { Icon } from '../Icon';
@@ -11,106 +10,54 @@ import styles from './TriageModal.module.css';
 interface TriageModalProps {
   task: Task;
   onClose: () => void;
+  onTriage: (quadrant: Quadrant) => void;
 }
 
-export const TriageModal: React.FC<TriageModalProps> = ({ task, onClose }) => {
-  const { handleUpdateTaskQuadrant } = useTasks();
-  const [isUrgent, setIsUrgent] = useState<boolean | null>(null);
-  const [isImportant, setIsImportant] = useState<boolean | null>(null);
-  const [targetQuadrant, setTargetQuadrant] = useState<Quadrant | null>(null);
-  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
-
+export const TriageModal: React.FC<TriageModalProps> = ({ task, onClose, onTriage }) => {
   const modalRef = useClickOutside(onClose);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     setModalRoot(document.getElementById('modal-root'));
   }, []);
 
-  useEffect(() => {
-    if (isUrgent === null || isImportant === null) return;
-
-    let destination: Quadrant;
-    if (isImportant && isUrgent) {
-      destination = 'do';
-    } else if (!isImportant && isUrgent) {
-        destination = 'schedule';
-    } else if (isImportant && !isUrgent) {
-        destination = 'schedule';
-    } else { 
-      destination = 'delegate';
-    }
-    setTargetQuadrant(destination);
-  }, [isUrgent, isImportant]);
-
-  useEffect(() => {
-    if (targetQuadrant) {
-      const timer = setTimeout(() => {
-        handleUpdateTaskQuadrant(task.id, targetQuadrant, 0);
-        onClose();
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [targetQuadrant, task.id, handleUpdateTaskQuadrant, onClose]);
-
-  const getButtonClass = (value: boolean | null, expected: boolean) => {
-    if (value === null) return 'btn-secondary';
-    return value === expected ? 'btn-primary' : 'btn-disabled';
-  };
-
   if (!modalRoot) return null;
+
+  const triageOptions: { id: Quadrant; title: string; subtitle: string; icon: keyof typeof icons; }[] = [
+    { id: "do", title: "Foco Imediato", subtitle: "Urgente & Importante", icon: 'zap' },
+    { id: "schedule", title: "Tarefas do Dia", subtitle: "Importante, não urgente", icon: 'calendar' },
+    { id: "someday", title: "Ideias & Projetos", subtitle: "Não urgente & não importante", icon: 'bookOpen' },
+  ];
 
   return createPortal(
     <div className="g-modal-overlay">
-      <div className="g-modal" ref={modalRef} style={{ maxWidth: '500px' }}>
-        <header className="g-modal-header">
-          <h3>{`Organizar: "${task.title}"`}</h3>
-          <button onClick={onClose} className="btn btn-secondary btn-icon" aria-label="Fechar">
-            <Icon path={icons.close} />
-          </button>
+      <div className="g-modal" ref={modalRef} style={{ maxWidth: '550px' }}>
+        <header className={`g-modal-header ${styles.centeredHeader}`}>
+            <h3>{`Para onde vai a tarefa "${task.title}"?`}</h3>
+            <p className={styles.subtitle}>Escolha o quadrante de destino para organizar sua tarefa.</p>
         </header>
+        
         <main className="g-modal-body">
-          <div className={styles.triageContainer}>
-            <div className={styles.questionBlock}>
-              <h4><Icon path={icons.clock} /> É Urgente?</h4>
-              <p>Precisa ser resolvido hoje ou tem um prazo iminente?</p>
-              <div className={styles.buttonGroup}>
-                <button
-                  onClick={() => setIsUrgent(true)}
-                  className={`btn ${getButtonClass(isUrgent, true)}`}
-                >
-                  Sim, é pra já
-                </button>
-                <button
-                  onClick={() => setIsUrgent(false)}
-                  className={`btn ${getButtonClass(isUrgent, false)}`}
-                >
-                  Não, pode esperar
-                </button>
-              </div>
+            <div className={styles.optionsGrid}>
+              {triageOptions.map(option => (
+                  <button 
+                      key={option.id}
+                      className={`${styles.optionButton} ${styles[option.id]}`}
+                      onClick={() => onTriage(option.id)}
+                  >
+                      <Icon path={icons[option.icon]} />
+                      <span className={styles.optionTitle}>{option.title}</span>
+                      <span className={styles.optionSubtitle}>{option.subtitle}</span>
+                  </button>
+              ))}
             </div>
-
-            {isUrgent !== null && (
-              <div className={styles.questionBlock}>
-                <h4><Icon path={icons.target} /> É Importante?</h4>
-                <p>Contribui diretamente para suas metas e projetos de longo prazo?</p>
-                <div className={styles.buttonGroup}>
-                  <button
-                    onClick={() => setIsImportant(true)}
-                    className={`btn ${getButtonClass(isImportant, true)}`}
-                  >
-                    Sim, alto impacto
-                  </button>
-                  <button
-                    onClick={() => setIsImportant(false)}
-                    className={`btn ${getButtonClass(isImportant, false)}`}
-                  >
-                    Não, baixo impacto
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         </main>
+
+        <footer className="g-modal-footer">
+          <button className={`${styles.footerButton}`} onClick={onClose}>
+            Decidir Depois
+          </button>
+        </footer>
       </div>
     </div>,
     modalRoot

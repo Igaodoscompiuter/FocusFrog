@@ -1,15 +1,14 @@
 /* HomeScreen.module.css */
 
-/* Adiciona um container principal para controlar o layout */
 .container {
     width: 100%;
-    max-width: 800px; /* Largura máxima para o conteúdo */
-    margin: 0 auto; /* Centraliza o container na página */
-    padding: 0 var(--sp-lg); /* Adiciona espaçamento nas laterais */
-    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--sp-lg);
+    box-sizing: border-box;
 }
 
-
+/* Animação mantida para possível uso futuro, mas removida do card */
 @keyframes pulseGlow {
   0%, 100% {
     box-shadow: 0 0 20px 0 var(--accent-color-glow);
@@ -23,7 +22,6 @@
 
 .dashboardHeader {
     padding: var(--sp-xl) var(--sp-lg) var(--sp-xxl) var(--sp-lg);
-    /* Remove a margem negativa para que o header fique dentro do novo container */
     margin: 0 0 var(--sp-lg) 0;
     color: var(--text-on-primary-color);
     border-radius: var(--border-radius-lg);
@@ -41,7 +39,6 @@
     opacity: 0.9;
 }
 
-/* Formulário de Despejo Mental */
 .brainDumpForm {
     display: flex;
     gap: var(--sp-sm);
@@ -51,11 +48,21 @@
 .brainDumpForm input {
     flex-grow: 1;
     padding: var(--sp-md);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-color);
-    background-color: var(--surface-color);
-    color: var(--text-color);
     font-size: 1rem;
+    color: var(--text-color);
+    border-radius: var(--border-radius-lg);
+    border: 2px solid var(--border-color);
+    background-color: var(--surface-secondary-color);
+    transition: all 0.2s ease;
+}
+
+.brainDumpForm input:focus {
+    outline: none;
+    background-color: var(--surface-secondary-hover-color);
+    border-color: transparent;
+    box-shadow: 
+        0 0 0 2px var(--accent-color), 
+        0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .brainDumpForm button {
@@ -87,13 +94,18 @@
     background-color: var(--surface-color);
     padding: var(--sp-lg);
     border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-color);
+    /* [CORREÇÃO] Alinhado para 2px para consistência com o novo estilo de foco */
+    border: 2px solid var(--border-color);
     margin-bottom: var(--sp-lg);
-    transition: box-shadow var(--transition-slow), border-color var(--transition-slow);
+    transition: all var(--transition-slow);
 }
 
+/* [CORREÇÃO] Animação substituída pelo novo estilo estático */
 .hasFrog {
-    animation: pulseGlow 3s ease-in-out infinite;
+    border-color: transparent; /* Esconde a borda para dar espaço ao box-shadow */
+    box-shadow: 
+        0 0 0 2px var(--accent-color), 
+        0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .frogCardHeader {
@@ -112,11 +124,9 @@
     transition: color var(--transition-slow);
 }
 
-/* A cor do título só muda quando o sapo está ativo */
 .hasFrog .frogCardHeader h3 {
     color: var(--accent-color);
 }
-
 
 .frogTaskTitle {
     font-size: 1.1rem;

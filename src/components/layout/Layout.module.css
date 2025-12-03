@@ -2,7 +2,8 @@
 
 .container {
     width: 100%;
-    max-width: 800px; /* Largura máxima para o conteúdo */
+    /* [CORREÇÃO] Aumentada a largura máxima para acomodar o layout de desktop */
+    max-width: 1200px; 
     margin: 0 auto; /* Centraliza o container na página */
     padding: 0 var(--sp-lg); /* Adiciona espaçamento nas laterais */
     box-sizing: border-box; /* Garante que o padding não aumente a largura total */
