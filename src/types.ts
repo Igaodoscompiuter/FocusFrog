@@ -1,6 +1,5 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-// [CORREÇÃO] Adicionado 'someday' para o quadrante de Ideias & Projetos
 export type Quadrant = 'inbox' | 'do' | 'schedule' | 'delegate' | 'someday';
 
 export interface Task {
@@ -41,14 +40,16 @@ export interface TaskTemplate {
   energyNeeded?: number;
   customDuration?: number;
   subtasks?: { text: string }[];
+  isDefault?: boolean; // <-- ADICIONADO
 }
 
 export interface Routine {
-  id: number;
+  id: string; // <-- ALTERADO PARA STRING
   name: string;
   icon: string | IconDefinition;
   description: string;
   taskTemplateIds: number[];
+  isDefault?: boolean; // <-- ADICIONADO
 }
 
 export interface ChecklistItem {

@@ -12,6 +12,7 @@ interface MorningReviewModalProps {
   onSelectTask: (taskId: string) => void; 
   onConfirm: () => void; 
   onClose: () => void; 
+  onNavigateToTasks: () => void; // <-- NOVA PROP PARA NAVEGAÇÃO
 }
 
 export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({ 
@@ -20,21 +21,22 @@ export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({
   selectedTask,
   onSelectTask,
   onConfirm,
-  onClose
+  onClose,
+  onNavigateToTasks // <-- NOVA PROP
 }) => {
 
   const modalRef = useClickOutside(onClose);
   const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    // Garante que o código só é executado no cliente
     setModalRoot(document.getElementById('modal-root'));
   }, []);
 
-  // Renderiza nulo se não estiver aberto ou o portal não estiver pronto
   if (!isOpen || !modalRoot) {
     return null;
   }
+
+  const hasTasks = tasks.length > 0;
 
   const modalContent = (
     <div className="g-modal-overlay"> 
@@ -46,7 +48,7 @@ export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({
         </header>
 
         <main className="g-modal-body">
-          {tasks.length > 0 ? (
+          {hasTasks ? (
             <ul className={styles.taskList}>
               {tasks.map(task => (
                 <li key={task.id}>
@@ -61,7 +63,7 @@ export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({
             </ul>
           ) : (
             <div className={styles.emptyState}>
-              <p>Nenhuma tarefa na sua lista! Adicione algumas para começar.</p>
+              <p>Nenhuma tarefa elegível na sua lista! Adicione algumas para começar.</p>
             </div>
           )}
         </main>
@@ -70,13 +72,24 @@ export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({
           <button className={`${styles.controlButton} ${styles.secondary}`} onClick={onClose}> 
             Decidir depois
           </button>
-          <button 
-            className={`${styles.controlButton} ${styles.primary}`} 
-            onClick={onConfirm} 
-            disabled={!selectedTask}
-          >
-            Engolir este sapo
-          </button>
+          
+          {/* LÓGICA CONDICIONAL DO BOTÃO */} 
+          {hasTasks ? (
+             <button 
+                className={`${styles.controlButton} ${styles.primary}`} 
+                onClick={onConfirm} 
+                disabled={!selectedTask}
+              >
+                Engolir este sapo
+              </button>
+          ) : (
+            <button 
+              className={`${styles.controlButton} ${styles.primary}`} 
+              onClick={onNavigateToTasks} // <-- AÇÃO DE NAVEGAÇÃO
+            >
+              Ir para Tarefas
+            </button>
+          )}
         </footer>
       </div>
     </div>

@@ -89,6 +89,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
     const isPomodoroActive = status !== 'idle';
     const [isDraggable, setIsDraggable] = useState(false);
 
+    const isFrog = frogTaskId === task.id;
+
     const mainActionType = useMemo(() => {
         if (isInInbox) return 'check';
         const focusMustBeTriggeredBySubtask = task.subtasks?.some(st => st.text.toLowerCase().includes("iniciar pomodoro")) ?? false;
@@ -99,13 +101,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
 
     const [{ x, scale }, api] = useSpring(() => ({ x: 0, scale: 1 }));
 
-    // [CORREÇÃO FINAL] Alinhado com a assinatura de addNotification(message, icon, category)
     const showSubtaskWarning = () => {
         addNotification(
             'Finalize as subtarefas antes de concluir a tarefa principal.', 
             '⚠️', 
             'info'
         );
+    };
+
+    const handleComplete = () => {
+        if (isFrog) {
+            addNotification("Sapo do Dia Concluído! VITÓRIA!", "🐸", "success");
+        }
+        if (isInInbox && handleMarkAsQuickWin) {
+            handleMarkAsQuickWin(task.id);
+        } else {
+            handleCompleteTask(task.id);
+        }
     };
 
     const bind = useDrag(({
@@ -146,10 +158,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
             clearTimeout(longPressTimer.current);
             if (axis === 'x') {
                 if (mx > swipeThreshold) {
-                    api.start({ x: window.innerWidth, onRest: () => {
-                        if (isInInbox && handleMarkAsQuickWin) handleMarkAsQuickWin(task.id);
-                        else handleCompleteTask(task.id);
-                    }});
+                    api.start({ x: window.innerWidth, onRest: handleComplete });
                     return;
                 } else if (mx < -swipeThreshold) {
                     api.start({ x: -window.innerWidth, onRest: () => handleDeleteTask(task.id) });
@@ -175,12 +184,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
             showSubtaskWarning();
             return;
         }
-        
-        if (isInInbox && handleMarkAsQuickWin) {
-            handleMarkAsQuickWin(task.id);
-        } else {
-            handleCompleteTask(task.id);
-        }
+        handleComplete();
     };
 
     const handleFocusClick = (e: React.MouseEvent) => {
@@ -190,7 +194,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
     };
 
     const taskTag = task.tagId ? tags.find(t => t.id === task.tagId) : null;
-    const isFrog = frogTaskId === task.id;
     const energyInfo = task.energyNeeded ? energyLevelMap[task.energyNeeded] : null;
     const isCurrentlyFocusedOnThisTask = activeTaskId === task.id;
     const canBeCompleted = !hasPendingSubtasks || isInInbox;
@@ -204,6 +207,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
         ${task.status === 'done' ? styles.statusDone : ''}
         ${isDragging ? styles.dragging : ''}
         ${isInInbox ? styles.inboxCard : ''}
+        ${isFrog ? styles.isFrog : ''}
     `;
 
     return (
@@ -251,8 +255,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
                                             <Icon path={isCurrentlyFocusedOnThisTask && isPomodoroActive ? icons.zap : icons.play} />
                                         </button>
                                     )}
-                                    <button title={isFrog ? "Desmarcar Sapo" : "Marcar como Sapo"} onClick={(e) => {e.stopPropagation(); handleSetFrog(isFrog ? null : task.id);}} className={`icon-button ${isFrog ? styles.frogIconActive : ''}`}><Icon path={icons.frog} /></button>
-                                </>
+                                    <button 
+                                        title={isFrog ? "Este é o Sapo do Dia" : "Marcar como Sapo do Dia"}
+                                        onClick={(e) => {e.stopPropagation(); handleSetFrog(task.id);}}
+                                        disabled={isFrog}
+                                        className={`icon-button ${isFrog ? styles.frogIconActive : ''}`}>
+                                        <Icon path={icons.frog} />
+                                    </button>
+                                </>                            
                             )}
                             {onEdit && <button title="Editar Tarefa" onClick={(e) => {e.stopPropagation(); onEdit(task);}} className="icon-button"><Icon path={icons.pencil} /></button>}
                         </div>

@@ -5,6 +5,9 @@
   padding: var(--sp-lg);
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--sp-lg); /* Adicionado para espaçamento */
 }
 
 .header {

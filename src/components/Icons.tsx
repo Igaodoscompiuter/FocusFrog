@@ -21,6 +21,7 @@ export const icons = {
     list: "M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z",
     arrowDownUp: "M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z",
     close: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
+    download: "M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z",
     
     // Objects & Concepts - Rebuilt for clarity and quality
     pomodoro: "M18.5 6.5C18.5 5.2 17.4 4 16 4h-2c-.8 0-1.6.4-2 1C11.6 4.4 10.8 4 10 4H8C6.6 4 5.5 5.2 5.5 6.5c0 .3.1.6.2.9C3.9 8.2 3 10 3 12c0 2.2 1.8 4 4 4h1v2.5c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5V16h1c2.2 0 4-1.8 4-4c0-2-1-3.8-2.8-4.6.1-.3.2-.6.2-.9z",

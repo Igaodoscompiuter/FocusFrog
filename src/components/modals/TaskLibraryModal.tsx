@@ -7,21 +7,28 @@ import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import styles from './TaskLibraryModal.module.css';
 import { useClickOutside } from '../../hooks/useClickOutside';
+import { RoutineEditorModal } from './RoutineEditorModal';
 
 interface TaskLibraryModalProps {
-    routines: Routine[];
     onAddRoutine: (routine: Routine) => void;
     onAddTemplates: (templates: TaskTemplate[]) => void;
     onClose: () => void;
 }
 
-export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, onAddRoutine, onAddTemplates, onClose }) => {
-    const { taskTemplates } = useTasks();
+export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine, onAddTemplates, onClose }) => {
+    const { routines, taskTemplates, handleDeleteTemplate, handleSaveRoutine, handleDeleteRoutine } = useTasks();
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<number[]>([]);
     const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'routines' | 'templates'>('routines');
     
-    const modalRef = useClickOutside(onClose);
+    const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
+    const [isCreatingRoutine, setIsCreatingRoutine] = useState(false);
+
+    const modalRef = useClickOutside(() => {
+        if (!isCreatingRoutine && !editingRoutine) {
+            onClose();
+        }
+    });
 
     const categories = useMemo(() => {
         const allCategories = Array.from(new Set(taskTemplates.map(t => t.category)));
@@ -45,11 +52,22 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
             onAddTemplates(templatesToAdd);
         }
         onClose();
-    };
+    }; 
     
     const handleAddRoutineAndClose = (routine: Routine) => {
         onAddRoutine(routine);
         onClose();
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent, templateId: number) => {
+        e.stopPropagation();
+        handleDeleteTemplate(templateId);
+    };
+
+    const handleSaveRoutineAndClose = (routine: Routine) => {
+        handleSaveRoutine(routine);
+        setIsCreatingRoutine(false);
+        setEditingRoutine(null);
     };
 
     return (
@@ -58,8 +76,13 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
                 <header className="g-modal-header">
                     <div>
                         <h3><Icon path={icons.bookOpen} /> Biblioteca</h3>
-                        <p className={styles.subtitle}>Adicione rotinas completas ou tarefas individuais para agilizar seu dia.</p>
+                        <p className={styles.subtitle}>Adicione rotinas e tarefas para agilizar seu dia.</p>
                     </div>
+                    {activeTab === 'routines' && (
+                        <button className="btn btn-primary" onClick={() => setIsCreatingRoutine(true)}>
+                            <Icon path={icons.plus} /> Criar Rotina
+                        </button>
+                    )}
                 </header>
                 
                  <div className={styles.libraryTabs}>
@@ -76,6 +99,16 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
                          <div className={styles.routinesList}>
                             {routines.map(routine => (
                                 <div key={routine.id} className={`card ${styles.routineCard}`}>
+                                    <div className={styles.routineActions}>
+                                        <button onClick={() => setEditingRoutine(routine)} title="Editar Rotina">
+                                            <Icon path={icons.edit} />
+                                        </button>
+                                        {!routine.isDefault && (
+                                            <button onClick={() => handleDeleteRoutine(routine.id)} title="Excluir Rotina">
+                                                <Icon path={icons.trash} />
+                                            </button>
+                                        )}
+                                    </div>
                                      <div className={styles.routineCardHeader}>
                                         <Icon path={icons[routine.icon as keyof typeof icons]} />
                                         <h5>{routine.name}</h5>
@@ -103,6 +136,16 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
                                                 <input type="checkbox" checked={selectedTemplateIds.includes(template.id)} readOnly />
                                                 <span className={styles.checkboxVisual}><Icon path={icons.check} /></span>
                                                 <label>{template.title}</label>
+                                                
+                                                {!template.isDefault && (
+                                                    <button 
+                                                        className={styles.deleteTemplateButton}
+                                                        onClick={(e) => handleDeleteClick(e, template.id)}
+                                                        title="Excluir este modelo"
+                                                    >
+                                                        <Icon path={icons.trash} />
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -121,6 +164,17 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ routines, on
                     )}
                 </footer>
             </div>
+
+            {(isCreatingRoutine || editingRoutine) && (
+                <RoutineEditorModal 
+                    routineToEdit={isCreatingRoutine ? null : editingRoutine}
+                    onSave={handleSaveRoutineAndClose}
+                    onClose={() => {
+                        setIsCreatingRoutine(false);
+                        setEditingRoutine(null);
+                    }}
+                />
+            )}
         </div>
     );
 };

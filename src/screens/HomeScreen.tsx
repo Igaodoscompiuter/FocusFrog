@@ -1,8 +1,8 @@
-
 import React, { useState, useMemo } from 'react';
 import { useTasks } from '../context/TasksContext';
 import { useUI } from '../context/UIContext';
 import { usePomodoro } from '../context/PomodoroContext';
+import { useUser } from '../context/UserContext';
 import { TaskModal } from '../components/modals/TaskModal';
 import { MorningReviewModal } from '../components/modals/MorningReviewModal';
 import { Icon } from '../components/Icon';
@@ -23,10 +23,10 @@ export const HomeScreen: React.FC = () => {
     const { tasks, frogTaskId, handleSetFrog, handleCompleteTask, handleAddTask, handleUnsetFrog, handleToggleLeavingHomeItem, leavingHomeItems, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification } = useUI();
     const { startFocusOnTask, activeTaskId, status } = usePomodoro(); 
+    const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
     const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
-    
     const [selectedFrogId, setSelectedFrogId] = useState<string | null>(null);
 
     const greeting = getGreeting();
@@ -64,8 +64,14 @@ export const HomeScreen: React.FC = () => {
         }
     };
 
+    // Função para navegar para a aba de tarefas a partir do modal
+    const handleNavigateToTasks = () => {
+        setIsMorningReviewOpen(false);
+        handleNavigate('tasks');
+    };
+
     return (
-        <div className={styles.container}> {/* [CORREÇÃO] Adicionado o container que faltava */}
+        <div className={styles.container}> 
             {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} />}
             
             <MorningReviewModal 
@@ -75,81 +81,80 @@ export const HomeScreen: React.FC = () => {
                 selectedTask={selectedFrogId}   
                 onSelectTask={setSelectedFrogId}  
                 onConfirm={handleConfirmFrog}   
+                onNavigateToTasks={handleNavigateToTasks} // <-- PROP CONECTADA
             />
             
             <div className={styles.dashboardHeader} style={{ background: greeting.gradient }}>
                 <div className={styles.greetingContent}>
-                    <h2>{greeting.text}</h2>
-                    <p>Vamos fazer acontecer hoje?</p>
+                    <div>
+                        <h2>{greeting.text}, {userName || 'Usuário'}!</h2>
+                        <p>Vamos fazer acontecer hoje?</p>
+                    </div>
+                    <img src="/icon-192.png" alt="FocusFrog App Icon" className={styles.headerIcon} />
                 </div>
             </div>
 
-            <form onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
-                <input 
-                    type="text" 
-                    placeholder="O que está na sua mente? (Despejo Mental)"
-                    value={brainDumpText}
-                    onChange={(e) => setBrainDumpText(e.target.value)}
-                />
-                <button type="submit" disabled={!brainDumpText.trim()}>
-                    <Icon path={icons.plus} />
-                </button>
-            </form>
+            <div className={styles.contentWrapper}>
+                <form onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
+                    <input 
+                        type="text" 
+                        placeholder="O que está na sua mente? (Despejo Mental)"
+                        value={brainDumpText}
+                        onChange={(e) => setBrainDumpText(e.target.value)}
+                    />
+                    <button type="submit" disabled={!brainDumpText.trim()}>
+                        <Icon path={icons.plus} />
+                    </button>
+                </form>
 
-            <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
-                <div className={styles.frogCardHeader}>
-                    <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
-                    {frogTask && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <button className="btn btn-secondary btn-small" onClick={() => setIsMorningReviewOpen(true)}>
-                                Alterar
+                <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
+                    <div className={styles.frogCardHeader}>
+                        <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
+                        {frogTask && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <button className="btn btn-secondary btn-small" onClick={() => setIsMorningReviewOpen(true)}>
+                                    Alterar
+                                </button>
+                                <button className="btn btn-secondary btn-icon btn-small" onClick={handleUnsetFrog} title="Remover Sapo">
+                                    <Icon path={icons.close} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {frogTask ? (
+                        <div>
+                            <p className={styles.frogTaskTitle}>{frogTask.title}</p>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{width: '100%'}} 
+                                onClick={() => handleFrogTaskClick(frogTask)}
+                                disabled={isFrogFocused}
+                            >
+                                {isFrogFocused ? (
+                                    <><Icon path={icons.zap} /> Focando no Sapo</>
+                                ) : 'Comer o Sapo'}
                             </button>
-                            <button className="btn btn-secondary btn-icon btn-small" onClick={handleUnsetFrog} title="Remover Sapo">
-                                <Icon path={icons.close} />
-                            </button>
+                        </div>
+                    ) : (
+                        <div className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
+                            <Icon path={icons.target} size={24} />
+                            <strong>Escolha seu Sapo</strong>
+                            <p>Selecione a tarefa que vai destravar seu dia</p>
                         </div>
                     )}
                 </div>
-                {frogTask ? (
-                    <div>
-                        <p className={styles.frogTaskTitle}>{frogTask.title}</p>
-                        <button 
-                            className="btn btn-primary" 
-                            style={{width: '100%'}} 
-                            onClick={() => handleFrogTaskClick(frogTask)}
-                            disabled={isFrogFocused}
-                        >
-                            {isFrogFocused ? (
-                                <><Icon path={icons.zap} /> Focando no Sapo</>
-                            ) : 'Comer o Sapo'}
-                        </button>
-                    </div>
-                ) : (
-                    <div className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
-                        <Icon path={icons.target} size={24} />
-                        <strong>Escolha seu Sapo</strong>
-                        <p>Selecione a tarefa que vai destravar seu dia</p>
-                    </div>
-                )}
+
+                <LeavingHomeChecklist 
+                    items={leavingHomeItems}
+                    onToggleItem={handleToggleLeavingHomeItem}
+                    onAddItem={handleAddLeavingHomeItem}
+                    onRemoveItem={handleRemoveLeavingHomeItem}
+                    onResetItems={handleResetLeavingHomeItems}
+                />
+
+                <AgendaDeHoje onEditTask={setEditingTask} />
+                
             </div>
-
-            <LeavingHomeChecklist 
-                items={leavingHomeItems}
-                onToggleItem={handleToggleLeavingHomeItem}
-                onAddItem={handleAddLeavingHomeItem}
-                onRemoveItem={handleRemoveLeavingHomeItem}
-                onResetItems={handleResetLeavingHomeItems}
-            />
-
-            <button 
-                className="btn btn-secondary"
-                style={{ width: '100%', marginBottom: 'var(--sp-lg)' }} 
-                onClick={() => handleNavigate('tasks')}>
-                <Icon path={icons.list} />
-                Ver todas as tarefas
-            </button>
-
-            <AgendaDeHoje onEditTask={setEditingTask} />
 
         </div>
     );

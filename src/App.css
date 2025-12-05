@@ -168,7 +168,7 @@ a {
 
 .btn-primary {
     background-color: var(--primary-color);
-    color: var(--text-on-primary-color);
+    color: var(--text-on-primary);
 }
 
 .btn-secondary {

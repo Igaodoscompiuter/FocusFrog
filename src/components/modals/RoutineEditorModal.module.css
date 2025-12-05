@@ -1,0 +1,220 @@
+/* RoutineEditorModal.module.css */
+
+.routineEditorModal {
+    max-width: 800px; 
+    overflow: hidden; 
+}
+
+.routineEditorModal .g-modal-body {
+    /* Os cartões agora são tratados como blocos normais, que empilham naturalmente. */
+}
+
+/* CARTÃO 1: Definição da Rotina */
+.formSection {
+    background-color: var(--surface-secondary-color);
+    padding: var(--sp-lg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--sp-lg); /* Espaçamento universal */
+}
+
+/* CARTÃO 2: Conteúdo da Rotina */
+.tasksSection {
+    background-color: var(--surface-secondary-color);
+    padding: var(--sp-lg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.sectionHeader {
+    font-size: 1.1rem; 
+    color: var(--text-primary-color);
+    padding-bottom: var(--sp-sm); 
+    margin-bottom: var(--sp-md); 
+    border-bottom: 1px solid var(--border-color); 
+}
+
+/* ----- ESTILOS DA ROTINA PADRÃO (NÃO-EDITÁVEL) ----- */
+
+.defaultRoutineInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-lg); /* Espaço entre o ícone e o texto */
+    background-color: transparent; 
+    padding: 0; 
+    border: none; 
+}
+
+.defaultRoutineIconContainer {
+    flex-shrink: 0;
+    width: 56px; 
+    height: 56px; 
+    border-radius: 50%;
+    background-color: var(--accent-color-light-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.defaultRoutineIconContainer svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent-color);
+}
+
+.defaultRoutineTextContainer h5 {
+    font-size: 1.25rem; /* Título maior */
+    font-weight: 600;
+    color: var(--text-primary-color);
+    margin: 0 0 var(--sp-xs) 0; /* Espaçamento para a descrição */
+}
+
+.defaultRoutineTextContainer p {
+    font-size: 1rem;
+    color: var(--text-secondary-color);
+    margin: 0;
+    line-height: 1.4;
+}
+
+
+/* Alinhamento da grelha de ícones */
+.iconSelector {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--sp-sm);
+    margin-top: var(--sp-md); 
+}
+
+.iconSelector button {
+    background: var(--surface-color);
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-md);
+    padding: var(--sp-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    width: 44px;
+    height: 44px;
+}
+
+.iconSelector button:hover { background-color: var(--surface-secondary-hover-color); }
+
+.iconSelector button.active {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.taskSearchInput {
+    width: 100%;
+}
+
+.taskListContainer {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.templateSelectionList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px; 
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+}
+
+/* ---- Itens da Lista e Checkboxes ---- */
+
+.templateItemContainer { list-style: none; }
+
+.checkboxLabel {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+}
+
+.checkboxLabel input[type="checkbox"] { opacity: 0; width: 0; height: 0; position: absolute; }
+
+.templateItem {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    border-radius: var(--border-radius-md);
+    transition: background-color var(--transition-fast);
+    border: 1px solid var(--border-color);
+    width: 100%;
+    background-color: var(--surface-color);
+}
+
+.templateItem:hover { background-color: var(--surface-secondary-hover-color); }
+
+.checkboxLabel.selected .templateItem {
+    background-color: var(--accent-color-light-bg);
+    border-color: var(--accent-color);
+}
+
+.templateTitle { flex-grow: 1; color: var(--text-primary-color); }
+
+.checkboxVisual {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--surface-color);
+    transition: all var(--transition-fast);
+}
+
+.checkboxLabel:hover .checkboxVisual { border-color: var(--accent-color); }
+
+.checkboxLabel.selected .checkboxVisual {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.checkboxVisual svg {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all var(--transition-fast);
+    color: var(--text-on-primary);
+}
+
+.checkboxLabel.selected .checkboxVisual svg { opacity: 1; transform: scale(1); }
+
+.removeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--sp-xs);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    color: var(--icon-color-secondary);
+}
+
+.removeButton:hover {
+    background-color: var(--danger-color-light-bg);
+    color: var(--danger-color);
+}
+
+.removeButton:disabled {
+    cursor: not-allowed;
+    background-color: transparent;
+    color: var(--text-disabled-color);
+}
+
+.noResults { text-align: center; color: var(--text-secondary-color); padding: var(--sp-lg); }

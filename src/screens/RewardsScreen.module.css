@@ -1,222 +1,196 @@
+/* RewardsScreen.module.css - CORRIGIDO com variáveis de tema unificadas */
 
-/* screens/RewardsScreen.module.css */
-
-/* --- Layout e Abas --- */
-.rewardsHeaderTabs {
+/* --- Layout Geral e Cabeçalho --- */
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--sp-lg);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: var(--sp-md);
+    margin-bottom: 1rem;
 }
 
-.pointsDisplaySmall {
+.pointsDisplay {
     display: flex;
     align-items: center;
-    gap: var(--sp-sm);
+    gap: 0.5rem;
     font-weight: 600;
     font-size: 1rem;
-    color: var(--warning-color); /* Cor de destaque para pontos */
+    color: var(--accent-color);
+    background-color: var(--accent-color-glow, rgba(245, 158, 11, 0.1));
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-full);
+    border: 1px solid var(--accent-color-hover, var(--accent-color));
 }
 
+/* --- Grupo de Abas --- */
 .tabGroup {
     display: flex;
-    gap: var(--sp-sm);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.tabContent {
-    animation: fadeIn 0.5s ease;
+.tabButton {
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
 }
 
-@keyframes fadeIn {
+.tabButton:hover {
+    color: var(--text-color);
+}
+
+.tabButton.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.tabButton.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    border-radius: 2px 2px 0 0;
+}
+
+.tabContent { animation: fadeIn 0.4s ease-in-out; }
+@keyframes fadeIn { 
     from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(0); } 
 }
 
-/* --- Seções e Títulos --- */
-.settingsSection {
-    margin-bottom: var(--sp-xl);
-}
-
-.sectionTitle {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-sm);
-    font-size: 1.1rem;
-    margin-bottom: var(--sp-md);
-    color: var(--text-muted-color);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* --- Componentes da Loja --- */
+/* --- Loja de Recompensas --- */
 .shopGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--sp-lg);
+    gap: 1.25rem;
 }
-
-.shopCard {
+.shopItem {
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
-    overflow: hidden;
-    transition: all 0.2s ease-out;
-}
-
-.shopCard.locked {
-    opacity: 0.7;
-}
-
-.shopCard.active {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-color);
-}
-
-.shopCardPreview {
-    position: relative;
-    height: 80px;
+    padding: 1rem;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.shopItem:hover { transform: translateY(-4px); box-shadow: var(--shadow-medium); }
+.itemHeader { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.itemPreview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border-subtle-color); }
+.itemIcon { font-size: 1.5rem; color: var(--text-secondary-color); }
+.itemName { margin: 0; font-size: 1rem; font-weight: 600; }
+.itemDescription { color: var(--text-secondary-color); font-size: 0.9rem; margin: 0.25rem 0 1rem 0; flex-grow: 1; min-height: 40px; }
+.itemFooter { margin-top: auto; }
+.itemFooter button { width: 100%; }
 
-.previewIcon {
-    opacity: 0.5;
-    width: 32px;
-    height: 32px;
-}
-
-.activeBadge {
-    position: absolute;
-    top: var(--sp-sm);
-    right: var(--sp-sm);
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.shopCardContent {
-    padding: var(--sp-md);
-}
-
-.shopCardContent h4 {
-    margin: 0;
-    font-size: 1.1rem;
-}
-.shopCardContent p {
-    font-size: 0.9rem;
-    color: var(--text-muted-color);
-    margin: var(--sp-xs) 0 var(--sp-md) 0;
-    min-height: 40px; /* Para alinhar os botões */
-}
-
-.shopCardFooter {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.shopCardFooter .btn {
-    width: 100%;
-}
-
-/* --- Componentes de Configuração (Estilo Temporário) --- */
-
+/* --- Secção de Configurações (Melhorada) --- */
 .settingsGroup {
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
+    margin-bottom: 1.5rem;
     overflow: hidden;
 }
-
-.settingItem {
-    display: flex;
-    align-items: center;
-    padding: var(--sp-md);
-    gap: var(--sp-md);
+.settingsGroup h3 {
+    padding: 1rem 1.25rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
     border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: background-color 150ms ease;
 }
-.settingItem:last-child {
-    border-bottom: none;
-}
-.settingItem:hover {
-    background-color: var(--surface-secondary-color);
-}
-.settingItem.danger:hover {
-    background-color: var(--danger-bg-color);
-    color: var(--danger-color);
-}
-.settingItem.danger .settingLabel {
-    color: var(--danger-color);
-}
-
-.settingIconWrapper {
-    background-color: var(--surface-secondary-color);
-    border-radius: var(--border-radius-md);
-    padding: var(--sp-sm);
+.settingRow {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.settingRow:last-child { border-bottom: none; }
+.settingRow label { font-weight: 500; color: var(--text-color); }
+.dataActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1.25rem;
 }
 
-.settingInfo {
-    flex-grow: 1;
+/* --- Controlos de Formulário Customizados --- */
+.select {
+    appearance: none;
+    background-color: var(--surface-secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1em;
+    transition: border-color 0.2s ease;
 }
-.settingLabel {
-    font-weight: 500;
-}
-.settingDescription {
-    font-size: 0.8rem;
-    color: var(--text-muted-color);
-    display: block;
-}
+.select:hover { border-color: var(--primary-color); }
 
-.settingValue {
-    color: var(--text-muted-color);
-}
-
-.settingChevron {
-    width: 16px;
-    height: 16px;
-    opacity: 0.5;
-}
-
-/* Toggle Switch (Componente customizado) */
-.toggleSwitch {
+.switch {
+    position: relative;
+    display: inline-block;
     width: 44px;
     height: 24px;
-    border-radius: 99px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.switchSlider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-color: var(--surface-secondary-color);
-    padding: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 34px;
     transition: background-color 0.2s ease;
 }
-.toggleSwitch.checked {
-    background-color: var(--primary-color);
-}
-.toggleThumb {
-    width: 16px;
+.switchSlider:before {
+    position: absolute;
+    content: "";
     height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-secondary-color);
     border-radius: 50%;
-    background-color: white;
-    transform: translateX(0);
-    transition: transform 0.2s ease;
-}
-.toggleSwitch.checked .toggleThumb {
-    transform: translateX(20px);
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-/* App Version */
-.appVersion {
-    text-align: center;
-    color: var(--text-muted-color);
-    font-size: 0.8rem;
-    margin-top: var(--sp-xl);
+.switch input:checked + .switchSlider {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color-hover);
 }
+.switch input:checked + .switchSlider:before {
+    transform: translateX(20px);
+    background-color: var(--text-on-primary);
+}
+
+.button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+}
+
+.buttonDanger {
+    background-color: var(--danger-color);
+    color: var(--text-on-accent);
+}
+.buttonDanger:hover {
+    filter: brightness(0.9);
+}
+
+/* --- App Version --- */
+.appVersion { text-align: center; color: var(--text-secondary-color); font-size: 0.85rem; margin-top: 1rem; user-select: none; cursor: pointer; }

@@ -6,6 +6,8 @@
     border-radius: var(--border-radius-lg);
     padding: var(--sp-lg);
     margin-bottom: var(--sp-lg);
+    width: 100%; /* GARANTE LARGURA TOTAL */
+    box-sizing: border-box; /* GARANTE QUE O PADDING NÃO QUEBRE O LAYOUT */
 }
 
 .header {

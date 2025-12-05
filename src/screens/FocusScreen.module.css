@@ -131,7 +131,7 @@
 .secondaryActionButton:hover {
     border-color: var(--primary-color);
     background-color: var(--primary-color);
-    color: var(--text-on-primary-color);
+    color: var(--text-on-primary);
     transform: scale(1.05);
 }
 

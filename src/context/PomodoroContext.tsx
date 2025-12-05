@@ -48,7 +48,7 @@ export const usePomodoro = () => {
 };
 
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { addNotification } = useUI();
+    const { addNotification, soundEnabled, hapticsEnabled } = useUI(); // <--- IMPORTADO hapticsEnabled
     const { activeSoundId, setPontosFoco } = useTheme();
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
@@ -86,6 +86,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, []);
 
     const playSound = useCallback((type: 'start' | 'end') => {
+        if (!soundEnabled) return; // <--- ADICIONADA VERIFICAÇÃO DE SOM
         try {
             const context = getAudioContext();
             if (!context) return;
@@ -105,7 +106,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             oscillator.start(now);
             oscillator.stop(now + 0.3);
         } catch (e) { console.error("Audio play failed", e); }
-    }, [getAudioContext]);
+    }, [getAudioContext, soundEnabled]);
 
     const stopBackgroundSound = useCallback((fade = false) => {
         if (backgroundSoundSourceRef.current && audioContextRef.current && gainNodeRef.current) {
@@ -129,7 +130,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const playBackgroundSound = useCallback((fade = false) => {
         stopBackgroundSound(false);
-        if (activeSoundId !== 'none' && sounds[activeSoundId]) {
+        if (soundEnabled && activeSoundId !== 'none' && sounds[activeSoundId]) { // <--- ADICIONADA VERIFICAÇÃO DE SOM
             try {
                 const context = getAudioContext();
                 if (!context) return;
@@ -148,7 +149,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 gainNodeRef.current = gainNode;
             } catch (error) { console.error("Error generating sound:", error); }
         }
-    }, [activeSoundId, stopBackgroundSound, getAudioContext]);
+    }, [activeSoundId, stopBackgroundSound, getAudioContext, soundEnabled]);
 
     const postCommandToSW = useCallback((type: string, payload?: any) => {
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -179,8 +180,11 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             addNotification('Pausa concluída Hora de focar', '💪', 'success');
         }
         playSound('end');
+        if (hapticsEnabled && navigator.vibrate) { // <--- ADICIONADA VERIFICAÇÃO DE VIBRAÇÃO
+            navigator.vibrate([200, 100, 200]); // Um padrão para fim de ciclo
+        }
         stopBackgroundSound(true);
-    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
+    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle, hapticsEnabled]); // <--- ADICIONADA DEPENDÊNCIA
 
     const uiCallbackRef = useRef(handleCycleCompletionUI);
     useEffect(() => { uiCallbackRef.current = handleCycleCompletionUI; }, [handleCycleCompletionUI]);
@@ -272,14 +276,12 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         postCommandToSW('START_TIMER');
     }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext]);
 
-    // FUNÇÃO MODIFICADA
     const stopCycle = useCallback(() => {
         stopBackgroundSound();
         setStatus('idle');
         setTimeRemaining(DEFAULT_FOCUS_DURATION);
         setSessionDuration(DEFAULT_FOCUS_DURATION);
         postCommandToSW('STOP_TIMER');
-        // Adicionada a linha abaixo para resetar a duração no Service Worker
         postCommandToSW('SET_FOCUS_DURATION', DEFAULT_FOCUS_DURATION / 60);
         setActiveTaskId(null);
         setActiveTaskTitle(null);

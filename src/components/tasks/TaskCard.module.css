@@ -48,11 +48,6 @@
     transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 
-.taskCard:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: var(--color-border-hover);
-}
-
 .statusDone {
     opacity: 0.6;
     background-color: var(--color-background-lighter);
@@ -114,10 +109,6 @@
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.checkbox:hover {
-    border-color: var(--color-primary);
-}
-
 .checkbox.disabled {
     border-color: var(--color-border);
     cursor: not-allowed;
@@ -142,7 +133,6 @@
     transform: scale(1.1);
 }
 
-/* [CORREÇÃO] - Usando a cor de aviso (amarelo) para destaque consistente */
 .frogIconActive {
     color: var(--color-warning);
     transform: scale(1.1);
@@ -155,7 +145,10 @@
     padding-left: 2.2rem; 
 }
 
-/* Subtasks */
+.isFrog {
+    border: 2px solid var(--color-warning);
+}
+
 .subtasksSection {
     padding-left: 0.5rem; 
     margin-top: 0.5rem;
@@ -172,9 +165,6 @@
     padding: 0.25rem 0.5rem;
     border-radius: 6px;
     background-color: var(--color-background);
-}
-.subtasksHeader:hover {
-    background-color: var(--color-background-lighter);
 }
 
 .collapsibleChevron {
@@ -205,10 +195,6 @@
 .subtaskItem.clickable {
     cursor: pointer;
 }
-.subtaskItem.clickable:hover {
-    background-color: var(--color-background-lighter);
-}
-
 
 .subtaskItem.completed span {
     text-decoration: line-through;
@@ -255,19 +241,6 @@
     cursor: pointer;
 }
 
-.clickableText:hover {
-    text-decoration: underline;
-}
-
-/* Footer */
-.taskCardFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-left: 2.2rem; 
-    margin-top: 0.5rem;
-}
-
 .footerTags {
     display: flex;
     gap: 0.5rem;
@@ -287,4 +260,10 @@
 
 .energyTag {
     gap: 0.25rem;
+}
+
+@media (max-width: 480px) {
+    .taskCardTitleGroup h4 {
+        white-space: normal;
+    }
 }

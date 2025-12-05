@@ -1,12 +1,11 @@
 
 import React from 'react';
 import { useTasks } from '../../context/TasksContext';
-import type { TaskFilters, EnergyLevel, Tag } from '../../types';
+import type { TaskFilters, EnergyLevel } from '../../types';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-
-// Importando os estilos modulares para manter o escopo de algumas classes
 import styles from './FilterPanel.module.css';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 interface FilterPanelProps {
     isOpen: boolean;
@@ -15,106 +14,106 @@ interface FilterPanelProps {
     onFilterChange: (filters: TaskFilters) => void;
 }
 
+// Opções de filtro, agora sem ícones para um design mais limpo
 const statusOptions: { id: 'overdue' | 'frog', label: string }[] = [
     { id: 'overdue', label: 'Atrasada' },
     { id: 'frog', label: 'Sapo do Dia' },
 ];
 const energyOptions: { id: EnergyLevel, label: string }[] = [
-    { id: 'low', label: 'Baixa Energia' },
-    { id: 'medium', label: 'Média Energia' },
-    { id: 'high', label: 'Alta Energia' },
+    { id: 'low', label: 'Baixa' },
+    { id: 'medium', label: 'Média' },
+    { id: 'high', label: 'Alta' },
 ];
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose, filters, onFilterChange }) => {
     const { tags } = useTasks();
+    const modalRef = useClickOutside(onClose);
 
     const handleToggleFilter = (key: keyof TaskFilters, value: string | number) => {
         const newFilters = { ...filters };
-        
-        switch (key) {
-            case 'tags': {
-                const current = newFilters.tags;
-                const val = value as number;
-                newFilters.tags = current.includes(val) ? current.filter(t => t !== val) : [...current, val];
-                break;
-            }
-            case 'status': {
-                const current = newFilters.status;
-                const val = value as 'overdue' | 'frog';
-                newFilters.status = current.includes(val) ? current.filter(s => s !== val) : [...current, val];
-                break;
-            }
-            case 'energy': {
-                const current = newFilters.energy;
-                const val = value as EnergyLevel;
-                newFilters.energy = current.includes(val) ? current.filter(e => e !== val) : [...current, val];
-                break;
-            }
+        let current = newFilters[key] as (string | number)[];
+        if (current.includes(value)) {
+            current = current.filter(item => item !== value);
+        } else {
+            current = [...current, value];
         }
-        onFilterChange(newFilters);
+        onFilterChange({ ...newFilters, [key]: current });
     };
 
     const handleClearFilters = () => {
         onFilterChange({ tags: [], status: [], energy: [] });
     };
 
-    // Não renderiza nada se não estiver aberto
-    if (!isOpen) {
-        return null;
+    if (!isOpen) return null;
+
+    // Adiciona uma classe específica para o status "Atrasada" quando ativo
+    const getStatusChipClass = (id: 'overdue' | 'frog') => {
+        const isActive = filters.status.includes(id);
+        return `${styles.filterChip} ${isActive ? styles.active : ''} ${isActive && id === 'overdue' ? styles.overdueActive : ''}`;
     }
 
     return (
-        <div className="g-modal-overlay" onClick={onClose}>
-            <div className="g-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="g-modal-header">
+        <div className="g-modal-overlay">
+            <div className={styles.filterPanel} ref={modalRef} onClick={(e) => e.stopPropagation()}>
+                <header className={styles.panelHeader}>
                     <h3><Icon path={icons.sliders} /> Filtros</h3>
-                    <button onClick={onClose} className="btn btn-secondary btn-icon" aria-label="Fechar filtros">
-                        <Icon path={icons.close} />
+                    <button onClick={onClose} className={styles.closeButton} aria-label="Fechar filtros">
+                        <Icon path={icons.x} />
                     </button>
-                </div>
-                <div className={`g-modal-body ${styles.panelBody}`}>
+                </header>
+
+                <main className={styles.panelBody}>
                     <div className={styles.filterSection}>
-                        <h4>Status</h4>
-                        <div className="g-input-group">
+                        <h4>STATUS</h4>
+                        <div className={styles.filterOptions}>
                             {statusOptions.map(option => (
-                                <label key={option.id} className="g-checkbox">
-                                    <input type="checkbox" checked={filters.status.includes(option.id)} onChange={() => handleToggleFilter('status', option.id)} />
-                                    <span>{option.label}</span>
-                                </label>
+                                <button 
+                                    key={option.id} 
+                                    className={getStatusChipClass(option.id)}
+                                    onClick={() => handleToggleFilter('status', option.id)}
+                                >
+                                    {option.label}
+                                </button>
                             ))}
                         </div>
                     </div>
 
                      <div className={styles.filterSection}>
-                        <h4>Tags</h4>
-                        <div className="g-input-group">
+                        <h4>TAGS</h4>
+                        <div className={styles.filterOptions}>
                              {tags.map(tag => (
-                                <label key={tag.id} className="g-checkbox">
-                                    <input type="checkbox" checked={filters.tags.includes(tag.id)} onChange={() => handleToggleFilter('tags', tag.id)} />
+                                <button 
+                                    key={tag.id} 
+                                    className={`${styles.filterChip} ${filters.tags.includes(tag.id) ? styles.active : ''}`}
+                                    onClick={() => handleToggleFilter('tags', tag.id)}
+                                >
                                     <span className={styles.tagColorDot} style={{backgroundColor: tag.color}}></span>
-                                    <span>{tag.name}</span>
-                                </label>
+                                    {tag.name}
+                                </button>
                             ))}
                         </div>
                     </div>
 
                      <div className={styles.filterSection}>
-                        <h4>Energia</h4>
-                        <div className="g-input-group">
+                        <h4>NÍVEL DE ENERGIA</h4>
+                        <div className={styles.filterOptions}>
                             {energyOptions.map(option => (
-                                <label key={option.id} className="g-checkbox">
-                                    <input type="checkbox" checked={filters.energy.includes(option.id)} onChange={() => handleToggleFilter('energy', option.id)} />
-                                    <span>{option.label}</span>
-                                </label>
+                                <button 
+                                    key={option.id} 
+                                    className={`${styles.filterChip} ${filters.energy.includes(option.id) ? styles.active : ''}`}
+                                    onClick={() => handleToggleFilter('energy', option.id)}
+                                >
+                                   {option.label}
+                                </button>
                             ))}
                         </div>
                     </div>
+                </main>
 
-                </div>
-                 <div className="g-modal-footer g-modal-footer--align-end">
-                    <button className="btn btn-secondary" onClick={handleClearFilters}>Limpar</button>
+                 <footer className={styles.panelFooter}>
+                    <button className="btn btn-secondary" onClick={handleClearFilters}>Limpar Filtros</button>
                     <button className="btn btn-primary" onClick={onClose}>Aplicar</button>
-                </div>
+                </footer>
             </div>
         </div>
     );

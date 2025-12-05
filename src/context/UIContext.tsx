@@ -2,7 +2,7 @@
 import React, { useState, createContext, useContext, ReactNode, useCallback, useEffect, useReducer } from 'react';
 import type { Screen, Task, Notification as NotificationType } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { notificationConfig } from '../config/notificationConfig'; // Importa a configuração
+import { notificationConfig } from '../config/notificationConfig';
 
 export type NotificationCategory = 'victory' | 'success' | 'info' | 'error';
 
@@ -24,7 +24,6 @@ type NotificationsAction =
     | { type: 'PROMOTE' }
     | { type: 'CLEAR_ALL' };
 
-// O reducer agora pode ser uma função pura, sem depender de constantes externas diretamente.
 const createNotificationReducer = (config: typeof notificationConfig) => 
     (state: NotificationsState, action: NotificationsAction): NotificationsState => {
     
@@ -54,7 +53,6 @@ const createNotificationReducer = (config: typeof notificationConfig) =>
             return state;
     }
 
-    // Recalcula a visibilidade do botão "Limpar" após cada ação
     const total = nextState.visible.length + nextState.queue.length;
     nextState.showClearAll = total >= config.minForClearAll;
     
@@ -63,8 +61,6 @@ const createNotificationReducer = (config: typeof notificationConfig) =>
 
 
 // --- Tipos e Contexto ---
-export type Density = 'compact' | 'normal' | 'spaced';
-
 export interface UIContextType {
     activeScreen: Screen;
     handleNavigate: (screen: Screen, options?: any) => void;
@@ -79,16 +75,17 @@ export interface UIContextType {
     removeNotification: (id: number) => void;
     promoteNotification: () => void;
     clearAllNotifications: () => void;
-    density: Density;
-    setDensity: React.Dispatch<React.SetStateAction<Density>>;
     soundEnabled: boolean;
     setSoundEnabled: React.Dispatch<React.SetStateAction<boolean>>;
     hapticsEnabled: boolean;
     setHapticsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
     isImmersiveMode: boolean;
     setIsImmersiveMode: React.Dispatch<React.SetStateAction<boolean>>;
-    installPrompt: any;
-    handleInstallApp: () => void;
+    
+    // Novo estado para o popup de instalação PWA
+    isPWAInstallPopupVisible: boolean;
+    showPWAInstallPopup: () => void;
+    hidePWAInstallPopup: () => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -104,13 +101,11 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
     const [taskInFocus, setTaskInFocus] = useState<Task | null>(null);
     const [subtaskInFocusId, setSubtaskInFocusId] = useState<string | null>(null);
-    const [density, setDensity] = useLocalStorage<Density>('focusfrog_density', 'normal');
     const [hapticsEnabled, setHapticsEnabled] = useLocalStorage<boolean>('focusfrog_haptics_enabled', true);
     const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>('focusfrog_sound_enabled', true);
     const [isImmersiveMode, setIsImmersiveMode] = useState(false);
-    const [installPrompt, setInstallPrompt] = useState<any>(null);
+    const [isPWAInstallPopupVisible, setIsPWAInstallPopupVisible] = useState(false);
 
-    // Cria o reducer passando a configuração importada
     const notificationReducer = createNotificationReducer(notificationConfig);
     const [notificationsState, dispatch] = useReducer(notificationReducer, { visible: [], queue: [], showClearAll: false });
 
@@ -139,13 +134,6 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (hapticsEnabled && navigator.vibrate) navigator.vibrate(20);
     }, [hapticsEnabled]);
 
-    const handleInstallApp = async () => {
-        if (!installPrompt) return;
-        installPrompt.prompt();
-        await installPrompt.userChoice;
-        setInstallPrompt(null);
-    };
-    
     const handleNavigate = (screen: Screen, options?: any) => {
         if (activeScreen === 'focus' && screen !== 'focus') {
             setIsImmersiveMode(false);
@@ -154,14 +142,8 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (hapticsEnabled && navigator.vibrate) navigator.vibrate(5);
     }
 
-    useEffect(() => {
-        const handleBeforeInstallPrompt = (e: Event) => {
-            e.preventDefault();
-            setInstallPrompt(e);
-        };
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    }, []);
+    const showPWAInstallPopup = () => setIsPWAInstallPopupVisible(true);
+    const hidePWAInstallPopup = () => setIsPWAInstallPopupVisible(false);
 
     const value: UIContextType = {
         activeScreen,
@@ -175,12 +157,12 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         removeNotification,
         promoteNotification,
         clearAllNotifications,
-        density, setDensity,
         soundEnabled, setSoundEnabled,
         hapticsEnabled, setHapticsEnabled,
         isImmersiveMode, setIsImmersiveMode,
-        installPrompt,
-        handleInstallApp,
+        isPWAInstallPopupVisible,
+        showPWAInstallPopup,
+        hidePWAInstallPopup,
     };
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

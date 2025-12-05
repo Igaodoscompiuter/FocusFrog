@@ -2,13 +2,14 @@
 
 .container {
     width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
+}
+
+.contentWrapper {
+    width: 100%;
     padding: 0 var(--sp-lg);
     box-sizing: border-box;
 }
 
-/* Animação mantida para possível uso futuro, mas removida do card */
 @keyframes pulseGlow {
   0%, 100% {
     box-shadow: 0 0 20px 0 var(--accent-color-glow);
@@ -21,15 +22,22 @@
 }
 
 .dashboardHeader {
-    padding: var(--sp-xl) var(--sp-lg) var(--sp-xxl) var(--sp-lg);
-    margin: 0 0 var(--sp-lg) 0;
-    color: var(--text-on-primary-color);
-    border-radius: var(--border-radius-lg);
+    margin: var(--sp-lg) var(--sp-lg) 0 var(--sp-lg);
+    padding: var(--sp-xl) var(--sp-lg);
+    color: var(--text-on-primary);
+    border-radius: 24px;
+}
+
+.greetingContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-lg);
 }
 
 .greetingContent h2 {
     font-family: var(--font-display);
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
     margin-bottom: var(--sp-sm);
 }
@@ -39,9 +47,18 @@
     opacity: 0.9;
 }
 
+/* ÍCONE CIRCULAR */
+.headerIcon {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 50%; /* Transforma a imagem em um círculo */
+}
+
 .brainDumpForm {
     display: flex;
     gap: var(--sp-sm);
+    margin-top: var(--sp-lg);
     margin-bottom: var(--sp-lg);
 }
 
@@ -68,7 +85,7 @@
 .brainDumpForm button {
     padding: var(--sp-md);
     background-color: var(--primary-color);
-    color: var(--text-on-primary-color);
+    color: var(--text-on-primary);
     border: none;
     border-radius: var(--border-radius-lg); 
     aspect-ratio: 1 / 1;
@@ -89,20 +106,17 @@
     filter: brightness(0.9);
 }
 
-/* --- CARD: Sapo do Dia --- */
 .frogCard {
     background-color: var(--surface-color);
     padding: var(--sp-lg);
     border-radius: var(--border-radius-lg);
-    /* [CORREÇÃO] Alinhado para 2px para consistência com o novo estilo de foco */
     border: 2px solid var(--border-color);
     margin-bottom: var(--sp-lg);
     transition: all var(--transition-slow);
 }
 
-/* [CORREÇÃO] Animação substituída pelo novo estilo estático */
 .hasFrog {
-    border-color: transparent; /* Esconde a borda para dar espaço ao box-shadow */
+    border-color: transparent;
     box-shadow: 
         0 0 0 2px var(--accent-color), 
         0 8px 25px rgba(0, 0, 0, 0.1);

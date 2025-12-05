@@ -34,15 +34,16 @@ interface TasksContextType {
     handlePostponeAllOverdue: (taskIds: string[]) => Promise<void>;
     clearOverdueReview: () => void;
     handleCreateTemplateFromTask: (task: Task) => void;
+    handleDeleteTemplate: (templateId: number) => void;
     handleAddRoutine: (routine: Routine) => void;
+    handleSaveRoutine: (routine: Routine) => void;
+    handleDeleteRoutine: (routineId: string) => void;
     handleAddTemplates: (templates: TaskTemplate[]) => void;
     leavingHomeItems: ChecklistItem[];
     handleToggleLeavingHomeItem: (itemId: string) => void;
     handleAddLeavingHomeItem: (text: string) => void;
     handleRemoveLeavingHomeItem: (itemId: string) => void;
     handleResetLeavingHomeItems: () => void;
-
-    // [NOVO] Lógica de Triagem
     triageQueue: Task[];
     isTriageActive: boolean;
     startTriage: () => void;
@@ -75,7 +76,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', [{ id: 1, name: 'Trabalho', color: '#3B82F6' }]);
     const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', null);
     
-    const routines = initialRoutines;
+    const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);
@@ -85,7 +86,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
     const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
 
-    // [NOVO] Estado para a fila de triagem
     const [triageQueue, setTriageQueue] = useState<Task[]>([]);
     const isTriageActive = useMemo(() => triageQueue.length > 0, [triageQueue]);
 
@@ -380,11 +380,25 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             energyNeeded: task.energyNeeded,
             category: 'Personalizado',
             subtasks: task.subtasks?.map(st => ({ text: st.text })),
+            isDefault: false,
         };
         setTaskTemplates(prev => [...prev, newTemplate]);
         addNotification("Novo modelo salvo na sua biblioteca", '📚', 'success');
     }, [setTaskTemplates, addNotification]);
     
+    const handleDeleteTemplate = useCallback((templateId: number) => {
+        const templateToDelete = taskTemplates.find(t => t.id === templateId);
+        if (!templateToDelete) return;
+
+        if (templateToDelete.isDefault) {
+            addNotification("Modelos padrão não podem ser excluídos.", '🛡️', 'error');
+            return;
+        }
+
+        setTaskTemplates(prev => prev.filter(t => t.id !== templateId));
+        addNotification("Modelo excluído com sucesso.", '🗑️', 'info');
+    }, [taskTemplates, setTaskTemplates, addNotification]);
+
     const handleAddTemplates = useCallback((templates: TaskTemplate[]) => {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -420,6 +434,35 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             addNotification(`Rotina '${routine.name}' adicionada`, '🚀', 'success');
         }
     }, [taskTemplates, handleAddTemplates, addNotification]);
+
+    const handleSaveRoutine = useCallback((routineToSave: Routine) => {
+        setRoutines(prev => {
+            const existingIndex = prev.findIndex(r => r.id === routineToSave.id);
+            if (existingIndex > -1) {
+                const newRoutines = [...prev];
+                newRoutines[existingIndex] = routineToSave;
+                addNotification(`Rotina '${routineToSave.name}' atualizada!`, '✏️', 'success');
+                return newRoutines;
+            } else {
+                const newRoutine = { ...routineToSave, id: `routine-${Date.now()}`, isDefault: false };
+                addNotification(`Nova rotina '${newRoutine.name}' criada!`, '✨', 'success');
+                return [...prev, newRoutine];
+            }
+        });
+    }, [setRoutines, addNotification]);
+
+    const handleDeleteRoutine = useCallback((routineId: string) => {
+        const routineToDelete = routines.find(r => r.id === routineId);
+        if (!routineToDelete) return;
+
+        if (routineToDelete.isDefault) {
+            addNotification('Rotinas padrão não podem ser excluídas.', '🛡️', 'error');
+            return;
+        }
+
+        setRoutines(prev => prev.filter(r => r.id !== routineId));
+        addNotification('Rotina excluída com sucesso.', '🗑️', 'info');
+    }, [routines, setRoutines, addNotification]);
     
     const handleToggleLeavingHomeItem = (itemId: string) => {
         setLeavingHomeItems(prev => prev.map(item => item.id === itemId ? { ...item, completed: !item.completed } : item));
@@ -471,7 +514,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         clearOverdueReview();
     };
 
-    // [NOVO] Funções de Controle de Triagem
     const startTriage = useCallback(() => {
         const inboxTasks = tasks.filter(t => t.quadrant === 'inbox');
         setTriageQueue(inboxTasks);
@@ -528,15 +570,16 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handlePostponeAllOverdue,
         clearOverdueReview,
         handleCreateTemplateFromTask,
+        handleDeleteTemplate,
         handleAddRoutine,
+        handleSaveRoutine,    
+        handleDeleteRoutine, 
         handleAddTemplates,
         leavingHomeItems,
         handleToggleLeavingHomeItem,
         handleAddLeavingHomeItem,
         handleRemoveLeavingHomeItem,
         handleResetLeavingHomeItems,
-
-        // [NOVO] Expondo a lógica de triagem
         triageQueue,
         isTriageActive,
         startTriage,

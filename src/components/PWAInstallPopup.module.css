@@ -1,0 +1,105 @@
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup {
+  background-color: var(--background-color-light);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform: translateY(20px);
+}
+
+.popupHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.popupIcon {
+  font-size: 2.5rem; /* Ajuste o tamanho conforme necessário */
+  color: var(--primary-color);
+}
+
+.popupTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color-primary);
+}
+
+.popupText {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: var(--text-color-secondary);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Estilos para os botões - você pode querer mover para um ficheiro global */
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.primary:hover {
+  filter: brightness(1.1);
+}
+
+.secondary {
+  background-color: var(--background-color-dark);
+  color: var(--text-color-primary);
+  border: 1px solid var(--border-color);
+}
+
+.secondary:hover {
+  background-color: var(--hover-color);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

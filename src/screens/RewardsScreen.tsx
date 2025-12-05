@@ -6,7 +6,9 @@ import { useTheme } from '../context/ThemeContext';
 import { useUI } from '../context/UIContext';
 import { useUserData } from '../hooks/useUserData';
 import styles from './RewardsScreen.module.css';
+import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 
+// --- TIPOS E DADOS ---
 interface ShopItem { id: string; type: 'theme' | 'sound'; name: string; description: string; cost: number; previewColor?: string; icon?: keyof typeof icons; }
 
 const shopCatalog: ShopItem[] = [
@@ -18,14 +20,15 @@ const shopCatalog: ShopItem[] = [
     { id: 'sound-keyboard', type: 'sound', name: 'Teclado Mecânico', description: 'Cliques satisfatórios para o foco.', cost: 150, icon: 'keyboard' },
 ];
 
+// --- COMPONENTE PRINCIPAL ---
 export const RewardsScreen: React.FC = () => {
     const { activeThemeId, setActiveThemeId, activeSoundId, setActiveSoundId, pontosFoco, setPontosFoco, unlockedRewards, setUnlockedRewards } = useTheme();
-    const { density, setDensity, addNotification, soundEnabled, setSoundEnabled, hapticsEnabled, setHapticsEnabled, setDevModeEnabled } = useUI();
+    const { addNotification, soundEnabled, setSoundEnabled, hapticsEnabled, setHapticsEnabled, setDevModeEnabled } = useUI();
     const { exportData, importData, resetData } = useUserData();
     
     const [activeTab, setActiveTab] = useState<'shop' | 'settings'>('shop');
+    const [isResetModalVisible, setIsResetModalVisible] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
     const [devTapCount, setDevTapCount] = useState(0);
     const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -59,96 +62,121 @@ export const RewardsScreen: React.FC = () => {
     };
     
     const handleImportClick = () => fileInputRef.current?.click();
-
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            importData(file);
+        if (file) importData(file);
+    };
+
+    const showResetModal = () => setIsResetModalVisible(true);
+    const hideResetModal = () => setIsResetModalVisible(false);
+    const confirmReset = () => {
+        resetData();
+        hideResetModal();
+    };
+
+    // Função para dar feedback tátil ao ativar a vibração
+    const handleHapticsChange = (enabled: boolean) => {
+        setHapticsEnabled(enabled);
+        if (enabled && navigator.vibrate) {
+            navigator.vibrate(50); // Vibração curta de confirmação
         }
     };
 
     return (
         <main className="screen-content">
-            <div className={styles.rewardsHeader}>
+             {isResetModalVisible && (
+                <ConfirmationModal
+                    title="Apagar Todos os Dados"
+                    message="Tem a certeza? Esta ação é irreversível e irá apagar todas as suas tarefas, pontos e personalizações."
+                    confirmText="Sim, Apagar Tudo"
+                    cancelText="Cancelar"
+                    onConfirm={confirmReset}
+                    onCancel={hideResetModal}
+                    variant="danger"
+                    icon="trash"
+                />
+            )}
+
+            <div className={styles.header}>
                 <h2>Personalizar</h2>
                 <div className={styles.pointsDisplay}><Icon path={icons.trophy} /> <span>{pontosFoco}</span></div>
             </div>
 
-            <div className={styles.rewardsHeaderTabs}>
+            <div className={styles.tabGroup}>
                  <button onClick={() => setActiveTab('shop')} className={`${styles.tabButton} ${activeTab === 'shop' ? styles.active : ''}`}>Loja</button>
                  <button onClick={() => setActiveTab('settings')} className={`${styles.tabButton} ${activeTab === 'settings' ? styles.active : ''}`}>Configurações</button>
             </div>
 
-            {activeTab === 'shop' && (
-                 <div className={`${styles.tabContent} ${styles.fadeIn}`}>
-                    <div className={styles.shopGrid}>
-                        {shopCatalog.map(item => {
-                            const isUnlocked = unlockedRewards.includes(item.id);
-                            const isEquipped = item.type === 'theme' ? activeThemeId === item.id : activeSoundId === item.id;
-                            return (
-                                <div key={item.id} className={`card ${styles.shopItem}`}>
-                                    <div className={styles.itemHeader}>
-                                        {item.previewColor && <div className={styles.itemPreview} style={{ backgroundColor: item.previewColor }}></div>}
-                                        {item.icon && <Icon path={icons[item.icon]} className={styles.itemIcon} />}
-                                        <h4 className={styles.itemName}>{item.name}</h4>
-                                    </div>
-                                    <p className={styles.itemDescription}>{item.description}</p>
-                                    <div className={styles.itemFooter}>
-                                        {!isUnlocked ? (
-                                            <button className="btn btn-primary" onClick={() => handlePurchase(item)} disabled={pontosFoco < item.cost}>
-                                                <Icon path={icons.lock} /> Comprar ({item.cost})
-                                            </button>
-                                        ) : (
-                                            <button className="btn btn-secondary" onClick={() => handleEquip(item)} disabled={isEquipped}>
-                                                {isEquipped ? 'Equipado' : 'Equipar'}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'settings' && (
-                <div className={`${styles.tabContent} ${styles.fadeIn}`}>
-                    <div className="card">
-                        <h4 className={styles.sectionTitle}>Interface</h4>
-                        <div className={styles.settingRow}>
-                            <label>Densidade da UI</label>
-                            <select value={density} onChange={(e) => setDensity(e.target.value as any)} className={styles.select}>
-                                <option value="compact">Compacta</option>
-                                <option value="comfortable">Confortável</option>
-                                <option value="spacious">Espaçosa</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="card">
-                         <h4 className={styles.sectionTitle}>Preferências</h4>
-                         <div className={styles.settingRow}>
-                            <label>Efeitos sonoros</label>
-                            <input type="checkbox" checked={soundEnabled} onChange={(e) => setSoundEnabled(e.target.checked)} className={styles.switch} />
-                        </div>
-                         <div className={styles.settingRow}>
-                            <label>Vibração (Haptics)</label>
-                            <input type="checkbox" checked={hapticsEnabled} onChange={(e) => setHapticsEnabled(e.target.checked)} className={styles.switch} />
-                        </div>
-                    </div>
-                    <div className="card">
-                        <h4 className={styles.sectionTitle}>Gerenciamento de Dados</h4>
-                        <div className={styles.dataActions}>
-                            <button className="btn btn-secondary" onClick={exportData}><Icon path={icons.download} /> Exportar</button>
-                            <button className="btn btn-secondary" onClick={handleImportClick}><Icon path={icons.upload} /> Importar</button>
-                            <button className="btn btn-danger" onClick={resetData}><Icon path={icons.trash} /> Resetar</button>
-                        </div>
-                    </div>
-                    <div className={styles.appVersion} onClick={handleVersionClick}>
-                        FocusFrog v1.1.0 • Feito com 💚
-                    </div>
-                    <input type="file" ref={fileInputRef} style={{display: 'none'}} accept=".json" onChange={handleFileChange} />
-                </div>
-            )}
+            <div className={styles.tabContent}>
+                {activeTab === 'shop' && <ShopTab {...{ shopCatalog, unlockedRewards, activeThemeId, activeSoundId, handlePurchase, handleEquip, pontosFoco }} />}
+                {activeTab === 'settings' && <SettingsTab {...{ soundEnabled, setSoundEnabled, hapticsEnabled, handleHapticsChange, exportData, handleImportClick, showResetModal, handleVersionClick, fileInputRef, handleFileChange }} />}
+            </div>
         </main>
     );
 };
+
+// --- ABA DA LOJA ---
+const ShopTab: React.FC<any> = ({ shopCatalog, unlockedRewards, activeThemeId, activeSoundId, handlePurchase, handleEquip, pontosFoco }) => (
+    <div className={styles.shopGrid}>
+        {shopCatalog.map((item: ShopItem) => {
+            const isUnlocked = unlockedRewards.includes(item.id);
+            const isEquipped = item.type === 'theme' ? activeThemeId === item.id : activeSoundId === item.id;
+            return (
+                <div key={item.id} className={styles.shopItem}>
+                    <div className={styles.itemHeader}>
+                        {item.previewColor && <div className={styles.itemPreview} style={{ backgroundColor: item.previewColor }}></div>}
+                        {item.icon && <Icon path={icons[item.icon]} className={styles.itemIcon} />}
+                        <h4 className={styles.itemName}>{item.name}</h4>
+                    </div>
+                    <p className={styles.itemDescription}>{item.description}</p>
+                    <div className={styles.itemFooter}>
+                        {!isUnlocked ? (
+                            <button className="btn btn-primary" onClick={() => handlePurchase(item)} disabled={pontosFoco < item.cost}>
+                                <Icon path={icons.lock} /> Comprar ({item.cost})
+                            </button>
+                        ) : (
+                            <button className="btn btn-secondary" onClick={() => handleEquip(item)} disabled={isEquipped}>
+                                {isEquipped ? 'Equipado' : 'Equipar'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        })}
+    </div>
+);
+
+// --- ABA DE CONFIGURAÇÕES (ATUALIZADA) ---
+const SettingsTab: React.FC<any> = ({ soundEnabled, setSoundEnabled, hapticsEnabled, handleHapticsChange, exportData, handleImportClick, showResetModal, handleVersionClick, fileInputRef, handleFileChange }) => (
+    <div>
+        <div className={styles.settingsGroup}>
+            <h3>Preferências</h3>
+            <div className={styles.settingRow}>
+                <label htmlFor="sound-toggle">Efeitos sonoros</label>
+                <label className={styles.switch}>
+                    <input id="sound-toggle" type="checkbox" checked={soundEnabled} onChange={(e) => setSoundEnabled(e.target.checked)} />
+                    <span className={styles.switchSlider}></span>
+                </label>
+            </div>
+            <div className={styles.settingRow}>
+                <label htmlFor="haptics-toggle">Vibração (Haptics)</label>
+                <label className={styles.switch}>
+                    <input id="haptics-toggle" type="checkbox" checked={hapticsEnabled} onChange={(e) => handleHapticsChange(e.target.checked)} />
+                    <span className={styles.switchSlider}></span>
+                </label>
+            </div>
+        </div>
+        <div className={styles.settingsGroup}>
+             <h3>Gerenciamento de Dados</h3>
+            <div className={styles.dataActions}>
+                <button className="btn btn-secondary" onClick={exportData}><Icon path={icons.download} /> Exportar</button>
+                <button className="btn btn-secondary" onClick={handleImportClick}><Icon path={icons.upload} /> Importar</button>
+                <button className={`btn ${styles.buttonDanger}`} onClick={showResetModal}><Icon path={icons.trash} /> Resetar</button>
+            </div>
+        </div>
+        <div className={styles.appVersion} onClick={handleVersionClick}>
+            FocusFrog v1.1.0 • Feito com 💚
+        </div>
+        <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".json" onChange={handleFileChange} />
+    </div>
+);

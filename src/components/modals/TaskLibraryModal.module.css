@@ -1,185 +1,235 @@
-/* Estilos para a Biblioteca de Tarefas */
+/* TaskLibraryModal.module.css */
 
-.taskLibraryModal {
-    max-width: 600px;
-}
-
-.modalHeader {
-    position: relative;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.modalHeader h3 {
-    margin-bottom: 0.25rem;
-}
-.modalHeader p {
-    margin: 0;
-    color: var(--color-text-secondary);
-}
-
-.closeButton {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    font-weight: 400;
+    margin-top: var(--sp-xs);
 }
 
 .libraryTabs {
     display: flex;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    margin: var(--sp-md) calc(var(--sp-lg) * -1) 0;
+    padding: 0 var(--sp-lg);
 }
 
 .libraryTabs button {
-    flex: 1;
-    padding: 1rem;
-    background-color: transparent;
+    background: none;
     border: none;
-    color: var(--color-text-secondary);
-    font-size: 1rem;
-    font-weight: 600;
+    padding: var(--sp-md) var(--sp-lg);
     cursor: pointer;
+    color: var(--text-secondary-color);
+    font-weight: 500;
+    position: relative;
+    top: 2px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px; /* Alinhar com a borda inferior do container */
-}
-
-.libraryTabs button:hover {
-    color: var(--color-text-primary);
+    gap: var(--sp-sm);
 }
 
 .libraryTabs button.active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
-}
-
-.modalBody {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: 0.25rem;
-    margin: 0 -0.25rem;
-}
-
-.librarySection {
-    padding: 0.5rem;
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
 }
 
 .routinesList {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-md);
+    padding: var(--sp-sm) 0;
 }
 
 .routineCard {
-    padding: 1rem;
+    position: relative; /* Para posicionar os botões de ação */
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    text-align: center;
-    align-items: center;
+    gap: var(--sp-sm);
+    background-color: var(--surface-secondary-color);
+    border: 2px solid var(--border-color);
+    padding: var(--sp-md);
+    border-radius: var(--border-radius-lg);
+    transition: all var(--transition-fast);
 }
 
-.routineCard h5 {
-    margin: 0;
+.routineCard:hover {
+    border-color: var(--border-color-hover);
 }
-.routineCard p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    flex-grow: 1;
+
+/* Ações de Edição e Exclusão da Rotina (SEMPRE VISÍVEL) */
+.routineActions {
+    position: absolute;
+    top: var(--sp-sm);
+    right: var(--sp-sm);
+    display: flex;
+    gap: var(--sp-xs);
+    opacity: 1; /* Alterado de 0 para 1 para estar sempre visível */
+}
+
+/* A regra .routineCard:hover .routineActions foi REMOVIDA */
+
+.routineActions button {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    color: var(--icon-color-secondary);
+    padding: var(--sp-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.routineActions button:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
 .routineCardHeader {
-    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    /* Adicionado padding para evitar que o título fique por baixo dos botões */
+    padding-right: 64px; 
 }
 
-/* Estilos do Acordeão */
+.routineCardHeader svg {
+    color: var(--accent-color);
+}
+
+.routineCard h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.routineCard p {
+    flex-grow: 1;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+}
+
 .taskLibraryAccordion {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--sp-sm);
+    padding: var(--sp-sm) 0;
 }
 
 .accordionItem {
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-medium);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+.accordionItem.open {
+    border-color: var(--border-color-hover);
 }
 
 .accordionHeader {
-    padding: 0.75rem 1rem;
+    padding: var(--sp-md);
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 600;
+    background-color: var(--surface-color);
+    transition: background-color var(--transition-fast);
 }
+
+.accordionHeader:hover {
+    background-color: var(--surface-secondary-color);
+}
+
 .accordionHeader svg {
-    transition: transform 0.2s ease-in-out;
+    transition: transform var(--transition-fast);
 }
+
 .accordionItem.open .accordionHeader svg {
     transform: rotate(180deg);
 }
 
-
 .accordionContent {
     max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
-    padding: 0 1rem;
-}
-.accordionItem.open .accordionContent {
-    max-height: 500px; /* Altura suficiente para o conteúdo */
-    padding: 0.5rem 1rem 1rem;
-    border-top: 1px solid var(--color-border);
+    overflow-y: auto;
+    visibility: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease, visibility 0.3s;
+    background-color: var(--surface-secondary-color);
 }
 
+.accordionItem.open .accordionContent {
+    max-height: 200px;
+    visibility: visible;
+    padding: var(--sp-sm) 0;
+}
 
 .templateItem {
-    display: flex;
+    display: flex; 
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    border-radius: var(--border-radius-small);
+    padding: var(--sp-sm) var(--sp-md);
     cursor: pointer;
+    transition: background-color var(--transition-fast);
 }
+
 .templateItem:hover {
-    background-color: var(--color-bg-secondary);
+    background-color: var(--surface-secondary-hover-color);
 }
-.templateItem input {
-   display: none;
+
+.templateItem input[type="checkbox"] {
+    display: none;
 }
+
 .templateItem label {
-    flex-grow: 1;
+    flex-grow: 1; 
+    margin-left: var(--sp-sm);
     cursor: pointer;
 }
 
 .checkboxVisual {
-    width: 18px;
-    height: 18px;
-    border-radius: var(--border-radius-small);
-    border: 2px solid var(--color-border-strong);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    transition: background-color 0.2s, border-color 0.2s;
+    background-color: var(--surface-color);
+    transition: all var(--transition-fast);
+}
+
+.checkboxVisual svg {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all var(--transition-fast);
 }
 
 .templateItem input:checked + .checkboxVisual {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
+.templateItem input:checked + .checkboxVisual svg {
+    opacity: 1;
+    transform: scale(1);
+    color: var(--text-on-primary);
+}
 
-.modalFooter {
+.deleteTemplateButton {
+    background: none;
+    border: none;
+    color: var(--icon-color-secondary);
+    cursor: pointer;
+    padding: var(--sp-xs);
+    margin-left: var(--sp-sm);
+    border-radius: var(--border-radius-sm);
     display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    border-top: 1px solid var(--color-border);
-    padding-top: 1.5rem;
-    margin-top: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: all var(--transition-fast);
 }
 
+.deleteTemplateButton:hover {
+    color: var(--danger-color);
+    background-color: var(--danger-color-light-bg);
+    opacity: 1;
+}

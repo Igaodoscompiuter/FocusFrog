@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
+import { useUI } from '../context/UIContext'; // Importa o hook da UI
+import { usePWAInstall } from '../context/PWAInstallProvider'; // Importa o hook PWA
 import './OnboardingNameScreen.css';
 
 const LOGO_URL = '/icon-512.png';
@@ -8,10 +10,17 @@ const LOGO_URL = '/icon-512.png';
 export const OnboardingNameScreen: React.FC = () => {
   const [name, setName] = useState('');
   const { setUserName } = useUser();
+  const { showPWAInstallPopup } = useUI(); // Pega a função para mostrar o popup
+  const { canInstall } = usePWAInstall(); // Pega o estado que nos diz se a app é instalável
 
   const handleSubmit = () => {
     if (name.trim()) {
       setUserName(name.trim());
+      
+      // Se a app for instalável, mostra o popup de sugestão
+      if (canInstall) {
+        showPWAInstallPopup();
+      }
     }
   };
 
