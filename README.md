@@ -1,7 +1,7 @@
 # 🐸 FocusFrog: Produtividade para Mentes Criativas
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/b788a108-a58f-4a0b-99d7-56e632b73319" width="256" alt="FocusFrog Icon" />
+  <img src="./src/assets/icon.png" width="256" alt="FocusFrog Icon" />
 </div>
 
 FocusFrog é um aplicativo de produtividade gamificado, desenhado especificamente para ajudar pessoas com TDAH e mentes criativas a transformar tarefas em conquistas. Usando técnicas como o método Pomodoro e reforço positivo, o app transforma o foco em uma jornada recompensadora.

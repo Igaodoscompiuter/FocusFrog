@@ -7,6 +7,7 @@ import { useUI } from '../context/UIContext';
 import { useUserData } from '../hooks/useUserData';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
+import appIcon from '../assets/icon.png'; // Importação adicionada
 
 // --- TIPOS E DADOS ---
 interface ShopItem { id: string; type: 'theme' | 'sound'; name: string; description: string; cost: number; previewColor?: string; icon?: keyof typeof icons; }
@@ -16,8 +17,8 @@ const shopCatalog: ShopItem[] = [
     { id: 'theme-ocean', type: 'theme', name: 'Tema Oceano', description: 'Azuis serenos e cinzas suaves.', cost: 100, previewColor: '#3a5ba0' },
     { id: 'theme-sunset', type: 'theme', name: 'Tema Pôr do Sol', description: 'Gradientes quentes de laranja e roxo.', cost: 250, previewColor: '#ff8c61' },
     { id: 'theme-neon', type: 'theme', name: 'Tema Neon', description: 'Vibrante e elétrico para noites de codificação.', cost: 500, previewColor: '#c700ff' },
-    { id: 'sound-rain', type: 'sound', name: 'Chuva Suave', description: 'Som ambiente de chuva calma.', cost: 50, icon: 'cloudRain' },
-    { id: 'sound-keyboard', type: 'sound', name: 'Teclado Mecânico', description: 'Cliques satisfatórios para o foco.', cost: 150, icon: 'keyboard' },
+    { id: 'sound-rain', type: 'sound', name: 'Chuva Suave', description: 'Som ambiente de chuva calma.', cost: 50, icon: 'cloud' }, // Corrigido
+    { id: 'sound-keyboard', type: 'sound', name: 'Teclado Mecânico', description: 'Cliques satisfatórios para o foco.', cost: 150, icon: 'terminal' }, // Corrigido
 ];
 
 // --- COMPONENTE PRINCIPAL ---
@@ -74,11 +75,10 @@ export const RewardsScreen: React.FC = () => {
         hideResetModal();
     };
 
-    // Função para dar feedback tátil ao ativar a vibração
     const handleHapticsChange = (enabled: boolean) => {
         setHapticsEnabled(enabled);
         if (enabled && navigator.vibrate) {
-            navigator.vibrate(50); // Vibração curta de confirmação
+            navigator.vibrate(50);
         }
     };
 
@@ -115,38 +115,44 @@ export const RewardsScreen: React.FC = () => {
     );
 };
 
-// --- ABA DA LOJA ---
+// --- ABA DA LOJA (MODIFICADA) ---
 const ShopTab: React.FC<any> = ({ shopCatalog, unlockedRewards, activeThemeId, activeSoundId, handlePurchase, handleEquip, pontosFoco }) => (
-    <div className={styles.shopGrid}>
-        {shopCatalog.map((item: ShopItem) => {
-            const isUnlocked = unlockedRewards.includes(item.id);
-            const isEquipped = item.type === 'theme' ? activeThemeId === item.id : activeSoundId === item.id;
-            return (
-                <div key={item.id} className={styles.shopItem}>
-                    <div className={styles.itemHeader}>
-                        {item.previewColor && <div className={styles.itemPreview} style={{ backgroundColor: item.previewColor }}></div>}
-                        {item.icon && <Icon path={icons[item.icon]} className={styles.itemIcon} />}
-                        <h4 className={styles.itemName}>{item.name}</h4>
+    <div className={styles.comingSoonContainer}>
+        <div className={styles.comingSoonOverlay}>
+            <img src={appIcon} alt="FocusFrog Icon" className={styles.comingSoonIcon} />
+            <h2 className={styles.comingSoonMessage}>EM BREVE!</h2>
+        </div>
+        <div className={`${styles.shopGrid} ${styles.blurContent}`}>
+            {shopCatalog.map((item: ShopItem) => {
+                const isUnlocked = unlockedRewards.includes(item.id);
+                const isEquipped = item.type === 'theme' ? activeThemeId === item.id : activeSoundId === item.id;
+                return (
+                    <div key={item.id} className={styles.shopItem}>
+                        <div className={styles.itemHeader}>
+                            {item.previewColor && <div className={styles.itemPreview} style={{ backgroundColor: item.previewColor }}></div>}
+                            {item.icon && <Icon path={icons[item.icon]} className={styles.itemIcon} />}
+                            <h4 className={styles.itemName}>{item.name}</h4>
+                        </div>
+                        <p className={styles.itemDescription}>{item.description}</p>
+                        <div className={styles.itemFooter}>
+                            {!isUnlocked ? (
+                                <button className="btn btn-primary" disabled>
+                                    <Icon path={icons.lock} /> Comprar ({item.cost})
+                                </button>
+                            ) : (
+                                <button className="btn btn-secondary" disabled>
+                                    {isEquipped ? 'Equipado' : 'Equipar'}
+                                </button>
+                            )}
+                        </div>
                     </div>
-                    <p className={styles.itemDescription}>{item.description}</p>
-                    <div className={styles.itemFooter}>
-                        {!isUnlocked ? (
-                            <button className="btn btn-primary" onClick={() => handlePurchase(item)} disabled={pontosFoco < item.cost}>
-                                <Icon path={icons.lock} /> Comprar ({item.cost})
-                            </button>
-                        ) : (
-                            <button className="btn btn-secondary" onClick={() => handleEquip(item)} disabled={isEquipped}>
-                                {isEquipped ? 'Equipado' : 'Equipar'}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            );
-        })}
+                );
+            })}
+        </div>
     </div>
 );
 
-// --- ABA DE CONFIGURAÇÕES (ATUALIZADA) ---
+// --- ABA DE CONFIGURAÇÕES (MODIFICADA) ---
 const SettingsTab: React.FC<any> = ({ soundEnabled, setSoundEnabled, hapticsEnabled, handleHapticsChange, exportData, handleImportClick, showResetModal, handleVersionClick, fileInputRef, handleFileChange }) => (
     <div>
         <div className={styles.settingsGroup}>
@@ -170,7 +176,7 @@ const SettingsTab: React.FC<any> = ({ soundEnabled, setSoundEnabled, hapticsEnab
              <h3>Gerenciamento de Dados</h3>
             <div className={styles.dataActions}>
                 <button className="btn btn-secondary" onClick={exportData}><Icon path={icons.download} /> Exportar</button>
-                <button className="btn btn-secondary" onClick={handleImportClick}><Icon path={icons.upload} /> Importar</button>
+                <button className="btn btn-secondary" onClick={handleImportClick}><Icon path={icons.arrowUpFromLine} /> Importar</button> {/* Corrigido */}
                 <button className={`btn ${styles.buttonDanger}`} onClick={showResetModal}><Icon path={icons.trash} /> Resetar</button>
             </div>
         </div>

@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       plugins: [
         react(),
         VitePWA({
-          registerType: 'autoUpdate',
+          registerType: 'prompt', // Alterado de 'autoUpdate' para 'prompt'
           // Ao definir o manifesto aqui, garantimos que o plugin Vite PWA
           // gere o manifesto corretamente, substituindo quaisquer arquivos estáticos.
           manifest: {

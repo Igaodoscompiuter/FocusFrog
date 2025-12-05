@@ -9,7 +9,8 @@ import { StatsScreen } from '../screens/StatsScreen';
 import { useUI } from '../context/UIContext';
 import type { Screen } from '../types';
 import { NotificationContainer } from './NotificationContainer';
-import { TasksProvider } from '../context/TasksContext'; 
+import { TasksProvider } from '../context/TasksContext';
+import { UpdatePrompt } from './UpdatePrompt'; // Importa o novo componente
 
 const screenMap: Record<Screen, React.ComponentType> = {
     dashboard: DashboardScreen,
@@ -34,12 +35,9 @@ export const AppLayout: React.FC = () => {
             
             {!isImmersiveMode && <BottomNav />}
 
-            {/* 
-                O NotificationContainer agora é renderizado diretamente.
-                Ele usa um portal para se posicionar corretamente na raiz do DOM,
-                então não precisa mais de um wrapper de estilo aqui.
-            */}
+            {/* Containers de notificação globais */}
             <NotificationContainer />
+            <UpdatePrompt /> {/* Adiciona o componente de atualização aqui */}
         </div>
     );
 };
