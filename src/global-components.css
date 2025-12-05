@@ -1,10 +1,14 @@
 /* src/global-components.css */
 
 /* =================================================================
-   THEME & DESIGN SYSTEM VARIABLES (LIGHT/DARK MODE)
+   THEME & DESIGN SYSTEM VARIABLES (DUAL SYSTEM)
 ================================================================= */
 
 :root {
+    /* -----------------------------------------------------------------
+       SISTEMA ANTIGO (BASE) - Define os valores de cor fixos.
+    ----------------------------------------------------------------- */
+    
     /* Cores Base */
     --color-primary-light: #4dabf7; /* Azul claro para hover/foco */
     --color-primary: #339af0;       /* Azul principal para interatividade */
@@ -39,23 +43,56 @@
     --color-text-secondary: #C1C2C5;   /* Texto secundário, para descrições */
     --color-text-tertiary: #868E96;    /* Texto menos importante, como placeholders */
 
-    /* Sombras (para tema escuro) */
+    /* Sombras, Raios e Tipografia */
     --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.06);
     --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-
-    /* Border Radius */
     --border-radius-small: 4px;
     --border-radius-medium: 8px;
     --border-radius-large: 12px;
     --border-radius-xl: 16px;
     --border-radius-round: 50%;
-
-    /* Tipografia */
     --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-family-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* -----------------------------------------------------------------
+       NOVO SISTEMA (TRADUÇÃO) - Mapeia para os nomes semânticos
+       que o sistema de temas da loja irá usar.
+    ----------------------------------------------------------------- */
+    
+    /* Cores de Ação */
+    --primary-color: var(--color-primary);
+    --primary-color-hover: var(--color-primary-dark);
+    --text-on-primary: #FFFFFF; /* Texto em botões primários é quase sempre branco */
+    
+    --danger-color: var(--color-danger);
+    --danger-color-hover: var(--color-danger-dark);
+    --text-on-accent: #FFFFFF; /* Texto em botões de perigo/aviso */
+
+    /* Cor de Destaque (usada para pontos, etc.) */
+    --accent-color: var(--color-warning);
+    --accent-color-hover: var(--color-warning-dark);
+    --accent-color-glow: rgba(250, 176, 5, 0.1);
+
+    /* Cores de Superfície e Fundo */
+    --background-color: var(--color-background);
+    --surface-color: var(--color-card);
+    --surface-secondary-color: var(--color-background-hover);
+    
+    /* Cores de Borda */
+    --border-color: var(--color-border);
+    --border-subtle-color: var(--color-border-hover);
+    
+    /* Cores de Texto */
+    --text-color: var(--color-text-primary);
+    --text-secondary-color: var(--color-text-secondary);
+    --text-disabled-color: var(--color-text-tertiary);
 }
+
+/* =================================================================
+   ESTILOS GLOBAIS - Usam o sistema antigo por enquanto.
+================================================================= */
 
 body {
     font-family: var(--font-family-sans);
@@ -66,9 +103,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* =================================================================
-   GLOBAL MODAL SYSTEM
-================================================================= */
+/* ... (O resto do ficheiro permanece inalterado, usando o sistema antigo) ... */
 
 .g-modal-overlay {
     position: fixed;
@@ -79,7 +114,7 @@ body {
     justify-content: center;
     z-index: 2000;
     backdrop-filter: blur(5px);
-    padding: 1rem; /* Espaçamento geral */
+    padding: 1rem;
     animation: g-modal-fadeIn 0.3s ease;
 }
 
@@ -89,12 +124,12 @@ body {
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-large);
     animation: g-modal-slideUp 0.3s ease;
-    padding: 1.5rem; /* Aumenta o padding interno */
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     max-height: 90vh;
     width: 100%; 
-    max-width: 550px; /* Largura máxima do modal */
+    max-width: 550px;
 }
 
 .g-modal-header {
@@ -131,12 +166,8 @@ body {
     display: flex;
     gap: 0.75rem;
     flex-shrink: 0;
-    justify-content: flex-end; /* Alinha botões à direita por padrão */
+    justify-content: flex-end;
 }
-
-/* =================================================================
-   GLOBAL FORM CONTROLS
-================================================================= */
 
 .g-input-group {
     display: flex;
@@ -166,8 +197,6 @@ body {
     border-color: var(--color-primary);
     background-color: var(--color-card);
 }
-
-/* ... (restante dos estilos globais) */
 
 @keyframes g-modal-fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes g-modal-slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

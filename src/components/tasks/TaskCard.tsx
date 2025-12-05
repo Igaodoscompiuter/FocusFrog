@@ -225,7 +225,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
                 onDragStart={isDraggable ? onDragStart : undefined}
                 onDragEnd={isDraggable ? (e) => { onDragEnd && onDragEnd(e); setIsDraggable(false); } : undefined}
                 className={cardClassName}
-                style={{ x, scale, touchAction: 'none' }}
+                style={{ x, scale, touchAction: 'pan-y' }}
             >
                 <div className={styles.taskCardContent}>
                     <div className={styles.taskCardHeader}>
