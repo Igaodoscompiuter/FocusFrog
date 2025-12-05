@@ -233,3 +233,10 @@
     background-color: var(--danger-color-light-bg);
     opacity: 1;
 }
+
+/* Adicionando Media Query para visualização mobile */
+@media (max-width: 768px) {
+  .routinesList {
+    grid-template-columns: 1fr;
+  }
+}

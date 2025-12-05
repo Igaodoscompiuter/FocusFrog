@@ -40,14 +40,15 @@ const TaskSelectionList = ({
                         {isRemovable ? (
                             <div className={styles.templateItem}>
                                 <span className={styles.templateTitle}>{template.title}</span>
-                                <button 
-                                    className={styles.removeButton}
-                                    onClick={() => onToggle(template.id)}
-                                    disabled={isRemovalDisabled}
-                                    title={isRemovalDisabled ? 'Tarefas padrão não podem ser removidas de rotinas padrão' : 'Remover Tarefa'}
-                                >
-                                    <Icon path={icons.trash} />
-                                </button>
+                                { !isRemovalDisabled && (
+                                    <button 
+                                        className={styles.removeButton}
+                                        onClick={() => onToggle(template.id)}
+                                        title={'Remover Tarefa'}
+                                    >
+                                        <Icon path={icons.trash} />
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <label className={`${styles.templateItem} ${styles.checkboxLabel} ${isSelected ? styles.selected : ''}`}>
@@ -167,37 +168,6 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: {
         taskTemplates.filter(t => !routine.taskTemplateIds.includes(t.id)),
     [taskTemplates, routine.taskTemplateIds]);
 
-    const MainContent = () => {
-        if (isEditing) {
-            return (
-                <div className={styles.taskListContainer}>
-                    <TaskSelectionList
-                        availableTemplates={tasksInRoutine}
-                        selectedIds={routine.taskTemplateIds}
-                        onToggle={handleToggleTask}
-                        searchTerm={searchTerm}
-                        isRemovable={true}
-                        routineIsDefault={routine.isDefault}
-                    />
-                    <button className="btn btn-primary" onClick={() => setIsAddTaskModalOpen(true)} style={{width: '100%', marginTop: 'var(--sp-md)'}}>
-                        <Icon path={icons.plus} /> Adicionar Tarefa
-                    </button>
-                </div>
-            );
-        } else {
-            return (
-                 <div className={styles.taskListContainer}>
-                    <TaskSelectionList
-                        availableTemplates={taskTemplates}
-                        selectedIds={routine.taskTemplateIds}
-                        onToggle={handleToggleTask}
-                        searchTerm={searchTerm}
-                    />
-                </div>
-            );
-        }
-    };
-
     return (
         <div className="g-modal-overlay">
             <div className={`g-modal ${styles.routineEditorModal}`} ref={modalRef}>
@@ -242,7 +212,31 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: {
                     <div className={styles.tasksSection}>
                         <h4 className={styles.sectionHeader}>{isEditing ? 'Tarefas na Rotina' : 'Selecione as Tarefas'}</h4>
                         <input type="text" placeholder="Buscar tarefas..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className={`${styles.taskSearchInput} g-input`}/>
-                        <MainContent />
+                        
+                        {isEditing ? (
+                            <div className={styles.taskListContainer}>
+                                <TaskSelectionList
+                                    availableTemplates={tasksInRoutine}
+                                    selectedIds={routine.taskTemplateIds}
+                                    onToggle={handleToggleTask}
+                                    searchTerm={searchTerm}
+                                    isRemovable={true}
+                                    routineIsDefault={routine.isDefault}
+                                />
+                                <button className="btn btn-primary" onClick={() => setIsAddTaskModalOpen(true)} style={{width: '100%', marginTop: 'var(--sp-md)'}}>
+                                    <Icon path={icons.plus} /> Adicionar Tarefa
+                                </button>
+                            </div>
+                        ) : (
+                            <div className={styles.taskListContainer}>
+                                <TaskSelectionList
+                                    availableTemplates={taskTemplates}
+                                    selectedIds={routine.taskTemplateIds}
+                                    onToggle={handleToggleTask}
+                                    searchTerm={searchTerm}
+                                />
+                            </div>
+                        )}
                     </div>
                 </main>
                 <footer className="g-modal-footer">

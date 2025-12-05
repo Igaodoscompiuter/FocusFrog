@@ -1,6 +1,7 @@
 
 import './global-components.css';
 import React, { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { useUser } from './context/UserContext';
 import { useUI } from './context/UIContext';
 import { PWAInstallProvider } from './context/PWAInstallProvider';
@@ -18,18 +19,29 @@ function App() {
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
-    const fadeOutTimer = setTimeout(() => {
-      setIsFadingOut(true);
-    }, 2000);
+    const initializeApp = async () => {
+      if (Capacitor.isNativePlatform()) {
+        // Importa e esconde a splash screen nativa dinamicamente
+        const { SplashScreen: CapacitorSplashScreen } = await import('@capacitor/splash-screen');
+        await CapacitorSplashScreen.hide();
+      }
 
-    const removeSplashTimer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2800);
+      // Lógica da animação da splash screen web
+      const fadeOutTimer = setTimeout(() => {
+        setIsFadingOut(true);
+      }, 2000);
 
-    return () => {
-      clearTimeout(fadeOutTimer);
-      clearTimeout(removeSplashTimer);
+      const removeSplashTimer = setTimeout(() => {
+        setShowSplash(false);
+      }, 2800);
+
+      return () => {
+        clearTimeout(fadeOutTimer);
+        clearTimeout(removeSplashTimer);
+      };
     };
+
+    initializeApp();
   }, []);
 
   if (showSplash) {

@@ -1,14 +1,19 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { PluginListenerHandle } from '@capacitor/core/dist/esm/web/plugin';
+import BackgroundTimer from '../plugins/background-timer';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { sounds } from '../sounds';
+import { showNotification, closeNotification } from '../utils/notifications';
 
 type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
-type PomodoroStatus = 'idle' | 'running' | 'paused';
+type PomodoroStatus = 'idle' | 'running' | 'paused' | 'finished';
 
 const DEFAULT_FOCUS_DURATION = 25 * 60;
+const NOTIFICATION_TAG = 'pomodoro-status';
 
 interface PomodoroContextType {
     pomodorosCompleted: number;
@@ -48,7 +53,7 @@ export const usePomodoro = () => {
 };
 
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { addNotification, soundEnabled, hapticsEnabled } = useUI(); // <--- IMPORTADO hapticsEnabled
+    const { addNotification, soundEnabled, hapticsEnabled } = useUI();
     const { activeSoundId, setPontosFoco } = useTheme();
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
@@ -72,6 +77,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     useEffect(() => { activeSubtaskIdRef.current = activeSubtaskId; }, [activeSubtaskId]);
 
     const isActive = status === 'running';
+    const isNative = Capacitor.isNativePlatform();
 
     const getAudioContext = useCallback(() => {
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -86,7 +92,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, []);
 
     const playSound = useCallback((type: 'start' | 'end') => {
-        if (!soundEnabled) return; // <--- ADICIONADA VERIFICAÇÃO DE SOM
+        if (!soundEnabled) return;
         try {
             const context = getAudioContext();
             if (!context) return;
@@ -130,7 +136,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const playBackgroundSound = useCallback((fade = false) => {
         stopBackgroundSound(false);
-        if (soundEnabled && activeSoundId !== 'none' && sounds[activeSoundId]) { // <--- ADICIONADA VERIFICAÇÃO DE SOM
+        if (soundEnabled && activeSoundId !== 'none' && sounds[activeSoundId]) {
             try {
                 const context = getAudioContext();
                 if (!context) return;
@@ -151,192 +157,161 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     }, [activeSoundId, stopBackgroundSound, getAudioContext, soundEnabled]);
 
-    const postCommandToSW = useCallback((type: string, payload?: any) => {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type, payload });
-        } else {
-            navigator.serviceWorker.ready.then(registration => {
-                registration.active?.postMessage({ type, payload });
-            });
-        }
-    }, []);
-
-    const handleCycleCompletionUI = useCallback((prevMode: TimerMode) => {
+    const handleCycleCompletionUI = useCallback(async (prevMode: TimerMode) => {
+        await closeNotification(NOTIFICATION_TAG);
         if (prevMode === 'focus') {
             setPomodorosCompleted(p => p + 1);
             setPontosFoco(p => p + 25);
-            addNotification('Foco concluído Hora de fazer uma pausa', '🏆', 'victory');
-            
+            const msg = 'Foco concluído! Hora de uma pausa.';
+            addNotification(msg, '🏆', 'victory');
+            showNotification(msg, { body: 'Bom trabalho! Clique para iniciar sua pausa.', tag: 'pomodoro-finished' });
             if (activeTaskId && activeSubtaskIdRef.current) {
                 setLastCompletedFocus({ taskId: activeTaskId, subtaskId: activeSubtaskIdRef.current });
             }
-
             setDistractionNotes('');
-            setActiveTaskId(null);
-            setActiveTaskTitle(null);
-            setActiveSubtaskId(null);
-            setActiveSubtaskTitle(null);
+            setActiveTaskId(null); setActiveTaskTitle(null); setActiveSubtaskId(null); setActiveSubtaskTitle(null);
         } else {
-            addNotification('Pausa concluída Hora de focar', '💪', 'success');
+            const msg = 'Pausa concluída! Hora de focar.';
+            addNotification(msg, '💪', 'success');
+            showNotification(msg, { body: 'Clique para iniciar seu próximo ciclo de foco.', tag: 'pomodoro-finished' });
         }
         playSound('end');
-        if (hapticsEnabled && navigator.vibrate) { // <--- ADICIONADA VERIFICAÇÃO DE VIBRAÇÃO
-            navigator.vibrate([200, 100, 200]); // Um padrão para fim de ciclo
-        }
+        if (hapticsEnabled && navigator.vibrate) navigator.vibrate([200, 100, 200]);
         stopBackgroundSound(true);
-    }, [addNotification, playSound, setPomodorosCompleted, setPontosFoco, stopBackgroundSound, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle, hapticsEnabled]); // <--- ADICIONADA DEPENDÊNCIA
+    }, [addNotification, playSound, hapticsEnabled, stopBackgroundSound, setPomodorosCompleted, setPontosFoco, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
 
     const uiCallbackRef = useRef(handleCycleCompletionUI);
     useEffect(() => { uiCallbackRef.current = handleCycleCompletionUI; }, [handleCycleCompletionUI]);
 
     useEffect(() => {
-        const handleSWMessage = (event: MessageEvent) => {
-            const { type, timeRemaining: swTime, timerMode: swMode, status: swStatus, pomodorosInCycle: swPoms } = event.data;
+        if (isNative) {
+             let tickListener: PluginListenerHandle | null = null;
+            let finishListener: PluginListenerHandle | null = null;
 
-            const isValidNumber = (val: any): val is number => typeof val === 'number' && isFinite(val);
-
-            if (type === 'TIMER_STATE') {
-                if (timerMode !== swMode && isValidNumber(swTime)) {
-                    setSessionDuration(swTime);
-                }
-                if (isValidNumber(swTime)) {
-                    if (swStatus !== 'running' || Math.abs(swTime - timeRemaining) > 1) {
+            const setupNativeListeners = async () => {
+                tickListener = await BackgroundTimer.addListener('onTick', (data) => {
+                    setTimeRemaining(data.remainingTime);
+                });
+                finishListener = await BackgroundTimer.addListener('onFinish', () => {
+                    uiCallbackRef.current(timerMode);
+                    setStatus('finished');
+                });
+            };
+            setupNativeListeners();
+            return () => {
+                tickListener?.remove();
+                finishListener?.remove();
+            };
+        } else {
+            const handleSWMessage = (event: MessageEvent) => {
+                const { type, timeRemaining: swTime, timerMode: swMode, status: swStatus } = event.data;
+                if (type === 'TIMER_STATE') {
+                     if (swStatus !== 'running' || Math.abs(swTime - timeRemaining) > 2) {
                         setTimeRemaining(swTime);
                     }
+                    if (timerMode !== swMode) setSessionDuration(swTime);
+                    setTimerMode(swMode);
+                    setStatus(swStatus);
+                } else if (type === 'CYCLE_END') {
+                    uiCallbackRef.current(timerMode);
                 }
-                if (swMode) setTimerMode(swMode);
-                if (swStatus) setStatus(swStatus);
-                if (isValidNumber(swPoms)) setPomodorosInCycle(swPoms);
-
-            } else if (type === 'CYCLE_END') {
-                uiCallbackRef.current(timerMode);
-            }
-        };
-
-        if ('serviceWorker' in navigator) {
+            };
             navigator.serviceWorker.addEventListener('message', handleSWMessage);
             postCommandToSW('SYNC_STATE');
-            postCommandToSW('SET_CYCLE_COUNT', pomodorosInCycle);
-        }
 
-        return () => {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.removeEventListener('message', handleSWMessage);
+            if (status === 'running') {
+                localTimerRef.current = window.setInterval(() => setTimeRemaining(prev => Math.max(0, prev - 1)), 1000);
+            } else {
+                if (localTimerRef.current) clearInterval(localTimerRef.current);
             }
-        };
-    }, [postCommandToSW, timerMode, pomodorosInCycle, timeRemaining]); 
-
-    useEffect(() => {
-        if (status === 'running') {
-            localTimerRef.current = window.setInterval(() => setTimeRemaining(prev => Math.max(0, prev - 1)), 1000);
-        } else {
-            if (localTimerRef.current) clearInterval(localTimerRef.current);
+            return () => {
+                navigator.serviceWorker.removeEventListener('message', handleSWMessage);
+                if (localTimerRef.current) clearInterval(localTimerRef.current);
+            };
         }
-        return () => { if (localTimerRef.current) clearInterval(localTimerRef.current); };
-    }, [status]);
+    }, [isNative, status, timerMode, timeRemaining]);
+
+    const postCommandToSW = useCallback((type: string, payload?: any) => {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type, payload });
+        }
+    }, []);
+
+    const startCycleLogic = async (duration: number, title: string, body: string) => {
+        setTimeRemaining(duration);
+        setSessionDuration(duration);
+        if (isNative) {
+            BackgroundTimer.start({ duration });
+        } else {
+            postCommandToSW('SET_FOCUS_DURATION', duration / 60);
+            postCommandToSW('START_TIMER');
+            await showNotification(title, { body, tag: NOTIFICATION_TAG, renotify: false, silent: true });
+        }
+        setStatus('running');
+        playSound('start');
+        playBackgroundSound(true);
+    };
+
+    const startCycle = useCallback(() => {
+        if (activeTaskId) {
+            setActiveTaskId(null); setActiveTaskTitle(null); setActiveSubtaskId(null); setActiveSubtaskTitle(null);
+        }
+        startCycleLogic(DEFAULT_FOCUS_DURATION, 'Foco Geral Ativado', `Próximos ${DEFAULT_FOCUS_DURATION / 60} minutos de foco intenso.`);
+    }, [activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle, isNative, playSound, playBackgroundSound, postCommandToSW]);
+
+    const startFocusOnTask = useCallback(async (taskId: string, taskTitle: string, duration?: number, subtaskId: string | null = null, subtaskTitle: string | null = null) => {
+        const newDurationInSeconds = (duration || DEFAULT_FOCUS_DURATION / 60) * 60;
+        setActiveTaskId(taskId); setActiveTaskTitle(taskTitle); setActiveSubtaskId(subtaskId); setActiveSubtaskTitle(subtaskTitle);
+        setTimerMode('focus');
+        addNotification(`Focando em ${taskTitle}`, '🎯', 'success');
+        await startCycleLogic(newDurationInSeconds, `Focando em: ${taskTitle}`, `Você tem ${newDurationInSeconds / 60} minutos dedicados a esta tarefa.`);
+    }, [addNotification, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle, isNative, playSound, playBackgroundSound, postCommandToSW]);
+
+    const pauseCycle = useCallback(async () => {
+        if (isNative) {
+            BackgroundTimer.stop();
+        } else {
+            postCommandToSW('PAUSE_TIMER');
+            await showNotification('Pomodoro Pausado', { body: 'Sua sessão de foco está em pausa. Clique para retomar.', tag: NOTIFICATION_TAG, renotify: true });
+        }
+        setStatus('paused');
+        stopBackgroundSound(true);
+    }, [isNative, stopBackgroundSound, postCommandToSW]);
+
+    const resumeCycle = useCallback(() => {
+        startCycleLogic(timeRemaining, `Retomando Foco: ${activeTaskTitle || 'Foco Geral'}`, `Restam ${Math.ceil(timeRemaining / 60)} minutos.`);
+    }, [timeRemaining, activeTaskTitle, isNative, playSound, playBackgroundSound, postCommandToSW]);
+
+    const stopCycle = useCallback(async () => {
+        if (isNative) {
+            BackgroundTimer.stop();
+        } else {
+            postCommandToSW('STOP_TIMER');
+            await closeNotification(NOTIFICATION_TAG);
+        }
+        setStatus('idle');
+        setTimeRemaining(DEFAULT_FOCUS_DURATION);
+        setSessionDuration(DEFAULT_FOCUS_DURATION);
+        stopBackgroundSound();
+        setActiveTaskId(null); setActiveTaskTitle(null); setActiveSubtaskId(null); setActiveSubtaskTitle(null);
+    }, [isNative, stopBackgroundSound, postCommandToSW, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
+
+    const skipBreak = useCallback(() => !isNative && postCommandToSW('SKIP_BREAK'), [isNative, postCommandToSW]);
+    const endCycleAndStartNext = useCallback(() => !isNative && postCommandToSW('SKIP_CYCLE'), [isNative, postCommandToSW]);
+    const setFocusDuration = useCallback((minutes: number) => {
+        const newDuration = minutes * 60;
+        if (!isNative) postCommandToSW('SET_FOCUS_DURATION', minutes);
+        setStatus('idle');
+        setTimerMode('focus');
+        setTimeRemaining(newDuration);
+        setSessionDuration(newDuration);
+    }, [isNative, postCommandToSW]);
 
     const clearLastCompletedFocus = useCallback(() => setLastCompletedFocus(null), []);
-
     const clearActiveSubtask = useCallback(() => {
         setActiveSubtaskId(null);
         setActiveSubtaskTitle(null);
     }, [setActiveSubtaskId, setActiveSubtaskTitle]);
-
-    const startCycle = useCallback(() => {
-        if (activeTaskId) {
-            setActiveTaskId(null);
-            setActiveTaskTitle(null);
-            setActiveSubtaskId(null);
-            setActiveSubtaskTitle(null);
-        }
-        const newDurationInSeconds = DEFAULT_FOCUS_DURATION;
-        setTimeRemaining(newDurationInSeconds);
-        setSessionDuration(newDurationInSeconds);
-
-        const ctx = getAudioContext();
-        if (ctx && ctx.state === 'suspended') ctx.resume();
-        playSound('start');
-        playBackgroundSound(true);
-        setStatus('running');
-        postCommandToSW('START_TIMER');
-    }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext, activeTaskId, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
-
-    const pauseCycle = useCallback(() => {
-        stopBackgroundSound(true);
-        setStatus('paused');
-        postCommandToSW('PAUSE_TIMER');
-    }, [stopBackgroundSound, postCommandToSW]);
-
-    const resumeCycle = useCallback(() => {
-        const ctx = getAudioContext();
-        if (ctx && ctx.state === 'suspended') ctx.resume();
-        playSound('start');
-        playBackgroundSound(true);
-        setStatus('running');
-        postCommandToSW('START_TIMER');
-    }, [playSound, playBackgroundSound, postCommandToSW, getAudioContext]);
-
-    const stopCycle = useCallback(() => {
-        stopBackgroundSound();
-        setStatus('idle');
-        setTimeRemaining(DEFAULT_FOCUS_DURATION);
-        setSessionDuration(DEFAULT_FOCUS_DURATION);
-        postCommandToSW('STOP_TIMER');
-        postCommandToSW('SET_FOCUS_DURATION', DEFAULT_FOCUS_DURATION / 60);
-        setActiveTaskId(null);
-        setActiveTaskTitle(null);
-        setActiveSubtaskId(null);
-        setActiveSubtaskTitle(null);
-    }, [stopBackgroundSound, postCommandToSW, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
-
-    const startFocusOnTask = useCallback((taskId: string, taskTitle: string, duration?: number, subtaskId: string | null = null, subtaskTitle: string | null = null) => {
-        stopBackgroundSound(false);
-        postCommandToSW('STOP_TIMER');
-
-        const newDurationInMinutes = duration || (DEFAULT_FOCUS_DURATION / 60);
-        const newDurationInSeconds = newDurationInMinutes * 60;
-
-        postCommandToSW('SET_FOCUS_DURATION', newDurationInMinutes);
-        setTimeRemaining(newDurationInSeconds);
-        setSessionDuration(newDurationInSeconds);
-
-        setActiveTaskId(taskId);
-        setActiveTaskTitle(taskTitle);
-        setActiveSubtaskId(subtaskId);
-        setActiveSubtaskTitle(subtaskTitle);
-        
-        const notificationTitle = subtaskTitle ? `${taskTitle}: ${subtaskTitle}` : taskTitle;
-        addNotification(`Focando em ${notificationTitle}`, '🎯', 'success');
-
-        setTimerMode('focus');
-        setStatus('running');
-
-        const ctx = getAudioContext();
-        if (ctx && ctx.state === 'suspended') ctx.resume();
-
-        playSound('start');
-        playBackgroundSound(true);
-        postCommandToSW('START_TIMER');
-    }, [addNotification, getAudioContext, playBackgroundSound, playSound, postCommandToSW, stopBackgroundSound, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
-
-    const skipBreak = useCallback(() => {
-        stopBackgroundSound();
-        postCommandToSW('SKIP_BREAK');
-    }, [stopBackgroundSound, postCommandToSW]);
-
-    const endCycleAndStartNext = useCallback(() => {
-        stopBackgroundSound();
-        postCommandToSW('SKIP_CYCLE');
-    }, [stopBackgroundSound, postCommandToSW]);
-
-    const setFocusDuration = useCallback((minutes: number) => {
-        const newDurationInSeconds = minutes * 60;
-        postCommandToSW('SET_FOCUS_DURATION', minutes);
-        setStatus('idle');
-        setTimerMode('focus');
-        setTimeRemaining(newDurationInSeconds);
-        setSessionDuration(newDurationInSeconds);
-    }, [postCommandToSW]);
 
     const value = {
         pomodorosCompleted,
