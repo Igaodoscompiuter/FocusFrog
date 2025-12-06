@@ -3,19 +3,20 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// A configuração do servidor (host, port, hmr) foi removida daqui
-// porque agora é gerenciada pelo .idx/dev.nix para uma integração perfeita
-// com o ambiente do IDX.
-
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       plugins: [
         react(),
         VitePWA({
-          registerType: 'prompt', // Alterado de 'autoUpdate' para 'prompt'
-          // Ao definir o manifesto aqui, garantimos que o plugin Vite PWA
-          // gere o manifesto corretamente, substituindo quaisquer arquivos estáticos.
+          // Muda para a estratégia 'injectManifest' para nos dar controle total sobre o service worker.
+          // Isso nos permite lidar com lógica de notificação complexa diretamente no service worker.
+          strategies: 'injectManifest',
+          // Especifica o nosso arquivo de service worker personalizado.
+          srcDir: 'src',
+          filename: 'sw.js',
+          registerType: 'prompt',
+          // O manifesto permanece o mesmo, garantindo a identidade visual do PWA.
           manifest: {
             name: 'Focus Frog',
             short_name: 'FocusFrog',
