@@ -181,7 +181,7 @@ const SettingsTab: React.FC<any> = ({ soundEnabled, setSoundEnabled, hapticsEnab
             </div>
         </div>
         <div className={styles.appVersion} onClick={handleVersionClick}>
-            FocusFrog v1.1.0 • Feito com 💚
+            FocusFrog v2.0.0 • Feito com 💚🐸
         </div>
         <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".json" onChange={handleFileChange} />
     </div>
