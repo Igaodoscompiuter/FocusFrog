@@ -1,0 +1,82 @@
+/*
+ * CSS Módulo para o Modal de Conclusão Rápida
+ * Estilos copiados e adaptados de MorningReviewModal.module.css para consistência.
+ */
+
+.modalSmall {
+    max-width: 480px;
+}
+
+.content {
+    text-align: center;
+    padding: 1rem;
+}
+
+.iconContainer {
+    margin-bottom: 0.5rem;
+    color: var(--color-success);
+}
+
+.promptText {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    max-width: 90%;
+    margin: 0 auto 1.5rem auto;
+}
+
+/* Estilo para a caixa de tarefa, baseado no .taskButton do MorningReviewModal */
+.taskHighlightBox {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 12px;
+    background-color: var(--surface-secondary-color);
+    color: var(--text-color);
+    text-align: center;
+    white-space: normal;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.5rem;
+    margin: 0 auto 1.5rem auto;
+    /* Borda de destaque, usando a cor de acento principal do app */
+    border: 2px solid var(--accent-color);
+}
+
+/* Estilos dos botões de controle, copiados diretamente de MorningReviewModal.module.css */
+.controlButton {
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex; /* Mudado de flex para inline-flex para caber no rodapé */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.secondary {
+    background-color: var(--surface-secondary-color);
+    border-color: var(--surface-secondary-color);
+    color: var(--text-secondary-color);
+}
+
+.secondary:hover {
+    background-color: var(--surface-secondary-hover-color);
+    color: var(--text-color);
+}
+
+.primary {
+    background-color: var(--accent-color);
+    color: var(--text-on-accent);
+    border-color: var(--accent-color);
+}
+
+.primary:hover {
+    filter: brightness(1.15);
+}

@@ -76,7 +76,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragStart, onDragEnd, isDragging, quadrant, onTriage }) => {
-    const { handleCompleteTask, handleSetFrog, frogTaskId, handleDeleteTask, handleToggleSubtask, handleMarkAsQuickWin } = useTasks();
+    const { handleCompleteTask, handleSetFrog, frogTaskId, handleDeleteTask, handleToggleSubtask } = useTasks();
     const { startFocusOnTask, activeTaskId, activeSubtaskId, status } = usePomodoro(); 
     const { addNotification } = useUI();
 
@@ -113,11 +113,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
         if (isFrog) {
             addNotification("Sapo do Dia Concluído! VITÓRIA!", "🐸", "success");
         }
-        if (isInInbox && handleMarkAsQuickWin) {
-            handleMarkAsQuickWin(task.id);
-        } else {
-            handleCompleteTask(task.id);
-        }
+        handleCompleteTask(task.id);
     };
 
     const bind = useDrag(({
@@ -190,7 +186,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
     const handleFocusClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (isPomodoroActive) return;
-        startFocusOnTask(task.id, task.title, task.customDuration);
+        // **MUDANÇA APLICADA AQUI**
+        startFocusOnTask(task.id, task.title, task.pomodoroEstimate, task.customDuration);
     };
 
     const taskTag = task.tagId ? tags.find(t => t.id === task.tagId) : null;
@@ -283,7 +280,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
                                             key={subtask.id} 
                                             subtask={subtask} 
                                             onToggle={() => handleToggleSubtask(task.id, subtask.id)} 
-                                            onStartFocus={() => startFocusOnTask(task.id, task.title, task.customDuration, subtask.id, formatSubtaskText(subtask.text))}
+                                            // **MUDANÇA APLICADA AQUI**
+                                            onStartFocus={() => startFocusOnTask(task.id, task.title, task.pomodoroEstimate, task.customDuration, subtask.id, formatSubtaskText(subtask.text))}
                                             isPomodoroActive={isPomodoroActive}
                                             isThisSubtaskFocused={isCurrentlyFocusedOnThisTask && activeSubtaskId === subtask.id}
                                         />

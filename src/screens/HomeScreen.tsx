@@ -5,6 +5,7 @@ import { usePomodoro } from '../context/PomodoroContext';
 import { useUser } from '../context/UserContext';
 import { TaskModal } from '../components/modals/TaskModal';
 import { MorningReviewModal } from '../components/modals/MorningReviewModal';
+import { QuickCompleteModal } from '../components/modals/QuickCompleteModal';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
 import type { Task } from '../types';
@@ -21,7 +22,7 @@ const getGreeting = () => {
 
 export const HomeScreen: React.FC = () => {
     const { tasks, frogTaskId, handleSetFrog, handleCompleteTask, handleAddTask, handleUnsetFrog, handleToggleLeavingHomeItem, leavingHomeItems, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
-    const { handleNavigate, addNotification } = useUI();
+    const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
     const { startFocusOnTask, activeTaskId, status } = usePomodoro(); 
     const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
@@ -48,11 +49,17 @@ export const HomeScreen: React.FC = () => {
     
     const handleFrogTaskClick = (task: Task) => {
         if (task.status === 'done') {
-            handleCompleteTask(task.id);
+            handleCompleteTask(task.id); 
             return;
         }
-        startFocusOnTask(task.id, task.title, task.customDuration);
-        handleNavigate('focus');
+
+        if (task.pomodoroEstimate && task.pomodoroEstimate > 0) {
+            // **CORREÇÃO APLICADA AQUI**
+            startFocusOnTask(task.id, task.title, task.pomodoroEstimate, task.customDuration);
+            handleNavigate('focus');
+        } else {
+            setQuickTaskForCompletion(task);
+        }
     };
 
     const handleConfirmFrog = () => {
@@ -64,7 +71,6 @@ export const HomeScreen: React.FC = () => {
         }
     };
 
-    // Função para navegar para a aba de tarefas a partir do modal
     const handleNavigateToTasks = () => {
         setIsMorningReviewOpen(false);
         handleNavigate('tasks');
@@ -73,6 +79,7 @@ export const HomeScreen: React.FC = () => {
     return (
         <div className={styles.container}> 
             {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} />}
+            <QuickCompleteModal />
             
             <MorningReviewModal 
                 isOpen={isMorningReviewOpen} 
@@ -81,7 +88,7 @@ export const HomeScreen: React.FC = () => {
                 selectedTask={selectedFrogId}   
                 onSelectTask={setSelectedFrogId}  
                 onConfirm={handleConfirmFrog}   
-                onNavigateToTasks={handleNavigateToTasks} // <-- PROP CONECTADA
+                onNavigateToTasks={handleNavigateToTasks}
             />
             
             <div className={styles.dashboardHeader} style={{ background: greeting.gradient }}>

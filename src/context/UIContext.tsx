@@ -1,5 +1,5 @@
 
-import React, { useState, createContext, useContext, ReactNode, useCallback, useEffect, useReducer } from 'react';
+import React, { useState, createContext, useContext, ReactNode, useCallback, useReducer } from 'react';
 import type { Screen, Task, Notification as NotificationType } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { notificationConfig } from '../config/notificationConfig';
@@ -68,6 +68,11 @@ export interface UIContextType {
     setTaskInFocus: React.Dispatch<React.SetStateAction<Task | null>>;
     subtaskInFocusId: string | null;
     setSubtaskInFocusId: React.Dispatch<React.SetStateAction<string | null>>;
+    
+    // MODIFICAÇÃO: Estado para controlar o modal de conclusão rápida
+    quickTaskForCompletion: Task | null;
+    setQuickTaskForCompletion: React.Dispatch<React.SetStateAction<Task | null>>;
+
     notifications: Notification[];
     queueCount: number;
     showClearAllButton: boolean;
@@ -82,7 +87,6 @@ export interface UIContextType {
     isImmersiveMode: boolean;
     setIsImmersiveMode: React.Dispatch<React.SetStateAction<boolean>>;
     
-    // Novo estado para o popup de instalação PWA
     isPWAInstallPopupVisible: boolean;
     showPWAInstallPopup: () => void;
     hidePWAInstallPopup: () => void;
@@ -105,6 +109,9 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>('focusfrog_sound_enabled', true);
     const [isImmersiveMode, setIsImmersiveMode] = useState(false);
     const [isPWAInstallPopupVisible, setIsPWAInstallPopupVisible] = useState(false);
+    
+    // MODIFICAÇÃO: Estado para a tarefa do modal de conclusão rápida
+    const [quickTaskForCompletion, setQuickTaskForCompletion] = useState<Task | null>(null);
 
     const notificationReducer = createNotificationReducer(notificationConfig);
     const [notificationsState, dispatch] = useReducer(notificationReducer, { visible: [], queue: [], showClearAll: false });
@@ -150,6 +157,7 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         handleNavigate,
         taskInFocus, setTaskInFocus,
         subtaskInFocusId, setSubtaskInFocusId,
+        quickTaskForCompletion, setQuickTaskForCompletion, // MODIFICAÇÃO: Fornecendo o novo estado
         notifications: notificationsState.visible,
         queueCount: notificationsState.queue.length,
         showClearAllButton: notificationsState.showClearAll,

@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.web.focusfroggit_81838821_bbab8.twa",
+        "sha256_cert_fingerprints": ["F2:EE:F8:68:ED:CC:8E:AF:CA:90:E1:42:AE:36:6B:9C:6B:ED:0D:E0:B5:89:7B:D7:73:E0:14:33:76:98:2E:B6"]
+      }
+    }]

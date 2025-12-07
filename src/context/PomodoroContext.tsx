@@ -12,27 +12,29 @@ const NOTIFICATION_TAG = 'pomodoro-status';
 type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
 type PomodoroStatus = 'idle' | 'running' | 'paused' | 'finished';
 
-const DEFAULT_FOCUS_DURATION = 25 * 60;
-const SHORT_BREAK_DURATION = 5 * 60;
-const LONG_BREAK_DURATION = 15 * 60;
+const DEFAULT_FOCUS_DURATION = 10; // Para teste
+const SHORT_BREAK_DURATION = 2; // Para teste
+const LONG_BREAK_DURATION = 5; // Para teste
 
 // --- Funções Auxiliares ---
 const playSound = (sound: HTMLAudioElement, volume: number) => {
-    sound.volume = volume;
-    sound.play().catch(err => console.error('Erro ao tocar som:', err));
+    if (sound) {
+        sound.volume = volume;
+        sound.play().catch(err => console.error('Erro ao tocar som:', err));
+    }
 };
 
 const postWebNotification = async (title: string, options: NotificationOptions) => {
-    if ('serviceWorker' in navigator) {
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            registration.active?.postMessage({ type: 'POST_NOTIFICATION', payload: { title, options } });
-        } catch (error) {
-            console.error('Erro ao enviar notificação via Service Worker:', error);
-        }
-    } else {
-        console.warn('Service Worker não é suportado neste navegador.');
-    }
+    // if ('serviceWorker' in navigator) {
+    //     try {
+    //         const registration = await navigator.serviceWorker.ready;
+    //         registration.active?.postMessage({ type: 'POST_NOTIFICATION', payload: { title, options } });
+    //     } catch (error) {
+    //         console.error('Erro ao enviar notificação via Service Worker:', error);
+    //     }
+    // } else {
+    //     console.warn('Service Worker não é suportado neste navegador.');
+    // }
 };
 
 // --- Interfaces ---
@@ -81,7 +83,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
     const [pomodorosInCycle, setPomodorosInCycle] = useLocalStorage('focusfrog_pomodorosInCycle', 0);
-    const [sessionDuration, setSessionDuration] = useLocalStorage<number>('focusfrog_sessionDuration', DEFAULT_FOCUS_DURATION);
+    
+    const [sessionDuration, setSessionDuration] = useState(DEFAULT_FOCUS_DURATION);
     
     const [timerMode, setTimerMode] = useState<TimerMode>('focus');
     const [status, setStatus] = useState<PomodoroStatus>('idle');
@@ -104,11 +107,11 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setTimeRemaining(duration);
         setStatus('running');
 
-        await postWebNotification('🎯 Foco Ativado', {
-            body: 'Mantenha a concentração!',
-            tag: NOTIFICATION_TAG,
-            renotify: true,
-        });
+        // await postWebNotification('🎯 Foco Ativado', {
+        //     body: 'Mantenha a concentração!',
+        //     tag: NOTIFICATION_TAG,
+        //     renotify: true,
+        // });
     }, []);
 
     const startNextCycle = useCallback((startImmediately = false) => {
@@ -147,7 +150,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                     if (soundEnabled) playSound(sounds.levelEnd, 0.5);
                     
                     if (timerMode === 'focus') {
-                        addNotification('Foco Concluído! 🎉', 'victory');
+                        // addNotification('Foco Concluído! 🎉', 'victory');
                         setPomodorosCompleted(p => p + 1);
                         setPontosFoco(p => p + 25);
                         if (activeTaskId) {
@@ -155,7 +158,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                             setActiveTaskId(null); setActiveTaskTitle(null); setActiveSubtaskId(null); setActiveSubtaskTitle(null);
                         }
                     } else {
-                        addNotification('Pausa Finalizada! 💪', 'success');
+                        // addNotification('Pausa Finalizada! 💪', 'success');
                     }
 
                     startNextCycle(false);
@@ -176,7 +179,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
         setTimerMode('focus');
         startTimer(sessionDuration);
-        addNotification('Foco Geral Ativado', '🎯', 'info');
+        // addNotification('Foco Geral Ativado', '🎯', 'info');
     }, [activeTaskId, sessionDuration, startTimer, addNotification]);
 
     const startFocusOnTask = useCallback((taskId: string, taskTitle: string, duration?: number, subtaskId: string | null = null, subtaskTitle: string | null = null) => {
@@ -184,16 +187,16 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setActiveTaskId(taskId); setActiveTaskTitle(taskTitle); setActiveSubtaskId(subtaskId); setActiveSubtaskTitle(subtaskTitle);
         setTimerMode('focus');
         startTimer(newDurationInSeconds);
-        addNotification(`Focando em: ${taskTitle}`, '🎯', 'success');
+        // addNotification(`Focando em: ${taskTitle}`, '🎯', 'success');
     }, [sessionDuration, startTimer, addNotification, setActiveTaskId, setActiveTaskTitle, setActiveSubtaskId, setActiveSubtaskTitle]);
 
     const pauseCycle = useCallback(async () => {
         setStatus('paused');
-        await postWebNotification('⏸️ Foco Pausado', {
-            body: 'Aguardando para retomar.',
-            tag: NOTIFICATION_TAG,
-            renotify: true
-        });
+        // await postWebNotification('⏸️ Foco Pausado', {
+        //     body: 'Aguardando para retomar.',
+        //     tag: NOTIFICATION_TAG,
+        //     renotify: true
+        // });
     }, []);
 
     const resumeCycle = useCallback(() => setStatus('running'), []);
