@@ -7,15 +7,7 @@ import { getMessaging, onBackgroundMessage } from 'https://www.gstatic.com/fireb
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js');
 
 // --- Configuração e Inicialização do Firebase (API v9 Modular) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyC4iDYWSOU9Naqp9O29f1pvzXfS8v6K5fU",
-  authDomain: "focusfroggit-81838821-bbab8.firebaseapp.com",
-  projectId: "focusfroggit-81838821-bbab8",
-  storageBucket: "focusfroggit-81838821-bbab8.firebasestorage.app",
-  messagingSenderId: "878346894346",
-  appId: "1:878346894346:web:c0517918bd73569e1f73f3",
-  measurementId: "G-JKRZJN6W6J"
-};
+const firebaseConfig = process.env.FIREBASE_CONFIG;
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);

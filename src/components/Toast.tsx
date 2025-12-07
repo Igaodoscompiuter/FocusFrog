@@ -12,6 +12,10 @@ export interface ToastProps {
 export const Toast: React.FC<ToastProps> = ({ notification, onDismiss }) => {
 
     useEffect(() => {
+        // Não agenda o auto-descarte se houver uma ação, a menos que seja configurado para isso
+        const autoDismiss = !notification.action || notificationConfig.dismissActionable;
+        if (!autoDismiss) return;
+
         const dismissTimeout = setTimeout(() => {
             onDismiss(notification.id);
         }, notificationConfig.defaultDuration);
@@ -19,12 +23,21 @@ export const Toast: React.FC<ToastProps> = ({ notification, onDismiss }) => {
         return () => clearTimeout(dismissTimeout);
     }, [notification, onDismiss]);
 
+    // Mapeia a categoria da notificação para a classe de estilo correspondente
+    const categoryClass = styles[notification.category] || '';
+
+    const handleActionClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Impede que o clique no botão descarte o toast
+        if(notification.action) {
+            notification.action.onAction();
+        }
+        onDismiss(notification.id); // Descarta o toast após a ação
+    };
+
     return (
         <div
-          className={styles.toast}
+          className={`${styles.toast} ${categoryClass}`}
           onClick={() => onDismiss(notification.id)}
-          // A propriedade de estilo inline foi removida para eliminar as cores de categoria.
-          // O componente agora usará apenas os estilos do arquivo CSS, resolvendo o bug visual da borda.
         >
             <span className={styles.toastIcon}>
               {notification.icon}
@@ -32,6 +45,12 @@ export const Toast: React.FC<ToastProps> = ({ notification, onDismiss }) => {
             <div className={styles.toastContent}>
                 <p>{notification.message}</p>
             </div>
+            {/* Adiciona o botão de ação se ele existir na notificação */}
+            {notification.action && (
+                <button className={styles.actionButton} onClick={handleActionClick}>
+                    {notification.action.label}
+                </button>
+            )}
         </div>
     );
 };

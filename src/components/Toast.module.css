@@ -1,5 +1,4 @@
-/* As classes de contêiner conflitantes foram removidas. */
-/* O NotificationContainer agora é o único responsável pelo layout. */
+/* Toast.module.css */
 
 .toast {
     pointer-events: auto; 
@@ -8,34 +7,69 @@
     padding: var(--sp-md) var(--sp-lg);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--border-color);
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
     display: flex;
     align-items: center;
     gap: var(--sp-md);
     width: 100%;
     max-width: 420px;
     transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    /* Adiciona uma borda esquerda padrão */
+    border-left: 4px solid var(--border-color);
+}
+
+/* --- Estilos por Categoria --- */
+.success {
+    border-left-color: var(--success-color);
+}
+.info {
+    border-left-color: var(--info-color);
+}
+.error {
+    border-left-color: var(--danger-color);
+}
+.victory {
+    border-left-color: var(--warning-color); /* Usaremos a cor de aviso para vitórias */
+}
+.special {
+    border-left-color: var(--primary-color);
+    /* Adiciona um brilho sutil para a notificação especial do Sapo */
+    box-shadow: 0 0 15px -3px var(--primary-color-translucent), var(--shadow-lg);
 }
 
 .toastIcon {
     flex-shrink: 0;
+    font-size: 1.2rem; /* Aumenta um pouco o ícone para destaque */
 }
 
 .toastContent {
     flex-grow: 1;
-}
-.toastContent h5 {
-    margin: 0;
-    font-size: 0.9rem;
+    text-align: left;
 }
 
 .toastContent p {
     margin: 0;
-    font-size: 0.8rem;
-    color: var(--text-secondary-color);
+    font-size: 0.9rem; /* Aumenta a legibilidade */
+    color: var(--text-color);
 }
 
 .toast.dismissing {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Estilo para botões de ação como "Desfazer" */
+.actionButton {
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: var(--sp-sm) var(--sp-xs);
+    cursor: pointer;
+    margin-left: auto;
+    flex-shrink: 0;
+    border-radius: var(--border-radius-md);
+}
+.actionButton:hover {
+    background-color: var(--surface-highlight-color);
 }

@@ -24,17 +24,17 @@ const CYCLE_LABELS: Record<ReturnType<typeof usePomodoro>['timerMode'], string> 
 
 export const FocusScreen: React.FC = () => {
     const { setShowFocusScreen } = useUI();
-    const { tasks, completeTask } = useTasks();
+    const { tasks, handleCompleteTask: completeTaskAction } = useTasks();
     const {
         timerMode, 
         status,
         timeRemaining, 
         sessionDuration,
         activeTaskId,
-        activeSubtaskTitle,
-        startCycle, 
-        pauseCycle,
+        activeTaskTitle, // Título da tarefa principal já vem do PomodoroContext
+        activeSubtaskTitle, // Título da subtarefa também já vem do PomodoroContext
         resumeCycle, 
+        pauseCycle, 
         stopCycle,
     } = usePomodoro();
 
@@ -43,11 +43,10 @@ export const FocusScreen: React.FC = () => {
     const frogSize = isMobile ? 100 : 120;
 
     const activeTask = useMemo(() => tasks.find(t => t.id === activeTaskId), [tasks, activeTaskId]);
-    const displayTitle = activeTask?.title || 'Foco Geral';
 
     const handleCompleteTask = () => {
         if (activeTaskId) {
-            completeTask(activeTaskId);
+            completeTaskAction(activeTaskId);
             stopCycle();
             setShowFocusScreen(false);
         }
@@ -73,14 +72,18 @@ export const FocusScreen: React.FC = () => {
         <main className={`${styles.focusScreen} ${styles['cycle-' + timerMode]}`}>
             <div className={styles.screenContent}>
 
+                {/* Bloco 1: "Mini Card" de Foco - Reutiliza o estilo do titleContainer */}
                 <div className={styles.titleContainer}>
                     <p>Focando em:</p>
-                    <h2>{displayTitle}</h2>
+                    {/* Mostra o título da tarefa principal, ou "Foco Geral" se não houver */}
+                    <h2>{activeTaskTitle || 'Foco Geral'}</h2>
+                    {/* Se houver uma subtarefa ativa, mostra seu título */}
                     {activeSubtaskTitle && (
                         <p className={styles.subtaskTitle}>{activeSubtaskTitle}</p>
                     )}
                 </div>
 
+                {/* Bloco 2: Santuário Zen (Sapo e Timer) - Sem alterações */}
                 <div className={styles.zenSanctuary}>
                     <Aura 
                         progress={progress} 
@@ -95,16 +98,15 @@ export const FocusScreen: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Bloco 3: Controles - Sem alterações */}
                 <div className={styles.controlsContainer}>
                     <div className={styles.footerActionLeft}>
                     { (status === 'running' || status === 'paused') && (
-                        // FIX: Tooltip removido
                         <button 
                             className={`btn ${styles.secondaryActionButton}`}
                             onClick={stopCycle}
                             aria-label="Parar ciclo"
                         >
-                            {/* FIX: Ícone melhorado para "Parar" */}
                             <Icon path={icons.square} />
                         </button>
                     )}
@@ -112,15 +114,13 @@ export const FocusScreen: React.FC = () => {
 
                     <div className={styles.mainActions}>
                         {status === 'running' ? (
-                            // FIX: Tooltip removido
                             <button className={`btn btn-primary ${styles.mainActionButton}`} onClick={pauseCycle} aria-label="Pausar ciclo">
                                 <Icon path={icons.pause} />
                             </button>
                         ) : (
-                            // FIX: Tooltip removido
                             <button 
                                 className={`btn btn-primary ${styles.mainActionButton}`} 
-                                onClick={status === 'paused' ? resumeCycle : startCycle}
+                                onClick={resumeCycle}
                                 aria-label={status === 'paused' ? 'Continuar ciclo' : 'Iniciar ciclo'}
                             >
                                 <Icon path={icons.play} />
@@ -129,8 +129,7 @@ export const FocusScreen: React.FC = () => {
                     </div>
 
                     <div className={styles.footerActionRight}>
-                        {activeTask && !activeTask.completed ? (
-                            // FIX: Tooltip removido
+                        {activeTask && timerMode === 'focus' && status !== 'finished' ? (
                             <button className={`btn ${styles.secondaryActionButton}`} onClick={handleCompleteTask} aria-label="Concluir tarefa">
                                 <Icon path={icons.checkCircle} />
                             </button>
@@ -139,7 +138,6 @@ export const FocusScreen: React.FC = () => {
                         )}
                     </div>
                 </div>
-
             </div>
         </main>
     );

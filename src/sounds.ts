@@ -6,7 +6,7 @@
 // so they can build internal chains (Source -> Filter -> Destination)
 type SoundGenerator = (context: AudioContext, destination: AudioNode) => AudioScheduledSourceNode;
 
-interface Sound {
+export interface Sound { // <--- ADICIONADO O 'EXPORT'
     id: string;
     name: string;
     generator: SoundGenerator;
