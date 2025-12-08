@@ -12,6 +12,7 @@ export interface Task {
   pomodoroEstimate?: number;
   pomodorosDone?: number;
   dueDate?: string;
+  completedAt?: string; // <-- ADICIONADO
   tagId?: number;
   subtasks?: Subtask[];
   energyNeeded?: number;
@@ -40,16 +41,16 @@ export interface TaskTemplate {
   energyNeeded?: number;
   customDuration?: number;
   subtasks?: { text: string }[];
-  isDefault?: boolean; // <-- ADICIONADO
+  isDefault?: boolean; 
 }
 
 export interface Routine {
-  id: string; // <-- ALTERADO PARA STRING
+  id: string; 
   name: string;
   icon: string | IconDefinition;
   description: string;
   taskTemplateIds: number[];
-  isDefault?: boolean; // <-- ADICIONADO
+  isDefault?: boolean; 
 }
 
 export interface ChecklistItem {

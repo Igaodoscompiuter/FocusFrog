@@ -25,7 +25,7 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
     }
 
     const handleToggleItemClick = (itemId: string) => {
-        if (isEditing) return; // Desabilita o clique no item durante a edição
+        if (isEditing) return;
         onToggleItem(itemId);
     };
 
@@ -33,37 +33,40 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
         <>
             {isModalOpen && (
                 <ChecklistModal 
-                    items={items} // A modal agora é apenas para adicionar
+                    items={items}
                     onAddItem={onAddItem}
-                    onRemoveItem={onRemoveItem} // Manter por enquanto, pode ser removido depois
+                    onRemoveItem={onRemoveItem}
                     onClose={() => setIsModalOpen(false)}
                 />
             )}
             
             <div className={styles.card}>
                 <div className={styles.header}>
-                    <h3><Icon path={icons.briefcase} /> Checklist para Sair</h3>
+                    <h3><Icon path={icons.briefcase} /> Já pegou?</h3>
                     <div className={styles.buttonGroup}>
                         {!isEditing ? (
                              <button 
-                                className="btn btn-secondary btn-small"
+                                className="btn btn-icon btn-secondary btn-small"
                                 onClick={onResetItems}
+                                title="Desmarcar Todos"
                             >
-                               Desmarcar Todos
+                               <Icon path={icons.rotateCw} />
                             </button>
                         ) : (
                             <button 
-                                className="btn btn-primary btn-small"
+                                className="btn btn-icon btn-primary btn-small"
                                 onClick={() => setIsModalOpen(true)}
+                                title="Adicionar Item"
                             >
-                                <Icon path={icons.plus} /> Adicionar
+                                <Icon path={icons.plus} />
                             </button>
                         )}
                         <button 
-                            className="btn btn-secondary btn-small"
+                            className="btn btn-icon btn-secondary btn-small"
                             onClick={() => setIsEditing(!isEditing)}
+                            title={isEditing ? 'Concluir Edição' : 'Editar Checklist'}
                         >
-                            {isEditing ? 'Concluir' : 'Editar'}
+                            {isEditing ? <Icon path={icons.check} /> : <Icon path={icons.pencil} />}
                         </button>
                     </div>
                 </div>
@@ -83,6 +86,7 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
                                 <button 
                                     className="btn btn-icon btn-small"
                                     onClick={() => onRemoveItem(item.id)}
+                                    title="Remover Item"
                                 >
                                     <Icon path={icons.trash} />
                                 </button>

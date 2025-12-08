@@ -33,19 +33,6 @@
   font-weight: 600;
 }
 
-/* A "pílula" indicadora do item ativo */
-.navItem.active::before {
-  content: '';
-  position: absolute;
-  top: -4px; /* Posiciona um pouco acima do botão */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 4px;
-  background-color: var(--primary-color);
-  border-radius: 2px;
-}
-
 .navIcon {
   font-size: 24px; /* Tamanho do ícone */
   margin-bottom: 2px;

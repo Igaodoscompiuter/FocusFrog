@@ -1,4 +1,3 @@
-
 /* screens/StatsScreen.module.css */
 
 .statsContainer {
@@ -18,29 +17,60 @@
 
 /* --- Cartão de Destaque (Streak) --- */
 .streakHeroCard {
-    background: linear-gradient(145deg, var(--primary-color), var(--primary-dark-color));
     color: white;
     border-radius: var(--border-radius-xl);
     padding: var(--sp-lg) var(--sp-xl);
     box-shadow: var(--shadow-lg);
     margin-bottom: var(--sp-lg);
+    transition: background 0.5s ease-in-out;
+}
+
+/* Níveis de Gradiente para o Streak (Escuro para Claro) */
+.streakLevel0 {
+    background: linear-gradient(145deg, var(--surface-secondary-color), var(--border-color));
+    color: var(--text-color);
+}
+
+.streakLevel1 {
+    background: linear-gradient(145deg, var(--primary-color-hover), var(--primary-color));
+}
+
+.streakLevel2 {
+    background: linear-gradient(145deg, var(--accent-color), var(--primary-color));
+}
+
+.streakLevel3 {
+    background: linear-gradient(145deg, var(--accent-color-dark), var(--accent-color));
 }
 
 .streakContent {
     display: flex;
-    align-items: center;
-    gap: var(--sp-xl);
+    flex-direction: column; /* Organiza número e sub-conteúdo verticalmente */
+    align-items: center;    /* Centraliza tudo */
+    gap: var(--sp-sm);      /* Espaço entre o número e o sub-conteúdo */
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Sombra mais forte para o texto */
 }
 
-.streakIconLarge {
-    font-size: 4rem; /* 64px */
-    opacity: 0.5;
+.streakSubContent {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-md);
+}
+
+.streakIcon {
+    font-size: 1.8rem; /* Tamanho ajustado para o novo layout */
+    opacity: 0.8;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); /* Sombra para o ícone */
     transition: all 0.5s ease;
 }
 
-.streakIconLarge.burning {
+.streakLevel0 .streakIcon {
+    opacity: 0.4;
+}
+
+.streakIcon.burning {
     opacity: 1;
-    filter: drop-shadow(0 0 10px #ffab70);
+    filter: drop-shadow(0 0 10px var(--accent-color-glow));
     animation: flame-flicker 2s infinite ease-in-out;
 }
 
@@ -50,17 +80,18 @@
 }
 
 .streakInfo {
-    line-height: 1.2;
+    line-height: 1;
+    text-align: center;
 }
 
 .streakCount {
-    font-size: 3rem; /* 48px */
+    font-size: 3.5rem; /* Aumenta um pouco o número */
     font-weight: 700;
     display: block;
 }
 
 .streakLabel {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
 }
 
@@ -94,11 +125,7 @@
 }
 
 /* --- Card de Consistência --- */
-.consistencyCard {
-  /* Esta classe agora pode ser usada para aplicar estilos específicos ao card de consistência, se necessário. */
-  /* Por exemplo, para sobrescrever o padding padrão: */
-  /* padding: var(--sp-xl); */
-}
+.consistencyCard {}
 
 .sectionTitle {
     display: flex;
@@ -110,20 +137,20 @@
 }
 
 .heatmapWrapper {
-    overflow-x: auto; /* Permite scroll horizontal se a tela for muito pequena */
-    padding-bottom: var(--sp-sm); /* Espaço para a barra de scroll não colar nos elementos */
-    margin: 0 calc(var(--sp-lg) * -1); /* Compensa o padding do card para o heatmap ir de ponta a ponta */
+    overflow-x: auto;
+    padding-bottom: var(--sp-sm);
+    margin: 0 calc(var(--sp-lg) * -1);
     padding-left: var(--sp-lg);
     padding-right: var(--sp-lg);
 }
 
 .heatmapGrid {
     display: grid;
-    grid-template-columns: repeat(18, 1fr); /* Ajuste conforme necessário */
+    grid-template-columns: repeat(18, 1fr);
     grid-auto-rows: 1fr;
     gap: 3px;
     width: 100%;
-    aspect-ratio: 18 / 5; /* Proporção do grid */
+    aspect-ratio: 18 / 5;
 }
 
 .heatmapCell {

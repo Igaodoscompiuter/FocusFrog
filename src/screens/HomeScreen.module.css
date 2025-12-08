@@ -10,29 +10,11 @@
     box-sizing: border-box;
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px 0 var(--accent-color-glow);
-    border-color: var(--accent-color-light);
-  }
-  50% {
-    box-shadow: 0 0 30px 5px var(--accent-color-glow);
-    border-color: var(--accent-color);
-  }
-}
-
 .dashboardHeader {
-    margin: var(--sp-lg) var(--sp-lg) 0 var(--sp-lg);
+    margin: var(--sp-lg) 0 0 0;
     padding: var(--sp-xl) var(--sp-lg);
     color: var(--text-on-primary);
     border-radius: 24px;
-}
-
-.greetingContent {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--sp-lg);
 }
 
 .greetingContent h2 {
@@ -47,12 +29,11 @@
     opacity: 0.9;
 }
 
-/* ÍCONE CIRCULAR */
 .headerIcon {
     width: 64px;
     height: 64px;
     flex-shrink: 0;
-    border-radius: 50%; /* Transforma a imagem em um círculo */
+    border-radius: 50%;
 }
 
 .brainDumpForm {
@@ -66,44 +47,9 @@
     flex-grow: 1;
     padding: var(--sp-md);
     font-size: 1rem;
-    color: var(--text-color);
     border-radius: var(--border-radius-lg);
     border: 2px solid var(--border-color);
     background-color: var(--surface-secondary-color);
-    transition: all 0.2s ease;
-}
-
-.brainDumpForm input:focus {
-    outline: none;
-    background-color: var(--surface-secondary-hover-color);
-    border-color: transparent;
-    box-shadow: 
-        0 0 0 2px var(--accent-color), 
-        0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.brainDumpForm button {
-    padding: var(--sp-md);
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
-    border: none;
-    border-radius: var(--border-radius-lg); 
-    aspect-ratio: 1 / 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: filter var(--transition-fast), transform var(--transition-fast);
-}
-
-.brainDumpForm button:disabled {
-    background-color: var(--border-color);
-    cursor: not-allowed;
-}
-
-.brainDumpForm button:not(:disabled):active {
-    transform: scale(0.95);
-    filter: brightness(0.9);
 }
 
 .frogCard {
@@ -117,16 +63,28 @@
 
 .hasFrog {
     border-color: transparent;
-    box-shadow: 
-        0 0 0 2px var(--accent-color), 
-        0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 2px var(--accent-color), 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .frogCardHeader {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; 
     align-items: center;
     margin-bottom: var(--sp-md);
+}
+
+.frogCardHeaderActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.iconButton {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .frogCardHeader h3 {
@@ -135,16 +93,22 @@
     gap: var(--sp-sm);
     font-size: 1.1rem;
     font-weight: 600;
-    transition: color var(--transition-slow);
+    color: var(--accent-color);
+    margin-right: auto; 
 }
 
-.hasFrog .frogCardHeader h3 {
-    color: var(--accent-color);
+.frogTitleCard {
+    background-color: var(--surface-secondary-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--sp-lg);
+    text-align: center;
+    margin-bottom: var(--sp-md);
 }
 
 .frogTaskTitle {
-    font-size: 1.1rem;
-    margin-bottom: var(--sp-md);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
     word-break: break-word;
 }
 
@@ -159,43 +123,68 @@
     color: var(--text-secondary-color);
     cursor: pointer;
     border-radius: var(--border-radius-md);
-    transition: background-color var(--transition-fast);
-}
-
-.frogCardContentEmpty:hover {
     background-color: var(--surface-secondary-color);
 }
 
-.frogCardContentEmpty strong {
-    font-weight: 600;
-    color: var(--text-color);
+.frogCardContentEmpty:hover {
+    filter: brightness(1.1);
 }
 
-.frogCardContentEmpty svg {
-    margin-bottom: var(--sp-xs);
-}
+
+/* --- Seção de Subtarefas --- */
 
 .frogSubtasks {
-    margin-bottom: var(--sp-md);
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-sm);
+    margin-bottom: var(--sp-md);
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--sp-md);
 }
 
 .frogSubtaskItem {
     display: flex;
     align-items: center;
-    gap: var(--sp-sm);
-    padding: var(--sp-sm);
-    background-color: var(--surface-secondary-color);
+    justify-content: center; 
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    padding: 0.5rem;
     border-radius: var(--border-radius-md);
+    cursor: pointer;
+    background-color: var(--surface-secondary-color);
+    transition: background-color 0.15s ease;
 }
 
-.frogSubtaskItem input[type="checkbox"] {
-    margin-right: var(--sp-sm);
+.frogSubtaskItem:last-child:nth-child(odd) {
+    grid-column: span 2;
 }
 
-.frogSubtaskItem label {
-    flex-grow: 1;
+.frogSubtaskItem span {
     word-break: break-word;
+}
+
+.frogSubtaskItem:hover {
+    filter: brightness(1.15);
+}
+
+.frogSubtaskItem.completed span {
+    text-decoration: line-through;
+    color: var(--text-secondary-color);
+}
+
+.frogSubtaskCheckbox {
+    min-width: 14px;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 4px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.frogSubtaskItem.completed .frogSubtaskCheckbox {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
 }

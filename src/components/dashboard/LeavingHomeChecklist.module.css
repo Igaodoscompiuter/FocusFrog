@@ -30,12 +30,6 @@
     gap: var(--sp-sm);
 }
 
-/* FIX: Garante que os botões no grupo (incluindo o primário 'Adicionar')
-   usem o mesmo border-radius para manter a consistência visual. */
-.buttonGroup > .btn {
-    border-radius: var(--border-radius-md);
-}
-
 .checklist {
     list-style: none;
     padding: 0;

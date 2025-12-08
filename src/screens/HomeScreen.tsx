@@ -12,6 +12,7 @@ import type { Task, Subtask } from '../types';
 import { LeavingHomeChecklist } from '../components/dashboard/LeavingHomeChecklist';
 import { AgendaDeHoje } from '../components/dashboard/AgendaDeHoje';
 import styles from './HomeScreen.module.css';
+import { FaPencilAlt, FaTimes } from 'react-icons/fa';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -76,14 +77,13 @@ export const HomeScreen: React.FC = () => {
     };
 
     const renderSubtask = (subtask: Subtask) => (
-        <div key={subtask.id} className={styles.frogSubtaskItem}>
-            <input
-                type="checkbox"
-                checked={subtask.completed}
-                onChange={() => frogTask && handleToggleSubtask(frogTask.id, subtask.id)}
-                id={`frog-sub-${subtask.id}`}
-            />
-            <label htmlFor={`frog-sub-${subtask.id}`}>{subtask.text}</label>
+        <div 
+            key={subtask.id} 
+            className={`${styles.frogSubtaskItem} ${subtask.completed ? styles.completed : ''}`}
+            onClick={() => frogTask && handleToggleSubtask(frogTask.id, subtask.id)}
+        >
+            <div className={styles.frogSubtaskCheckbox}></div>
+            <span>{subtask.text}</span>
         </div>
     );
     
@@ -92,13 +92,13 @@ export const HomeScreen: React.FC = () => {
         if (hasSubtasks) {
             if (uncompletedSubtasks > 1) return `Faltam ${uncompletedSubtasks} subtarefas`;
             if (uncompletedSubtasks === 1) return 'Falta 1 subtarefa';
-            return 'Sapo comido! 🎉'; // Isso só aparece por um instante antes do card sumir
+            return 'Sapo comido! 🎉';
         }
         return 'Comer o Sapo';
     };
 
     return (
-        <div className={styles.container}> 
+        <div className={styles.contentWrapper}> 
             {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} />}
             <QuickCompleteModal />
             
@@ -122,73 +122,71 @@ export const HomeScreen: React.FC = () => {
                 </div>
             </div>
 
-            <div className={styles.contentWrapper}>
-                <form onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
-                    <input 
-                        type="text" 
-                        placeholder="O que está na sua mente? (Despejo Mental)"
-                        value={brainDumpText}
-                        onChange={(e) => setBrainDumpText(e.target.value)}
-                    />
-                    <button type="submit" disabled={!brainDumpText.trim()}>
-                        <Icon path={icons.plus} />
-                    </button>
-                </form>
+            <form onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
+                <input 
+                    type="text" 
+                    placeholder="O que está na sua mente? (Despejo Mental)"
+                    value={brainDumpText}
+                    onChange={(e) => setBrainDumpText(e.target.value)}
+                />
+                <button type="submit" disabled={!brainDumpText.trim()}>
+                    <Icon path={icons.plus} />
+                </button>
+            </form>
 
-                <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
-                    <div className={styles.frogCardHeader}>
-                        <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
-                        {frogTask && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <button className="btn btn-secondary btn-small" onClick={() => setIsMorningReviewOpen(true)}>
-                                    Alterar
-                                </button>
-                                <button className="btn btn-secondary btn-icon btn-small" onClick={handleUnsetFrog} title="Remover Sapo">
-                                    <Icon path={icons.close} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    {frogTask ? (
-                        <div>
-                            <p className={styles.frogTaskTitle}>{frogTask.title}</p>
-                            
-                            {hasSubtasks && (
-                                <div className={styles.frogSubtasks}>
-                                    {frogTask.subtasks!.map(renderSubtask)}
-                                </div>
-                            )}
-
-                            <button 
-                                className="btn btn-primary" 
-                                style={{width: '100%'}} 
-                                onClick={handleEatFrog}
-                                disabled={isFrogFocused || hasSubtasks}
-                            >
-                               {getFrogButtonText()}
+            <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
+                <div className={styles.frogCardHeader}>
+                    <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
+                    {frogTask && (
+                        <div className={styles.frogCardHeaderActions}>
+                            <button className={`btn btn-secondary btn-small ${styles.iconButton}`} onClick={() => setIsMorningReviewOpen(true)}>
+                                <FaPencilAlt />
                             </button>
-                        </div>
-                    ) : (
-                        <div className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
-                            <Icon path={icons.target} size={24} />
-                            <strong>Escolha seu Sapo</strong>
-                            <p>Selecione a tarefa que vai destravar seu dia</p>
+                            <button className={`btn btn-secondary btn-icon btn-small ${styles.iconButton}`} onClick={handleUnsetFrog} title="Remover Sapo">
+                                <FaTimes />
+                            </button>
                         </div>
                     )}
                 </div>
+                {frogTask ? (
+                    <div>
+                        <div className={styles.frogTitleCard}>
+                            <p className={styles.frogTaskTitle}>{frogTask.title}</p>
+                        </div>
+                        
+                        {hasSubtasks && (
+                            <div className={styles.frogSubtasks}>
+                                {frogTask.subtasks!.map(renderSubtask)}
+                            </div>
+                        )}
 
-                <LeavingHomeChecklist 
-                    items={leavingHomeItems}
-                    onToggleItem={handleToggleLeavingHomeItem}
-                    onAddItem={handleAddLeavingHomeItem}
-                    onRemoveItem={handleRemoveLeavingHomeItem}
-                    onResetItems={handleResetLeavingHomeItems}
-                />
-
-                <AgendaDeHoje onEditTask={setEditingTask} />
-                
+                        <button 
+                            className="btn btn-primary" 
+                            style={{width: '100%'}} 
+                            onClick={handleEatFrog}
+                            disabled={isFrogFocused || hasSubtasks}
+                        >
+                           {getFrogButtonText()}
+                        </button>
+                    </div>
+                ) : (
+                    <div className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
+                        <Icon path={icons.target} size={24} />
+                        <strong>Escolha seu Sapo</strong>
+                        <p>Selecione a tarefa que vai destravar seu dia</p>
+                    </div>
+                )}
             </div>
 
+            <LeavingHomeChecklist 
+                items={leavingHomeItems}
+                onToggleItem={handleToggleLeavingHomeItem}
+                onAddItem={handleAddLeavingHomeItem}
+                onRemoveItem={handleRemoveLeavingHomeItem}
+                onResetItems={handleResetLeavingHomeItems}
+            />
+
+            <AgendaDeHoje onEditTask={setEditingTask} />
         </div>
     );
 };

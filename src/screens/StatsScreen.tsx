@@ -8,6 +8,14 @@ import { usePomodoro } from '../context/PomodoroContext';
 import { useTheme } from '../context/ThemeContext';
 import styles from './StatsScreen.module.css';
 
+const getStreakLevelClass = (streakDays: number) => {
+  if (streakDays === 0) return styles.streakLevel0;
+  if (streakDays >= 1 && streakDays <= 6) return styles.streakLevel1;
+  if (streakDays >= 7 && streakDays <= 29) return styles.streakLevel2;
+  if (streakDays >= 30) return styles.streakLevel3;
+  return styles.streakLevel0;
+};
+
 export const StatsScreen: React.FC = () => {
   const { handleNavigate } = useUI();
   const { tasks } = useTasks();
@@ -18,21 +26,19 @@ export const StatsScreen: React.FC = () => {
     const tasksCompleted = tasks.filter(t => t.status === 'done');
     const focusHours = (pomodorosCompleted * 25) / 60;
 
-    // Lógica de Streak
     const completionDates = [...new Set(tasksCompleted.map(t => new Date(t.completedAt!).toDateString()))];
     completionDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
     
     let streakDays = 0;
     if (completionDates.length > 0) {
-        streakDays = 1;
         let today = new Date();
-        // Se o último dia não for hoje ou ontem, o streak é 0 ou 1
         const lastCompletionDate = new Date(completionDates[0]);
         const daysSinceLastCompletion = (today.setHours(0,0,0,0) - lastCompletionDate.setHours(0,0,0,0)) / (1000*60*60*24);
 
         if (daysSinceLastCompletion > 1) {
             streakDays = 0;
         } else {
+            streakDays = 1;
              for (let i = 0; i < completionDates.length - 1; i++) {
                 const currentDate = new Date(completionDates[i]);
                 const previousDate = new Date(completionDates[i+1]);
@@ -80,6 +86,7 @@ export const StatsScreen: React.FC = () => {
     return data;
   }, [tasks]);
 
+  const streakClass = getStreakLevelClass(stats.streakDays);
 
   return (
     <main className="screen-content">
@@ -90,14 +97,16 @@ export const StatsScreen: React.FC = () => {
       </div>
       
       <div className={styles.statsContainer}>
-          <div className={styles.streakHeroCard}>
+          <div className={`${styles.streakHeroCard} ${streakClass}`}>
             <div className={styles.streakContent}>
-                <div className={`${styles.streakIconLarge} ${stats.streakDays > 0 ? styles.burning : ''}`}>
-                    <Icon path={icons.flame} />
-                </div>
                 <div className={styles.streakInfo}>
                     <span className={styles.streakCount}>{stats.streakDays}</span>
-                    <span className={styles.streakLabel}>Dias seguidos de foco!</span>
+                </div>
+                <div className={styles.streakSubContent}>
+                    <div className={`${styles.streakIcon} ${stats.streakDays > 0 ? styles.burning : ''}`}>
+                        <Icon path={icons.flame} />
+                    </div>
+                    <span className={styles.streakLabel}>Dias seguidos de foco</span>
                 </div>
             </div>
           </div>

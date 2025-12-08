@@ -26,7 +26,7 @@ export const BottomNav: React.FC = () => {
   }
 
   const screenLabels: Record<Screen, string> = {
-    dashboard: 'Dashboard',
+    dashboard: 'Home',
     tasks: 'Tarefas',
     focus: 'Foco',
     stats: 'Estatísticas',

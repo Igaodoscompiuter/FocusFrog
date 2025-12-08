@@ -27,12 +27,6 @@ interface TasksContextType {
     handleDuplicateTask: (taskId: string) => void;
     handlePostponeTask: (taskId: string, days: number) => void;
     needsMorningPlan: boolean;
-    needsOverdueReview: boolean;
-    overdueTasksForReview: Task[];
-    handleSetFrogFromReview: (taskId: string) => void;
-    handleReviewAction: (action: 'complete' | 'postpone' | 'remove_date', taskId: string) => void;
-    handlePostponeAllOverdue: (taskIds: string[]) => Promise<void>;
-    clearOverdueReview: () => void;
     handleCreateTemplateFromTask: (task: Task) => void;
     handleDeleteTemplate: (templateId: number) => void;
     handleAddRoutine: (routine: Routine) => void;
@@ -80,10 +74,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);
-    const [lastOpenedDate, setLastOpenedDate] = useLocalStorage('focusfrog_lastOpenedDate', '');
-    const [overdueTasksForReview, setOverdueTasksForReview] = useState<Task[]>([]);
-    const [needsOverdueReview, setNeedsOverdueReview] = useState(false);
-    
     const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
 
     const [triageQueue, setTriageQueue] = useState<Task[]>([]);
@@ -98,26 +88,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, []);
 
     const todayString = useMemo(() => getLocalTodayString(), [getLocalTodayString]);
-    
-    useEffect(() => {
-        if (lastOpenedDate !== todayString) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            
-            const overdue = tasks.filter(t => {
-                if (!t.dueDate || t.status === 'done') return false;
-                const taskDate = new Date(t.dueDate + 'T00:00:00');
-                return taskDate < yesterday;
-            });
-
-            if (overdue.length > 0) {
-                setOverdueTasksForReview(overdue);
-                setNeedsOverdueReview(true);
-            }
-            
-            setLastOpenedDate(todayString);
-        }
-    }, [tasks, lastOpenedDate, todayString, setLastOpenedDate]);
     
     const needsMorningPlan = useMemo(() => {
         const frogForToday = tasks.find(t => t.id === frogTaskId && t.dueDate === todayString);
@@ -164,7 +134,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
     const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
         const taskToComplete = tasks.find(t => t.id === taskId);
-        if (taskToComplete && taskToComplete.status !== 'done' && taskId === activeTaskId) {
+        if (!taskToComplete || taskToComplete.status === 'done') return; // Sai se a tarefa não existe ou já está feita
+
+        if (taskId === activeTaskId) {
             stopCycle();
         }
     
@@ -173,44 +145,35 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
             // Cenário 1: Lidando com uma subtarefa
             if (subtaskId) {
-                const updatedSubtasks = task.subtasks?.map(st => {
-                    if (st.id === subtaskId) {
-                        return { ...st, completed: !st.completed };
-                    }
-                    return st;
-                }) || [];
+                const updatedSubtasks = task.subtasks?.map(st => 
+                    st.id === subtaskId ? { ...st, completed: true } : st
+                ) || [];
 
                 const allSubtasksDone = updatedSubtasks.every(st => st.completed);
-                let newStatus = task.status;
                 
-                if (allSubtasksDone && task.status !== 'done') {
-                    newStatus = 'done';
+                if (allSubtasksDone) {
                     setPontosFoco(p => p + 10);
                     if (taskId === frogTaskId) {
                         addNotification('Sapo do dia engolido!', '🐸', 'victory');
-                        setPontosFoco(p => p + 40); // 10 da tarefa + 40 de bônus
+                        setPontosFoco(p => p + 40); // Bônus
                     } else {
                         addNotification('Tarefa concluída por subtarefas!', '🎉', 'success');
                     }
-                } else if (!allSubtasksDone && task.status === 'done') {
-                    newStatus = 'todo'; // Reverte para 'todo' se uma subtarefa for desmarcada
+                    return { ...task, subtasks: updatedSubtasks, status: 'done', completedAt: new Date().toISOString() };
                 }
                 
-                return { ...task, subtasks: updatedSubtasks, status: newStatus };
+                return { ...task, subtasks: updatedSubtasks };
             
             // Cenário 2: Lidando com a tarefa principal diretamente
             } else {
-                const newStatus = task.status === 'done' ? 'todo' : 'done';
-                if (newStatus === 'done') {
-                    setPontosFoco(p => p + 10);
-                    if (taskId === frogTaskId) {
-                        addNotification('Sapo do dia engolido!', '🐸', 'victory');
-                        setPontosFoco(p => p + 40); // 10 da tarefa + 40 de bônus
-                    } else {
-                        addNotification('Tarefa concluída!', '🎉', 'success');
-                    }
+                setPontosFoco(p => p + 10);
+                if (taskId === frogTaskId) {
+                    addNotification('Sapo do dia engolido!', '🐸', 'victory');
+                    setPontosFoco(p => p + 40); // Bônus
+                } else {
+                    addNotification('Tarefa concluída!', '🎉', 'success');
                 }
-                return { ...task, status: newStatus };
+                return { ...task, status: 'done', completedAt: new Date().toISOString() };
             }
         }));
     }, [tasks, setTasks, addNotification, setPontosFoco, activeTaskId, stopCycle, frogTaskId]);
@@ -218,7 +181,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // Efeito para lidar com a conclusão automática do Pomodoro
     useEffect(() => {
         if (lastCompletedFocus?.taskId) {
-            // Usamos um setTimeout para desassociar esta atualização da renderização do Pomodoro
             setTimeout(() => {
                 handleCompleteTask(lastCompletedFocus.taskId);
                 clearLastCompletedFocus();
@@ -491,43 +453,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setLeavingHomeItems(prev => prev.map(item => ({ ...item, completed: false })));
     };
     
-    const clearOverdueReview = () => {
-        setNeedsOverdueReview(false);
-        setOverdueTasksForReview([]);
-    };
-    
-    const handleSetFrogFromReview = (taskId: string) => {
-        setFrogTaskId(taskId);
-        const task = tasks.find(t => t.id === taskId);
-        if (task && !task.dueDate) {
-            handleUpdateTask({ ...task, dueDate: todayString });
-        }
-    };
-    
-    const handleReviewAction = (action: 'complete' | 'postpone' | 'remove_date', taskId: string) => {
-        const task = overdueTasksForReview.find(t => t.id === taskId);
-        if (!task) return;
-
-        switch (action) {
-            case 'complete':
-                handleCompleteTask(taskId);
-                break;
-            case 'postpone':
-                handlePostponeTask(taskId, 1);
-                break;
-            case 'remove_date':
-                handleUpdateTask({ ...task, dueDate: undefined });
-                break;
-        }
-        setOverdueTasksForReview(prev => prev.filter(t => t.id !== taskId));
-    };
-    
-    const handlePostponeAllOverdue = async (taskIds: string[]) => {
-        taskIds.forEach(id => handlePostponeTask(id, 1));
-        addNotification(`${taskIds.length} tarefa(s) adiada(s) para amanhã`, '🗓️', 'info');
-        clearOverdueReview();
-    };
-
     const startTriage = useCallback(() => {
         const inboxTasks = tasks.filter(t => t.quadrant === 'inbox');
         setTriageQueue(inboxTasks);
@@ -577,12 +502,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleDuplicateTask,
         handlePostponeTask,
         needsMorningPlan,
-        needsOverdueReview,
-overdueTasksForReview,
-        handleSetFrogFromReview,
-        handleReviewAction,
-        handlePostponeAllOverdue,
-        clearOverdueReview,
         handleCreateTemplateFromTask,
         handleDeleteTemplate,
         handleAddRoutine,
