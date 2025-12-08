@@ -7,10 +7,15 @@
   right: 0;
   height: calc(60px + var(--safe-bottom));
   background-color: var(--surface-color);
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-start; /* Alinha os itens no topo para a "pílula" ter espaço */
-  padding-top: 8px; /* Espaço para a "pílula" e ícones */
+
+  /* --- REESCRITO COM CSS GRID PARA ALINHAMENTO PERFEITO --- */
+  display: grid;
+  /* Cria 5 colunas de largura idêntica */
+  grid-template-columns: repeat(5, 1fr);
+  /* Alinha os itens ao topo da barra */
+  align-items: start;
+  
+  padding-top: 8px;
   padding-bottom: var(--safe-bottom);
   border-top: 1px solid var(--border-color);
   z-index: 1000;
@@ -19,14 +24,19 @@
 .navItem {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
+  align-items: center; /* Centraliza o conteúdo (ícone e texto) horizontalmente */
+  justify-content: center; /* Centraliza o conteúdo verticalmente */
+  
+  /* O Grid agora cuida do espaçamento, não precisamos de width ou flex-grow */
+  width: 100%; /* Faz o item ocupar toda a célula da grade */
+
   color: var(--text-secondary-color);
   font-size: 12px;
-  position: relative; /* Necessário para o posicionamento da pílula */
+  position: relative;
   transition: color var(--transition-fast);
 }
+
+/* Nenhuma regra de posicionamento complexa é mais necessária. */
 
 .navItem.active {
   color: var(--primary-color);
@@ -34,6 +44,6 @@
 }
 
 .navIcon {
-  font-size: 24px; /* Tamanho do ícone */
+  font-size: 24px;
   margin-bottom: 2px;
 }

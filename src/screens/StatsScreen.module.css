@@ -80,10 +80,23 @@
 
 /* --- Grid de Métricas --- */
 .keyMetricsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--sp-md);
     margin-bottom: var(--sp-lg);
+}
+
+.keyMetricsGrid > * { /* Seleciona todos os filhos diretos */
+    flex-grow: 1; /* Permite que cresçam se houver espaço */
+}
+
+.keyMetricsGrid > :nth-child(1),
+.keyMetricsGrid > :nth-child(2) {
+    flex-basis: calc(50% - var(--sp-sm)); /* 2 itens por linha */
+}
+
+.keyMetricsGrid > :nth-child(3) {
+    flex-basis: 100%; /* 1 item na linha de baixo */
 }
 
 .metricCard {

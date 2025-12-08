@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useUI } from '../context/UIContext';
-import { InstallButton } from './InstallButton'; // Importa o nosso novo botão
 import { FiGrid, FiCheckSquare, FiTarget, FiBarChart2, FiAward } from 'react-icons/fi';
 import type { Screen } from '../types';
 import styles from './BottomNav.module.css';
@@ -12,18 +11,18 @@ const iconMap: Record<Screen, React.ElementType> = {
   focus: FiTarget,
   stats: FiBarChart2,
   rewards: FiAward,
-  moodboard: FiGrid, // SUBSTITUÍDO: Usando FiGrid como teste
+  moodboard: FiGrid, // Este ícone não será mais usado na barra principal
 };
 
-const baseScreenOrder: Screen[] = ['dashboard', 'tasks', 'focus', 'stats', 'rewards'];
+// A ordem de 5 ícones, com Home no centro, agora é garantida.
+const baseScreenOrder: Screen[] = ['focus', 'tasks', 'dashboard', 'stats', 'rewards'];
 
 export const BottomNav: React.FC = () => {
-  const { activeScreen, handleNavigate, devModeEnabled } = useUI();
+  // REMOVIDO: a variável devModeEnabled não é mais necessária aqui.
+  const { activeScreen, handleNavigate } = useUI();
 
-  const screenOrder = [...baseScreenOrder];
-  if (devModeEnabled) {
-    screenOrder.push('moodboard'); 
-  }
+  // A ordem agora é fixa, garantindo sempre 5 botões.
+  const screenOrder = baseScreenOrder;
 
   const screenLabels: Record<Screen, string> = {
     dashboard: 'Home',
@@ -31,28 +30,27 @@ export const BottomNav: React.FC = () => {
     focus: 'Foco',
     stats: 'Estatísticas',
     rewards: 'Personalizar',
-    moodboard: 'Dev', 
+    moodboard: 'Dev',
   };
 
   return (
     <nav className={styles.bottomNav}>
-      <InstallButton /> {/* Adicionamos o botão de instalação aqui */}
-      {screenOrder.map((screen) => {
-        const Icon = iconMap[screen];
-        const isActive = activeScreen === screen;
-        const itemClassName = `${styles.navItem} ${isActive ? styles.active : ''}`;
+        {screenOrder.map((screen) => {
+          const Icon = iconMap[screen];
+          const isActive = activeScreen === screen;
+          const itemClassName = `${styles.navItem} ${isActive ? styles.active : ''}`;
 
-        return (
-          <button 
-            key={screen} 
-            className={itemClassName}
-            onClick={() => handleNavigate(screen)}
-          >
-            <Icon className={styles.navIcon} />
-            <span>{screenLabels[screen]}</span>
-          </button>
-        );
-      })}
+          return (
+            <button 
+              key={screen} 
+              className={itemClassName}
+              onClick={() => handleNavigate(screen)}
+            >
+              <Icon className={styles.navIcon} />
+              <span>{screenLabels[screen]}</span>
+            </button>
+          );
+        })}
     </nav>
   );
 };
