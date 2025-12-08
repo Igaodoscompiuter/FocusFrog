@@ -1,12 +1,16 @@
 /* Toast.module.css */
 
 .toast {
-    pointer-events: auto; 
-    background-color: var(--surface-secondary-color);
+    pointer-events: auto;
+    /* Efeito de vidro fosco para semitransparência */
+    background-color: rgba(var(--surface-rgb), 0.75); /* Usa a cor da superfície com 75% de opacidade */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Compatibilidade com Safari */
+    
     color: var(--text-color);
     padding: var(--sp-md) var(--sp-lg);
     border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(var(--text-rgb), 0.1); /* Borda sutil */
     box-shadow: var(--shadow-lg);
     display: flex;
     align-items: center;
@@ -14,7 +18,6 @@
     width: 100%;
     max-width: 420px;
     transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    /* Adiciona uma borda esquerda padrão */
     border-left: 4px solid var(--border-color);
 }
 
@@ -29,17 +32,16 @@
     border-left-color: var(--danger-color);
 }
 .victory {
-    border-left-color: var(--warning-color); /* Usaremos a cor de aviso para vitórias */
+    border-left-color: var(--warning-color); 
 }
 .special {
     border-left-color: var(--primary-color);
-    /* Adiciona um brilho sutil para a notificação especial do Sapo */
     box-shadow: 0 0 15px -3px var(--primary-color-translucent), var(--shadow-lg);
 }
 
 .toastIcon {
     flex-shrink: 0;
-    font-size: 1.2rem; /* Aumenta um pouco o ícone para destaque */
+    font-size: 1.2rem;
 }
 
 .toastContent {
@@ -49,7 +51,7 @@
 
 .toastContent p {
     margin: 0;
-    font-size: 0.9rem; /* Aumenta a legibilidade */
+    font-size: 0.9rem;
     color: var(--text-color);
 }
 
@@ -58,7 +60,6 @@
   transform: translateY(-20px);
 }
 
-/* Estilo para botões de ação como "Desfazer" */
 .actionButton {
     background: transparent;
     border: none;

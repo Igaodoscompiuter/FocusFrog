@@ -70,7 +70,7 @@ const defaultLeavingHomeItems: ChecklistItem[] = [
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { addNotification } = useUI();
     const { setPontosFoco } = useTheme();
-    const { activeTaskId, stopCycle } = usePomodoro(); 
+    const { activeTaskId, stopCycle, lastCompletedFocus, clearLastCompletedFocus } = usePomodoro(); 
 
     const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', [{ id: 1, name: 'Trabalho', color: '#3B82F6' }]);
@@ -124,18 +124,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return !frogForToday;
     }, [tasks, frogTaskId, todayString]);
 
-    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
-        setTasks(prev => {
-            const newTasks: Task[] = tasksData.map((taskData, index) => ({
-                ...taskData,
-                id: `task-${Date.now()}-${index}`,
-                status: 'todo',
-                displayOrder: prev.filter(t => t.quadrant === taskData.quadrant).length + index,
-            }));
-            return [...prev, ...newTasks];
-        });
-    }, [setTasks]);
-    
     const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status'>) => {
         handleAddTasks([taskData]);
         if (taskData.quadrant === 'inbox') {
@@ -143,7 +131,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         } else {
             addNotification('Nova tarefa adicionada à sua lista', '✨', 'success');
         }
-    }, [handleAddTasks, addNotification]);
+    }, [addNotification]);
 
     const handleUpdateTask = useCallback((updatedTask: Task) => {
         setTasks(prevTasks => {
@@ -173,6 +161,83 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         });
         addNotification('Tarefa atualizada com sucesso', '✏️', 'success');
     }, [setTasks, addNotification]);
+    
+    const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
+        const taskToComplete = tasks.find(t => t.id === taskId);
+        if (taskToComplete && taskToComplete.status !== 'done' && taskId === activeTaskId) {
+            stopCycle();
+        }
+    
+        setTasks(prev => prev.map(task => {
+            if (task.id !== taskId) return task;
+    
+            // Cenário 1: Lidando com uma subtarefa
+            if (subtaskId) {
+                const updatedSubtasks = task.subtasks?.map(st => {
+                    if (st.id === subtaskId) {
+                        return { ...st, completed: !st.completed };
+                    }
+                    return st;
+                }) || [];
+
+                const allSubtasksDone = updatedSubtasks.every(st => st.completed);
+                let newStatus = task.status;
+                
+                if (allSubtasksDone && task.status !== 'done') {
+                    newStatus = 'done';
+                    setPontosFoco(p => p + 10);
+                    if (taskId === frogTaskId) {
+                        addNotification('Sapo do dia engolido!', '🐸', 'victory');
+                        setPontosFoco(p => p + 40); // 10 da tarefa + 40 de bônus
+                    } else {
+                        addNotification('Tarefa concluída por subtarefas!', '🎉', 'success');
+                    }
+                } else if (!allSubtasksDone && task.status === 'done') {
+                    newStatus = 'todo'; // Reverte para 'todo' se uma subtarefa for desmarcada
+                }
+                
+                return { ...task, subtasks: updatedSubtasks, status: newStatus };
+            
+            // Cenário 2: Lidando com a tarefa principal diretamente
+            } else {
+                const newStatus = task.status === 'done' ? 'todo' : 'done';
+                if (newStatus === 'done') {
+                    setPontosFoco(p => p + 10);
+                    if (taskId === frogTaskId) {
+                        addNotification('Sapo do dia engolido!', '🐸', 'victory');
+                        setPontosFoco(p => p + 40); // 10 da tarefa + 40 de bônus
+                    } else {
+                        addNotification('Tarefa concluída!', '🎉', 'success');
+                    }
+                }
+                return { ...task, status: newStatus };
+            }
+        }));
+    }, [tasks, setTasks, addNotification, setPontosFoco, activeTaskId, stopCycle, frogTaskId]);
+
+    // Efeito para lidar com a conclusão automática do Pomodoro
+    useEffect(() => {
+        if (lastCompletedFocus?.taskId) {
+            // Usamos um setTimeout para desassociar esta atualização da renderização do Pomodoro
+            setTimeout(() => {
+                handleCompleteTask(lastCompletedFocus.taskId);
+                clearLastCompletedFocus();
+                stopCycle(); 
+            }, 0);
+        }
+    }, [lastCompletedFocus, handleCompleteTask, clearLastCompletedFocus, stopCycle]);
+
+    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
+        setTasks(prev => {
+            const newTasks: Task[] = tasksData.map((taskData, index) => ({
+                ...taskData,
+                id: `task-${Date.now()}-${index}`,
+                status: 'todo',
+                displayOrder: prev.filter(t => t.quadrant === taskData.quadrant).length + index,
+            }));
+            return [...prev, ...newTasks];
+        });
+    }, [setTasks]);
 
     const handleUpdateTaskQuadrant = useCallback((taskId: string, newQuadrant: Quadrant, newIndex: number) => {
         setTasks(prevTasks => {
@@ -247,7 +312,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         
         setTasks(prev => prev.filter(t => t.id !== taskId));
 
-        addNotification('Tarefa excluída', '🗑️', {
+        addNotification('Tarefa excluída', '🗑️', 'info', {
             label: 'Desfazer',
             onAction: handleUndoDelete,
         });
@@ -256,57 +321,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             setLastDeletedTask(null);
         }, 5000); 
     }, [tasks, setTasks, addNotification, handleUndoDelete, activeTaskId, stopCycle]);
-
-    const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
-        const taskToComplete = tasks.find(t => t.id === taskId);
-        
-        if (taskToComplete && taskToComplete.status !== 'done' && taskId === activeTaskId) {
-            stopCycle();
-        }
-
-        setTasks(prev => prev.map(task => {
-            if (task.id === taskId) {
-                if (subtaskId) {
-                    let subtaskJustCompleted = false;
-                    const updatedSubtasks = task.subtasks?.map(st => {
-                        if (st.id === subtaskId) {
-                            if (!st.completed) subtaskJustCompleted = true;
-                            return { ...st, completed: !st.completed };
-                        }
-                        return st;
-                    }) || [];
-                    
-                    if (subtaskJustCompleted) {
-                        setPontosFoco(p => p + 5);
-                        addNotification('+5 pontos por subtarefa', '✨');
-                    }
-
-                    const allSubtasksDone = updatedSubtasks.every(st => st.completed);
-                    let newStatus = task.status;
-                    
-                    if (allSubtasksDone && updatedSubtasks.length > 0) {
-                        if(task.status !== 'done') {
-                            addNotification('Todas as subtarefas concluídas', '🎉');
-                            setPontosFoco(p => p + 10);
-                        }
-                        newStatus = 'done';
-                    } else if (task.status === 'done' && !allSubtasksDone) {
-                        newStatus = 'todo';
-                    }
-                    
-                    return { ...task, subtasks: updatedSubtasks, status: newStatus };
-                }
-                
-                const newStatus = task.status === 'done' ? 'todo' : 'done';
-                if (newStatus === 'done') {
-                    addNotification('Tarefa concluída', '🎉');
-                    setPontosFoco(p => p + 10);
-                }
-                return { ...task, status: newStatus };
-            }
-            return task;
-        }));
-    }, [tasks, setTasks, addNotification, setPontosFoco, activeTaskId, stopCycle]);
     
     const handleToggleSubtask = useCallback((taskId: string, subtaskId: string) => {
         handleCompleteTask(taskId, subtaskId);
@@ -564,7 +578,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handlePostponeTask,
         needsMorningPlan,
         needsOverdueReview,
-        overdueTasksForReview,
+overdueTasksForReview,
         handleSetFrogFromReview,
         handleReviewAction,
         handlePostponeAllOverdue,

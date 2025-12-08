@@ -8,7 +8,7 @@ import { MorningReviewModal } from '../components/modals/MorningReviewModal';
 import { QuickCompleteModal } from '../components/modals/QuickCompleteModal';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
-import type { Task } from '../types';
+import type { Task, Subtask } from '../types';
 import { LeavingHomeChecklist } from '../components/dashboard/LeavingHomeChecklist';
 import { AgendaDeHoje } from '../components/dashboard/AgendaDeHoje';
 import styles from './HomeScreen.module.css';
@@ -21,9 +21,9 @@ const getGreeting = () => {
 };
 
 export const HomeScreen: React.FC = () => {
-    const { tasks, frogTaskId, handleSetFrog, handleCompleteTask, handleAddTask, handleUnsetFrog, handleToggleLeavingHomeItem, leavingHomeItems, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
+    const { tasks, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
-    const { startFocusOnTask, activeTaskId, status } = usePomodoro(); 
+    const { activeTaskId, status, startFocusOnTask } = usePomodoro(); 
     const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
@@ -34,6 +34,9 @@ export const HomeScreen: React.FC = () => {
     const frogTask = useMemo(() => tasks.find(t => t.id === frogTaskId && t.status !== 'done'), [tasks, frogTaskId]);
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
     
+    const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
+    const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
+
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
         return frogTask.id === activeTaskId && status !== 'idle';
@@ -44,21 +47,6 @@ export const HomeScreen: React.FC = () => {
         if (brainDumpText.trim()) {
             handleAddTask({ title: brainDumpText, quadrant: 'inbox', pomodoroEstimate: 1, energyNeeded: 'medium' });
             setBrainDumpText('');
-        }
-    };
-    
-    const handleFrogTaskClick = (task: Task) => {
-        if (task.status === 'done') {
-            handleCompleteTask(task.id); 
-            return;
-        }
-
-        if (task.pomodoroEstimate && task.pomodoroEstimate > 0) {
-            // **CORREÇÃO APLICADA AQUI**
-            startFocusOnTask(task.id, task.title, task.pomodoroEstimate, task.customDuration);
-            handleNavigate('focus');
-        } else {
-            setQuickTaskForCompletion(task);
         }
     };
 
@@ -74,6 +62,39 @@ export const HomeScreen: React.FC = () => {
     const handleNavigateToTasks = () => {
         setIsMorningReviewOpen(false);
         handleNavigate('tasks');
+    };
+
+    const handleEatFrog = () => {
+        if (!frogTask || hasSubtasks) return;
+
+        if (frogTask.pomodoroEstimate > 0) {
+            startFocusOnTask(frogTask.id, frogTask.title, frogTask.customDuration);
+            handleNavigate('focus');
+        } else {
+            setQuickTaskForCompletion(frogTask);
+        }
+    };
+
+    const renderSubtask = (subtask: Subtask) => (
+        <div key={subtask.id} className={styles.frogSubtaskItem}>
+            <input
+                type="checkbox"
+                checked={subtask.completed}
+                onChange={() => frogTask && handleToggleSubtask(frogTask.id, subtask.id)}
+                id={`frog-sub-${subtask.id}`}
+            />
+            <label htmlFor={`frog-sub-${subtask.id}`}>{subtask.text}</label>
+        </div>
+    );
+    
+    const getFrogButtonText = () => {
+        if (isFrogFocused) return <><Icon path={icons.zap} /> Focando no Sapo</>;
+        if (hasSubtasks) {
+            if (uncompletedSubtasks > 1) return `Faltam ${uncompletedSubtasks} subtarefas`;
+            if (uncompletedSubtasks === 1) return 'Falta 1 subtarefa';
+            return 'Sapo comido! 🎉'; // Isso só aparece por um instante antes do card sumir
+        }
+        return 'Comer o Sapo';
     };
 
     return (
@@ -131,15 +152,20 @@ export const HomeScreen: React.FC = () => {
                     {frogTask ? (
                         <div>
                             <p className={styles.frogTaskTitle}>{frogTask.title}</p>
+                            
+                            {hasSubtasks && (
+                                <div className={styles.frogSubtasks}>
+                                    {frogTask.subtasks!.map(renderSubtask)}
+                                </div>
+                            )}
+
                             <button 
                                 className="btn btn-primary" 
                                 style={{width: '100%'}} 
-                                onClick={() => handleFrogTaskClick(frogTask)}
-                                disabled={isFrogFocused}
+                                onClick={handleEatFrog}
+                                disabled={isFrogFocused || hasSubtasks}
                             >
-                                {isFrogFocused ? (
-                                    <><Icon path={icons.zap} /> Focando no Sapo</>
-                                ) : 'Comer o Sapo'}
+                               {getFrogButtonText()}
                             </button>
                         </div>
                     ) : (

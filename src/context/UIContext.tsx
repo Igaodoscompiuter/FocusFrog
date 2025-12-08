@@ -53,8 +53,15 @@ const createNotificationReducer = (config: typeof notificationConfig) =>
             return state;
     }
 
+    // Lógica para mostrar/esconder o botão "Limpar Tudo" 
     const total = nextState.visible.length + nextState.queue.length;
-    nextState.showClearAll = total >= config.minForClearAll;
+    if (total > 3) { // Regra para MOSTRAR o botão
+        nextState.showClearAll = true;
+    } else if (total < 2) { // Regra para ESCONDER o botão
+        nextState.showClearAll = false;
+    } else { // Manter o estado atual se o total for 2 ou 3
+        nextState.showClearAll = state.showClearAll;
+    }
     
     return nextState;
 };
@@ -76,7 +83,7 @@ export interface UIContextType {
     notifications: Notification[];
     queueCount: number;
     showClearAllButton: boolean;
-    addNotification: (message: string, icon: string, category: NotificationCategory) => void;
+    addNotification: (message: string, icon: string, category?: NotificationCategory, action?: { label: string; onAction: () => void; }) => void;
     removeNotification: (id: number) => void;
     promoteNotification: () => void;
     clearAllNotifications: () => void;
@@ -110,14 +117,13 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isImmersiveMode, setIsImmersiveMode] = useState(false);
     const [isPWAInstallPopupVisible, setIsPWAInstallPopupVisible] = useState(false);
     
-    // MODIFICAÇÃO: Estado para a tarefa do modal de conclusão rápida
     const [quickTaskForCompletion, setQuickTaskForCompletion] = useState<Task | null>(null);
 
     const notificationReducer = createNotificationReducer(notificationConfig);
     const [notificationsState, dispatch] = useReducer(notificationReducer, { visible: [], queue: [], showClearAll: false });
 
-    const addNotification = useCallback((message: string, icon: string, category: NotificationCategory) => {
-        const newNotification: Notification = { id: Date.now() + Math.random(), message, icon, category };
+    const addNotification = useCallback((message: string, icon: string, category: NotificationCategory = 'info', action?: { label: string; onAction: () => void; }) => {
+        const newNotification: Notification = { id: Date.now() + Math.random(), message, icon, category, action };
 
         if (notificationsState.visible.length < notificationConfig.maxVisible) {
             dispatch({ type: 'ADD_TO_VISIBLE', payload: newNotification });
@@ -157,7 +163,7 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         handleNavigate,
         taskInFocus, setTaskInFocus,
         subtaskInFocusId, setSubtaskInFocusId,
-        quickTaskForCompletion, setQuickTaskForCompletion, // MODIFICAÇÃO: Fornecendo o novo estado
+        quickTaskForCompletion, setQuickTaskForCompletion, 
         notifications: notificationsState.visible,
         queueCount: notificationsState.queue.length,
         showClearAllButton: notificationsState.showClearAll,

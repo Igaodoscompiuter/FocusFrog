@@ -99,7 +99,6 @@ export const RewardsScreen: React.FC = () => {
 
             <div className={styles.header}>
                 <h2>Personalizar</h2>
-                <div className={styles.pointsDisplay}><Icon path={icons.trophy} /> <span>{pontosFoco}</span></div>
             </div>
 
             <div className={styles.tabGroup}>

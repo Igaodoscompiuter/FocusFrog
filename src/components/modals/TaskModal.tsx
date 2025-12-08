@@ -65,9 +65,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     };
     const handleRemoveSubtask = (id: string) => handleChange('subtasks', task.subtasks?.filter(st => st.id !== id));
 
-    const handleStartSubtaskFocus = (subtask: Subtask) => {
-        if (task.id && task.title) {
-            startFocusOnTask(task.id, task.title, undefined, subtask.id, subtask.text);
+    const handleStartFocus = () => {
+        if (task.id && task.title && !isQuickTask) {
+            startFocusOnTask(task.id, task.title);
             handleNavigate('focus');
             onClose();
         }
@@ -108,7 +108,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     const renderTaskForm = () => (
         <>
             <header className="g-modal-header">
-                <h3><Icon path={icons.pencil} /> {task.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3>
+                <div className={styles.headerTitleGroup}>
+                    <h3><Icon path={icons.pencil} /> {task.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3>
+                    {task.id && !isQuickTask && (
+                        <button onClick={handleStartFocus} className="btn btn-primary btn-icon" title="Iniciar Foco na Tarefa">
+                            <Icon path={icons.play} />
+                        </button>
+                    )}
+                </div>
                 <button onClick={onClose} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button>
             </header>
             <main className="g-modal-body">
@@ -189,11 +196,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                                 <li key={sub.id} className={styles.subtaskItem}>
                                     <input type="checkbox" checked={sub.completed} readOnly className="task-complete-button"/>
                                     <input type="text" value={sub.text} onChange={e => handleChange('subtasks', task.subtasks?.map(s => s.id === sub.id ? {...s, text: e.target.value} : s))} className={styles.subtaskInput}/>
-                                    {!isQuickTask && !sub.completed && (
-                                        <button onClick={() => handleStartSubtaskFocus(sub)} className="btn btn-tertiary btn-icon btn-sm" title="Focar na subtarefa">
-                                            <Icon path={icons.play}/>
-                                        </button>
-                                    )}
                                     <button onClick={() => handleRemoveSubtask(sub.id)} className="btn btn-tertiary btn-icon btn-sm"><Icon path={icons.trash}/></button>
                                 </li>
                             ))}
