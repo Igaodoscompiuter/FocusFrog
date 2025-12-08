@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
@@ -8,12 +7,35 @@ import { usePomodoro } from '../context/PomodoroContext';
 import { useTheme } from '../context/ThemeContext';
 import styles from './StatsScreen.module.css';
 
-const getStreakLevelClass = (streakDays: number) => {
-  if (streakDays === 0) return styles.streakLevel0;
-  if (streakDays >= 1 && streakDays <= 6) return styles.streakLevel1;
-  if (streakDays >= 7 && streakDays <= 29) return styles.streakLevel2;
-  if (streakDays >= 30) return styles.streakLevel3;
-  return styles.streakLevel0;
+// Função para gerar o estilo dinâmico do card de streak
+const getStreakStyle = (streakDays: number): React.CSSProperties => {
+  // Nível 0: Sem streak, card neutro
+  if (streakDays === 0) {
+    return {
+      background: 'linear-gradient(145deg, var(--surface-secondary-color), var(--border-color))',
+      color: 'var(--text-color)',
+    };
+  }
+
+  // Nível 1: Primeiro dia, a faísca azul
+  if (streakDays === 1) {
+    return { background: 'linear-gradient(145deg, #3C6DB9, #5D9CEC)' };
+  }
+
+  // Níveis 2-29: O fogo se espalha dia a dia
+  if (streakDays >= 2 && streakDays < 30) {
+    // Calcula o progresso da "chama" de 0 (dia 2) a 1 (dia 29)
+    const progress = (streakDays - 2) / (29 - 2);
+    // A chama avança da direita (0%) para a esquerda (100%)
+    const spreadPercentage = 100 - progress * 100;
+
+    return {
+      background: `linear-gradient(270deg, #FF8C00 0%, #FFD700 50%, #3A7BD5 ${spreadPercentage}%)`,
+    };
+  }
+
+  // Nível 30+: Fogo intenso, o auge da consistência
+  return { background: 'linear-gradient(145deg, #FF8C00, #E65C00)' };
 };
 
 export const StatsScreen: React.FC = () => {
@@ -86,7 +108,8 @@ export const StatsScreen: React.FC = () => {
     return data;
   }, [tasks]);
 
-  const streakClass = getStreakLevelClass(stats.streakDays);
+  // Gera o estilo dinâmico para o card
+  const streakStyle = getStreakStyle(stats.streakDays);
 
   return (
     <main className="screen-content">
@@ -97,7 +120,7 @@ export const StatsScreen: React.FC = () => {
       </div>
       
       <div className={styles.statsContainer}>
-          <div className={`${styles.streakHeroCard} ${streakClass}`}>
+          <div className={styles.streakHeroCard} style={streakStyle}>
             <div className={styles.streakContent}>
                 <div className={styles.streakInfo}>
                     <span className={styles.streakCount}>{stats.streakDays}</span>
