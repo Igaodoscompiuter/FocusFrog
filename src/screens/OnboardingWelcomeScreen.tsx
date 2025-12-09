@@ -9,28 +9,32 @@ export const OnboardingWelcomeScreen: React.FC = () => {
   return (
     <div className="welcome-container">
       <div className="welcome-card">
-        <h1 className="welcome-title">Olá, {userName}!</h1>
+        <h1 className="welcome-title">Bem-vindo, {userName}!</h1>
         <p className="welcome-subtitle">
-          O FocusFrog foi desenhado para transformar suas tarefas em uma jornada focada e recompensadora. 
+          O FocusFrog é uma caixa de ferramentas para acalmar a mente e te ajudar a focar no que realmente importa. Veja como:
         </p>
 
         <div className="features-grid">
           <div className="feature-item">
-            <h3>🐸 Técnica Pomodoro</h3>
-            <p>Alterne entre ciclos de foco e pausas para maximizar sua concentração.</p>
+            <h3>🐸 Engula um Sapo por Dia</h3>
+            <p>Para vencer a paralisia de decisão, escolheremos UMA tarefa principal por dia: o seu "Sapo". Completá-la já torna o dia uma vitória.</p>
           </div>
           <div className="feature-item">
-            <h3>📝 Listas de Tarefas</h3>
-            <p>Organize suas tarefas e defina prioridades para nunca perder o rumo.</p>
+            <h3>📝 Adeus, "Não sei por onde começar"</h3>
+            <p>Use a Matriz de Prioridades para organizar suas ideias. Ela te ajuda a separar o que é para FAZER AGORA do que pode ser AGENDADO, dando clareza.</p>
           </div>
           <div className="feature-item">
-            <h3>🔔 Notificações</h3>
-            <p>Receba alertas no final de cada ciclo, mesmo com o app fechado.</p>
+            <h3>⚡️ Rotinas que Pensam por Você</h3>
+            <p>Use rotinas prontas (como "limpar em 5 min" ou "preparar para dormir") que quebram tarefas assustadoras em passos rápidos para você apenas seguir.</p>
+          </div>
+          <div className="feature-item">
+            <h3>✅ Chega de Voltar para Casa</h3>
+            <p>Antes de sair, use nosso checklist "Já pegou?" para verificar itens como chaves e carteira. Uma pequena ajuda para sua memória de trabalho.</p>
           </div>
         </div>
 
         <button onClick={completeOnboarding} className="g-button g-button--primary">
-          Começar a Usar!
+          Estou pronto para focar!
         </button>
       </div>
     </div>
