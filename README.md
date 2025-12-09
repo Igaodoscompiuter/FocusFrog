@@ -34,9 +34,19 @@ FocusFrog é uma caixa de ferramentas de produtividade, desenhada para acalmar m
   </tr>
 </table>
 
+### 🤔 Como Usar no Dia a Dia
+
+O fluxo ideal para aproveitar o máximo do FocusFrog é simples e foi pensado para criar um ritmo:
+
+1.  **Descarregue a Mente:** Use a aba "Tarefas" para adicionar tudo o que está na sua cabeça. Não se preocupe em organizar agora, apenas tire da frente.
+2.  **Organize e Priorize:** Use a **Matriz de Prioridades** para decidir o que é urgente e o que pode ser agendado. Defina a tarefa mais importante como seu **"Sapo do Dia"**.
+3.  **Inicie um Ciclo de Foco:** Escolha uma tarefa da sua lista de "Fazer Agora" e inicie um ciclo Pomodoro (25 minutos de foco intenso).
+4.  **Faça uma Pausa e Celebre:** Ao final do ciclo, o sapo te avisará. Faça uma pausa curta, celebre a pequena vitória e, se estiver pronto, inicie o próximo ciclo.
+5.  **Use as Rotinas:** Para tarefas domésticas ou recorrentes, utilize as **Rotinas Prontas** para começar sem pensar muito.
+
 ---
 
-## 🚀 Como Começar
+## 🚀 Como Começar (Para Desenvolvedores)
 
 Siga os passos abaixo para rodar o projeto localmente na sua máquina.
 
@@ -46,7 +56,6 @@ Siga os passos abaixo para rodar o projeto localmente na sua máquina.
 **Instalação:**
 
 1.  **Clone o repositório:**
-    Obtenha a URL (HTTPS ou SSH) clicando no botão "Code" no topo desta página e execute o comando abaixo em seu terminal.
     '''bash
     git clone <URL_DO_REPOSITÓRIO>
     '''
