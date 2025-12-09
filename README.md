@@ -6,6 +6,8 @@
     <img alt="React" src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
     <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>
     <img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white"/>
+    <img alt="Capacitor" src="https://img.shields.io/badge/Capacitor-119EFF?style=for-the-badge&logo=capacitor&logoColor=white"/>
+
   </p>
 </div>
 
@@ -16,74 +18,71 @@ FocusFrog é uma caixa de ferramentas de produtividade, desenhada para acalmar m
 ### ✨ As Ferramentas na sua Caixa
 
 <table>
-  <tr>
-    <td width="80" align="center">🐸</td>
-    <td><strong>Engula o Sapo do Dia</strong><br>Baseado na ideia de que completar a tarefa mais difícil primeiro torna o resto do dia mais fácil, o app te ajuda a definir UMA prioridade diária. Concluí-la já é uma vitória.</td>
-  </tr>
-  <tr>
-    <td width="80" align="center">📝</td>
-    <td><strong>Matriz de Decisão Clara</strong><br>Para combater a paralisia de "não sei por onde começar", use a Matriz de Prioridades para organizar suas ideias. Ela te ajuda a separar o que é para <strong>FAZER AGORA</strong> do que pode ser <strong>AGENDADO</strong>, dando clareza imediata.</td>
-  </tr>
-  <tr>
-    <td width="80" align="center">⚡️</td>
-    <td><strong>Rotinas que Pensam por Você</strong><br>Use rotinas pré-montadas (como "arrumar em 5 min" ou "preparar para dormir") que quebram tarefas assustadoras em passos rápidos e gerenciáveis para você apenas seguir.</td>
-  </tr>
-    <tr>
-    <td width="80" align="center">✅</td>
-    <td><strong>Checklist "Já Pegou?"</strong><br>Uma ferramenta simples para ajudar sua memória de trabalho antes de sair. Verifique rapidamente itens essenciais como chaves e carteira para evitar o estresse de ter que voltar.</td>
-  </tr>
+  <!-- ... (table content) ... -->
 </table>
 
 ### 🤔 Como Usar no Dia a Dia
 
-O fluxo ideal para aproveitar o máximo do FocusFrog é simples e foi pensado para criar um ritmo:
-
-1.  **Descarregue a Mente:** Use a aba "Tarefas" para adicionar tudo o que está na sua cabeça. Não se preocupe em organizar agora, apenas tire da frente.
-2.  **Organize e Priorize:** Use a **Matriz de Prioridades** para decidir o que é urgente e o que pode ser agendado. Defina a tarefa mais importante como seu **"Sapo do Dia"**.
-3.  **Inicie um Ciclo de Foco:** Escolha uma tarefa da sua lista de "Fazer Agora" e inicie um ciclo Pomodoro (25 minutos de foco intenso).
-4.  **Faça uma Pausa e Celebre:** Ao final do ciclo, o sapo te avisará. Faça uma pausa curta, celebre a pequena vitória e, se estiver pronto, inicie o próximo ciclo.
-5.  **Use as Rotinas:** Para tarefas domésticas ou recorrentes, utilize as **Rotinas Prontas** para começar sem pensar muito.
+<!-- ... (usage guide) ... -->
 
 ---
 
 ## 🚀 Como Começar (Para Desenvolvedores)
 
-Siga os passos abaixo para rodar o projeto localmente na sua máquina.
+Este projeto usa React (Vite) para o front-end e **Capacitor** para a compilação nativa (Android/iOS).
 
-**Pré-requisitos:**
-*   [Node.js](https://nodejs.org/) (versão 18 ou superior)
+### 1. Configuração Essencial do Firebase
 
-**Instalação:**
+Antes de rodar, você precisa de um backend Firebase para que o aplicativo funcione.
 
-1.  **Clone o repositório:**
+1.  **Crie um Projeto no Firebase:** Vá para o [console do Firebase](https://console.firebase.google.com/) e crie um novo projeto.
+2.  **Obtenha as Chaves de Configuração:** Nas configurações do seu projeto, adicione um novo "App da Web" e copie o objeto `firebaseConfig` que será gerado.
+3.  **Atualize o Código:** Abra o arquivo `src/firebase.ts` e substitua o objeto `firebaseConfig` que está lá pelo objeto que você copiou do seu próprio projeto.
+
+> **Aviso:** O repositório contém chaves de exemplo para facilitar um primeiro teste rápido, mas você **deve** usar seu próprio projeto Firebase para que a autenticação e o banco de dados funcionem corretamente.
+
+### 2. Rodando para Desenvolvimento Web
+
+Esta é a forma mais rápida de ver o aplicativo em ação no seu navegador.
+
+1.  **Clone o repositório e entre na pasta:**
     '''bash
     git clone <URL_DO_REPOSITÓRIO>
-    '''
-
-2.  **Entre na pasta do projeto:**
-    '''bash
     cd focusfrog
     '''
 
-3.  **Instale as dependências:**
+2.  **Instale as dependências:**
     '''bash
     npm install
     '''
 
-4.  **Rode o servidor de desenvolvimento:**
+3.  **Rode o servidor de desenvolvimento:**
     '''bash
     npm run dev
     '''
+    O aplicativo estará rodando em `http://localhost:5173`.
 
-Após esses passos, o aplicativo estará rodando em `http://localhost:5173`.
+### 3. Rodando em um Dispositivo Android
+
+Para testar as funcionalidades nativas, siga os passos abaixo (após completar a instalação para web).
+
+1.  **Instale o Capacitor CLI (se ainda não tiver):**
+    '''bash
+    npm install -g @capacitor/cli
+    '''
+
+2.  **Sincronize o projeto:** Este comando compila o app web e copia os arquivos para o projeto nativo do Android.
+    '''bash
+    npx cap sync
+    '''
+
+3.  **Abra o projeto no Android Studio:**
+    '''bash
+    npx cap open android
+    '''
+
+4.  **Rode o App:** Com o Android Studio aberto, você pode rodar o aplicativo em um emulador ou em um dispositivo físico conectado.
 
 ## 🏛️ Arquitetura do Projeto ("Arquitetura da Casa")
 
-O projeto segue uma filosofia de organização clara para garantir escalabilidade e manutenção:
-
-*   **/src/components**: Componentes de UI reutilizáveis (a "Mobília").
-*   **/src/screens**: As telas principais do aplicativo (os "Cômodos").
-*   **/src/context**: Gerenciadores de estado global (os "Cérebros").
-*   **/src/hooks**: Hooks customizados para lógica reutilizável (as "Caixas de Ferramentas").
-*   **/src/global-styles.css**: Estilos globais e de base (a "Fundação").
-*   **`[Componente].module.css`**: Estilos específicos para um componente ou tela (a "Decoração").
+<!-- ... (architecture details) ... -->
