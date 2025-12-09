@@ -1,88 +1,75 @@
 <div align="center">
-  <img src="./src/assets/icon.png" width="256" alt="FocusFrog Icon" />
-  <h1>🐸 FocusFrog</h1>
-  <p><strong>Produtividade para Mentes Criativas</strong></p>
-  <p>
-    <img alt="React" src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
-    <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>
-    <img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white"/>
-    <img alt="Capacitor" src="https://img.shields.io/badge/Capacitor-119EFF?style=for-the-badge&logo=capacitor&logoColor=white"/>
 
-  </p>
+  <img src="./src/assets/icon.png" width="256" alt="FocusFrog Icon" />
+
+  <h1>🐸 FocusFrog</h1>
+
+  <strong>Produtividade Calma para Mentes Criativas e com TDAH</strong>
+
+  <p>Cansado de apps de tarefas que te deixam ainda mais ansioso? O FocusFrog é a sua caixa de ferramentas para encontrar clareza, foco e vitórias diárias.</p>
+
+  <br />
+
+  <a href="https://focusfroggit-81838821-bbab8.web.app/" target="_blank">
+    <img alt="Acessar o Aplicativo" src="https://img.shields.io/badge/✨ Acessar Agora e Acalmar a Mente-4CAF50?style=for-the-badge&logo=google-chrome&logoColor=white"/>
+  </a>
+
 </div>
 
-FocusFrog é uma caixa de ferramentas de produtividade, desenhada para acalmar mentes criativas e com TDAH. Em vez de apenas listar tarefas, o aplicativo oferece um sistema de apoio com ferramentas específicas para os desafios do dia a dia.
+---
+
+<div align="center">
+
+  ## Para quem é o FocusFrog?
+
+  <p>Se você se identifica com algum destes pontos, ele foi feito para você:</p>
+
+  <p>✓ Tem dificuldade em decidir por onde começar</p>
+  <p>✓ Sente que sua lista de tarefas é uma fonte de estresse</p>
+  <p>✓ Precisa de ajuda para focar em uma coisa de cada vez</p>
+  <p>✓ Quer um sistema que te apoie, em vez de apenas te cobrar</p>
+
+</div>
 
 ---
 
-### ✨ As Ferramentas na sua Caixa
+## ✨ Sua Caixa de Ferramentas para a Produtividade
 
-<table>
-  <!-- ... (table content) ... -->
-</table>
+<br />
 
-### 🤔 Como Usar no Dia a Dia
+<div align="center">
+  <h4>🐸 Engula o Sapo do Dia</h4>
+  <p>Defina <strong>UMA</strong> tarefa principal para o seu dia. Completá-la já faz o dia valer a pena e transforma o resto em bônus.</p>
+</div>
 
-<!-- ... (usage guide) ... -->
+<div align="center">
+  <h4>📝 Matriz de Decisão Clara</h4>
+  <p>Combata a paralisia da escolha. Jogue suas tarefas na matriz e veja instantaneamente o que é para <strong>FAZER AGORA</strong> e o que pode ser agendado.</p>
+</div>
+
+<div align="center">
+  <h4>⚡️ Rotinas que Pensam por Você</h4>
+  <p>Use rotinas prontas para tarefas comuns (como "arrumar o quarto" ou "se preparar para dormir") e comece a agir sem esforço mental.</p>
+</div>
+
+<div align="center">
+  <h4>✅ Checklist "Já Pegou?"</h4>
+  <p>Apoie sua memória de trabalho. Um checklist rápido para itens essenciais (chaves, carteira) para você sair de casa com tranquilidade.</p>
+</div>
+
 
 ---
 
-## 🚀 Como Começar (Para Desenvolvedores)
+## 🚀 Pronto para Começar?
 
-Este projeto usa React (Vite) para o front-end e **Capacitor** para a compilação nativa (Android/iOS).
+O FocusFrog é um Aplicativo Web Progressivo (PWA). Use no navegador ou instale no seu celular ou computador com um único clique, sem precisar de loja de aplicativos.
 
-### 1. Configuração Essencial do Firebase
+**Acesse pelo link e transforme seu dia:**
 
-Antes de rodar, você precisa de um backend Firebase para que o aplicativo funcione.
+### [https://focusfroggit-81838821-bbab8.web.app/](https://focusfroggit-81838821-bbab8.web.app/)
 
-1.  **Crie um Projeto no Firebase:** Vá para o [console do Firebase](https://console.firebase.google.com/) e crie um novo projeto.
-2.  **Obtenha as Chaves de Configuração:** Nas configurações do seu projeto, adicione um novo "App da Web" e copie o objeto `firebaseConfig` que será gerado.
-3.  **Atualize o Código:** Abra o arquivo `src/firebase.ts` e substitua o objeto `firebaseConfig` que está lá pelo objeto que você copiou do seu próprio projeto.
+<br />
 
-> **Aviso:** O repositório contém chaves de exemplo para facilitar um primeiro teste rápido, mas você **deve** usar seu próprio projeto Firebase para que a autenticação e o banco de dados funcionem corretamente.
-
-### 2. Rodando para Desenvolvimento Web
-
-Esta é a forma mais rápida de ver o aplicativo em ação no seu navegador.
-
-1.  **Clone o repositório e entre na pasta:**
-    '''bash
-    git clone <URL_DO_REPOSITÓRIO>
-    cd focusfrog
-    '''
-
-2.  **Instale as dependências:**
-    '''bash
-    npm install
-    '''
-
-3.  **Rode o servidor de desenvolvimento:**
-    '''bash
-    npm run dev
-    '''
-    O aplicativo estará rodando em `http://localhost:5173`.
-
-### 3. Rodando em um Dispositivo Android
-
-Para testar as funcionalidades nativas, siga os passos abaixo (após completar a instalação para web).
-
-1.  **Instale o Capacitor CLI (se ainda não tiver):**
-    '''bash
-    npm install -g @capacitor/cli
-    '''
-
-2.  **Sincronize o projeto:** Este comando compila o app web e copia os arquivos para o projeto nativo do Android.
-    '''bash
-    npx cap sync
-    '''
-
-3.  **Abra o projeto no Android Studio:**
-    '''bash
-    npx cap open android
-    '''
-
-4.  **Rode o App:** Com o Android Studio aberto, você pode rodar o aplicativo em um emulador ou em um dispositivo físico conectado.
-
-## 🏛️ Arquitetura do Projeto ("Arquitetura da Casa")
-
-<!-- ... (architecture details) ... -->
+<div align="center">
+  <small>© 2024 FocusFrog. Todos os direitos reservados.</small>
+</div>
