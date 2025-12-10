@@ -55,8 +55,18 @@
     padding: var(--sp-md);
     font-size: 1rem;
     border-radius: var(--border-radius-lg);
-    border: 2px solid var(--border-color);
     background-color: var(--surface-secondary-color);
+    color: var(--text-color);
+    transition: all var(--transition-fast);
+    /* [CORREÇÃO] Usa a mesma técnica de borda do modal */
+    border: 2px solid transparent;
+}
+
+.brainDumpForm input:focus {
+    outline: none;
+    background-color: var(--surface-color);
+    /* [CORREÇÃO] Replica o estilo de foco do modal */
+    box-shadow: 0 0 0 2px var(--accent-color);
 }
 
 .frogCard {

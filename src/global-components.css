@@ -1,3 +1,4 @@
+
 /* src/global-components.css */
 
 /* =================================================================
@@ -101,6 +102,8 @@ body {
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* [CORREÇÃO] Impede o gesto de "puxar para recarregar" em PWAs. */
+    overscroll-behavior-y: contain;
 }
 
 /* ... (O resto do ficheiro permanece inalterado, usando o sistema antigo) ... */

@@ -162,7 +162,7 @@ export const HomeScreen: React.FC = () => {
             </div>
 
             <div className={styles.contentWrapper}>
-                <form onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
+                <form id="tutorial-step1-form" onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
                     <input 
                         type="text" 
                         placeholder="O que está na sua mente? (Despejo Mental)"
@@ -201,6 +201,7 @@ export const HomeScreen: React.FC = () => {
                             )}
 
                             <button 
+                                id="eat-the-frog-button"
                                 className="btn btn-primary" 
                                 style={{width: '100%'}} 
                                 onClick={handleEatFrog}
@@ -210,7 +211,7 @@ export const HomeScreen: React.FC = () => {
                             </button>
                         </div>
                     ) : (
-                        <div className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
+                        <div id="frog-card-empty-state" className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
                             <Icon path={icons.target} size={24} />
                             <strong>Escolha seu Sapo</strong>
                             <p>Selecione a tarefa que vai destravar seu dia</p>
@@ -222,7 +223,7 @@ export const HomeScreen: React.FC = () => {
                     items={leavingHomeItems}
                     onToggleItem={handleToggleLeavingHomeItem}
                     onAddItem={handleAddLeavingHomeItem}
-                    onRemoveItem={handleRemoveLeavingHomeItem}
+                    onRemoveItem={handleRemoveLeavingHomeItem} 
                     onResetItems={handleResetLeavingHomeItems}
                 />
 

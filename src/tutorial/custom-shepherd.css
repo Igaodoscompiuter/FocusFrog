@@ -1,0 +1,100 @@
+
+/* src/tutorial/custom-shepherd.css */
+
+/* Aplica variáveis de cor do app para consistência */
+.shepherd-element.focus-frog-shepherd-step {
+    --shepherd-text-color: #ffffff;
+    --shepherd-header-background: #2a2a2e;
+    --shepherd-footer-background: #2a2a2e;
+    --shepherd-background: #3c3c43;
+
+    background-color: var(--shepherd-background);
+    border: 1px solid #545458;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-width: 350px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Estilo do Header (Título e botão de cancelar) */
+.shepherd-element .shepherd-header {
+    background-color: var(--shepherd-header-background);
+    padding: 12px 16px;
+    border-bottom: 1px solid #545458;
+}
+
+.shepherd-element .shepherd-title {
+    color: #e5e5ea;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.shepherd-element .shepherd-cancel-icon {
+    color: #98989d;
+    font-size: 1.5rem;
+}
+.shepherd-element .shepherd-cancel-icon:hover {
+    color: #ffffff;
+}
+
+/* Conteúdo de texto principal */
+.shepherd-element .shepherd-text {
+    color: var(--shepherd-text-color);
+    padding: 16px;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* Estilo do Footer e Botões */
+.shepherd-element .shepherd-footer {
+    background-color: var(--shepherd-footer-background);
+    padding: 0 16px 16px 16px;
+    border-top: none;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.shepherd-element .shepherd-button {
+    background-color: #007aff; /* Cor primária do app */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.shepherd-element .shepherd-button:not(:last-child) {
+    margin-right: 10px;
+}
+
+.shepherd-element .shepherd-button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para botões secundários (como 'Sair') */
+.shepherd-element .shepherd-button.shepherd-button-secondary {
+    background-color: #545458;
+    color: #e5e5ea;
+}
+
+.shepherd-element .shepherd-button.shepherd-button-secondary:hover {
+    background-color: #6a6a6f;
+}
+
+/* Seta que aponta para o elemento */
+.shepherd-arrow:before {
+    background-color: var(--shepherd-background);
+    border: 1px solid #545458;
+    border-top: none;
+    border-right: none;
+}
+
+/* Overlay Modal - O Spotlight */
+.shepherd-modal-overlay {
+    /* Aumenta a opacidade para um foco mais forte */
+    background-color: rgba(0, 0, 0, 0.75) !important;
+}

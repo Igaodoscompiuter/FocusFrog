@@ -1,0 +1,67 @@
+/*
+  Estratégia dos 4 Painéis
+
+  - `overlayPanel`: Um painel simples, escuro e semitransparente que bloqueia cliques.
+    O componente React criará quatro destes e os posicionará para enquadrar o elemento do tutorial.
+
+  - `textBox`: A caixa de texto explicativa. Permanece em grande parte a mesma, com um z-index alto
+    para garantir que fique acima dos painéis.
+*/
+
+.overlayPanel {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.7);
+    pointer-events: auto; /* Bloqueia cliques */
+    z-index: 10000;
+    transition: all 0.3s ease-in-out;
+}
+
+.textBox {
+    position: fixed;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    padding: var(--sp-lg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    z-index: 10001; /* Acima dos painéis de overlay */
+    pointer-events: auto; 
+    box-shadow: var(--shadow-large);
+    width: calc(100% - var(--sp-lg) * 2);
+    max-width: 450px;
+    
+    /* Posicionamento dinâmico (JS irá ajustar isso) */
+    opacity: 0;
+    transform: translateY(0);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, top 0.3s ease-in-out, bottom 0.3s ease-in-out;
+}
+
+/* Estilos para o conteúdo da caixa de texto (cabeçalho, etc.) permanecem os mesmos */
+.tutorialHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--sp-md);
+    padding-bottom: var(--sp-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.progressIndicator {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+}
+
+.exitButton {
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: var(--sp-xs);
+}
+
+.tutorialContent p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
