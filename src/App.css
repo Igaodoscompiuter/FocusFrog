@@ -73,10 +73,10 @@ body {
   color: var(--text-color);
   line-height: 1.6;
   font-size: calc(1rem * var(--font-scale));
-  overscroll-behavior-y: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  overscroll-behavior-y: contain; /* Previne o pull-to-refresh globalmente */
 }
 
 input, textarea, [contenteditable] {

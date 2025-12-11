@@ -1,24 +1,41 @@
 // @ts-nocheck
-// --- Service Worker v5: Unificado com Firebase v9 (Modular) ---
+// --- Service Worker v6: Corrigido para Sintaxe Clássica (Firebase v8) ---
 
-// --- Importações Essenciais ---
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js';
-import { getMessaging, onBackgroundMessage } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging-sw.js';
+// --- Importações Essenciais (Sintaxe Clássica) ---
+// Carrega o Workbox para gerenciamento de cache offline.
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js');
+// Carrega as bibliotecas do Firebase. A v9 modular não funciona com importScripts.
+// Usamos a v8, que é compatível.
+importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js');
 
-// --- Configuração e Inicialização do Firebase (API v9 Modular) ---
-const firebaseConfig = process.env.FIREBASE_CONFIG;
 
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+// --- Configuração e Inicialização do Firebase (Sintaxe v8) ---
+// A configuração foi injetada diretamente para evitar problemas com process.env.
+const firebaseConfig = {
+  apiKey: "AIzaSyC4iDYWSOU9Naqp9O29f1pvzXfS8v6K5fU",
+  authDomain: "focusfroggit-81838821-bbab8.firebaseapp.com",
+  projectId: "focusfroggit-81838821-bbab8",
+  storageBucket: "focusfroggit-81838821-bbab8.firebasestorage.app",
+  messagingSenderId: "878346894346",
+  appId: "1:878346894346:web:c0517918bd73569e1f73f3",
+  measurementId: "G-JKRZJN6W6J"
+};
+
+// Inicializa o Firebase e o Messaging
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
 
 // --- Configuração do Workbox e Cache ---
 const CACHE_NAME = "focusfrog-cache";
 const OFFLINE_FALLBACK_PAGE = "offline.html";
 
 if (workbox) {
+    // A variável __WB_MANIFEST é injetada pelo Vite/Workbox para precache.
     workbox.precaching.precacheAndRoute(self.__WB_MANIFEST || []);
 }
+
 
 // --- Listeners de Eventos do Service Worker ---
 self.addEventListener('install', (event) => {
@@ -49,11 +66,12 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
+
 // --- LÓGICA DE NOTIFICAÇÕES ---
 
 // 1. Handler para Notificações REMOTAS (Push do Firebase em Segundo Plano)
-onBackgroundMessage(messaging, (payload) => {
-  console.log('[SW v9] Mensagem Push recebida em segundo plano:', payload);
+messaging.onBackgroundMessage((payload) => {
+  console.log('[SW v8] Mensagem Push recebida em segundo plano:', payload);
   const notificationTitle = payload.notification.title;
   const notificationOptions = { body: payload.notification.body, icon: payload.notification.icon || './icon-192.png' };
   return self.registration.showNotification(notificationTitle, notificationOptions);
@@ -77,6 +95,7 @@ function cancelNotification() {
     notificationTimer = null;
   }
 }
+
 
 // --- Estratégia de Cache do Workbox ---
 if (workbox.navigationPreload.isSupported()) {

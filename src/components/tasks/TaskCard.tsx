@@ -220,7 +220,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
                                     </button>
                                 </>                            
                             )}
-                            {onEdit && <button title="Editar Tarefa" onClick={(e) => {e.stopPropagation(); onEdit(task);}} className="icon-button"><Icon path={icons.pencil} /></button>}
+                            {onEdit && task.templateId !== 50 && <button title="Editar Tarefa" onClick={(e) => {e.stopPropagation(); onEdit(task);}} className="icon-button"><Icon path={icons.pencil} /></button>}
                         </div>
                     </div>
 

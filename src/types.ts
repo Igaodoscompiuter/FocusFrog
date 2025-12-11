@@ -1,3 +1,4 @@
+
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 export type Quadrant = 'inbox' | 'do' | 'schedule' | 'delegate' | 'someday';
@@ -12,11 +13,12 @@ export interface Task {
   pomodoroEstimate?: number;
   pomodorosDone?: number;
   dueDate?: string;
-  completedAt?: string; // <-- ADICIONADO
+  completedAt?: string;
   tagId?: number;
   subtasks?: Subtask[];
   energyNeeded?: number;
-  customDuration?: number; 
+  customDuration?: number;
+  templateId?: number;
 }
 
 export interface Subtask {
@@ -41,7 +43,7 @@ export interface TaskTemplate {
   energyNeeded?: number;
   customDuration?: number;
   subtasks?: { text: string }[];
-  isDefault?: boolean; 
+  isDefault?: boolean;
 }
 
 export interface Routine {

@@ -20,6 +20,13 @@ export const FrogOfTheDayCard: React.FC<FrogOfTheDayCardProps> = ({
     onOpenMorningReview, 
     onUnsetFrog 
 }) => {
+
+    const isSpecialFrog = frogTask?.title === "🐸 Card Especial FocusFrog N.1";
+
+    const handleSpecialFrogClick = () => {
+        window.open('https://www.instagram.com/focus.frog/', '_blank');
+    };
+
     return (
         <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''}`}>
             <div className={styles.frogCardHeader}>
@@ -38,18 +45,28 @@ export const FrogOfTheDayCard: React.FC<FrogOfTheDayCardProps> = ({
             {frogTask ? (
                 <div>
                     <p className={styles.frogTaskTitle}>{frogTask.title}</p>
-                    <button 
-                        className="btn btn-primary" 
-                        style={{width: '100%'}}
-                        onClick={() => onFrogTaskClick(frogTask)}
-                        disabled={isFrogInFocus}
-                    >
-                        {isFrogInFocus ? (
-                            <><Icon path={icons.zap} /> Focando no Sapo</>
-                        ) : (
-                            'Comer o Sapo!'
-                        )}
-                    </button>
+                    {isSpecialFrog ? (
+                        <button 
+                            className="btn btn-primary" 
+                            style={{width: '100%'}}
+                            onClick={handleSpecialFrogClick}
+                        >
+                            Visitar o Instagram 🐸
+                        </button>
+                    ) : (
+                        <button 
+                            className="btn btn-primary" 
+                            style={{width: '100%'}}
+                            onClick={() => onFrogTaskClick(frogTask)}
+                            disabled={isFrogInFocus}
+                        >
+                            {isFrogInFocus ? (
+                                <><Icon path={icons.zap} /> Focando no Sapo</>
+                            ) : (
+                                'Comer o Sapo!'
+                            )}
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className={styles.frogCardContentEmpty} onClick={onOpenMorningReview}>

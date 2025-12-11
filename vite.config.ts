@@ -23,6 +23,14 @@ export default defineConfig(({ mode }) => {
           strategies: 'injectManifest',
           srcDir: 'src',
           filename: 'sw.js',
+          // CORREÇÃO: Força o build do Service Worker para o formato clássico.
+          injectManifest: {
+            rollupOptions: {
+              output: {
+                format: 'iife'
+              }
+            }
+          },
           registerType: 'autoUpdate',
           manifest: {
             name: 'Focus Frog',

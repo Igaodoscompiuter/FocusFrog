@@ -5,7 +5,8 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
-import { initialRoutines, initialTaskTemplates } from '../constants';
+// A importação de 'welcomeTaskTemplate' foi removida, pois agora faz parte de 'initialTaskTemplates'.
+import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
 
 interface TasksContextType {
     tasks: Task[];
@@ -59,7 +60,7 @@ const defaultLeavingHomeItems: ChecklistItem[] = [
     { id: 'item-1', text: 'Chaves', completed: false, isDefault: true },
     { id: 'item-2', text: 'Carteira', completed: false, isDefault: true },
     { id: 'item-3', text: 'Celular', completed: false, isDefault: true },
-]
+];
 
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { addNotification } = useUI();
@@ -67,10 +68,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const { activeTaskId, stopCycle, lastCompletedFocus, clearLastCompletedFocus } = usePomodoro(); 
 
     const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
-    const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', [{ id: 1, name: 'Trabalho', color: '#3B82F6' }]);
+    const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', defaultTags);
     const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', null);
-    
+    const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
+
     const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
+    // O estado agora é inicializado diretamente com 'initialTaskTemplates', que já contém o card especial.
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);
@@ -78,6 +81,36 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const [triageQueue, setTriageQueue] = useState<Task[]>([]);
     const isTriageActive = useMemo(() => triageQueue.length > 0, [triageQueue]);
+
+    // Lógica de onboarding atualizada para encontrar o modelo de boas-vindas dentro da lista principal.
+    useEffect(() => {
+        const welcomeTaskTemplate = taskTemplates.find(t => t.id === 50);
+        if (!onboardingCompleted && welcomeTaskTemplate) {
+            const newTaskId = `task-${Date.now()}`;
+            const welcomeTaskInstance: Task = {
+                id: newTaskId,
+                title: welcomeTaskTemplate.title,
+                description: welcomeTaskTemplate.description,
+                quadrant: welcomeTaskTemplate.quadrant || 'inbox',
+                pomodoroEstimate: welcomeTaskTemplate.pomodoroEstimate !== undefined ? welcomeTaskTemplate.pomodoroEstimate : 1,
+                customDuration: welcomeTaskTemplate.customDuration,
+                energyNeeded: welcomeTaskTemplate.energyNeeded,
+                subtasks: welcomeTaskTemplate.subtasks?.map((st, subIndex) => ({
+                    id: `sub-${Date.now()}-${subIndex}`,
+                    text: st.text,
+                    completed: false
+                })),
+                tagId: welcomeTaskTemplate.category === "FocusFrog🐸" ? 1 : undefined,
+                status: 'todo',
+                displayOrder: 0,
+                templateId: welcomeTaskTemplate.id,
+            };
+
+            setTasks([welcomeTaskInstance]);
+            setFrogTaskId(newTaskId);
+            setOnboardingCompleted(true);
+        }
+    }, [onboardingCompleted, setOnboardingCompleted, setTasks, setFrogTaskId, taskTemplates]);
 
     const getLocalTodayString = useCallback(() => {
         const today = new Date();
@@ -395,6 +428,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 completed: false
             })),
             dueDate: todayString,
+            templateId: template.id, // <-- ADICIONADO
         }));
         
         if (newTasks.length > 0) {

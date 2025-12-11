@@ -1,5 +1,5 @@
 
-import type { Quadrant, Routine, TaskTemplate } from './types';
+import type { Quadrant, Routine, TaskTemplate, Tag } from './types';
 import { icons } from './components/Icons';
 
 export const quadrants: { id: Quadrant; title: string; subtitle: string; icon: keyof typeof icons; }[] = [
@@ -7,6 +7,15 @@ export const quadrants: { id: Quadrant; title: string; subtitle: string; icon: k
     { id: "do", title: "Foco Imediato", subtitle: "Urgente & Importante", icon: 'zap' },
     { id: "schedule", title: "Tarefas do Dia", subtitle: "Importante, não urgente", icon: 'calendar' },
     { id: "someday", title: "Ideias & Projetos", subtitle: "Não urgente & não importante", icon: 'bookOpen' },
+];
+
+export const defaultTags: Tag[] = [
+    { id: 1, name: 'FocusFrog🐸', color: '#5c8b57' },
+    { id: 2, name: 'Pessoal', color: '#3B82F6' },
+    { id: 3, name: 'Trabalho', color: '#4B5563' },
+    { id: 4, name: 'Estudos', color: '#F97316' },
+    { id: 5, name: 'Casa', color: '#14B8A6' },
+    { id: 6, name: 'Saúde', color: '#EC4899' }
 ];
 
 export const defaultCategories = [
@@ -35,6 +44,23 @@ export const routineIcons: (keyof typeof icons)[] = [
 ];
 
 export const initialTaskTemplates: TaskTemplate[] = [
+    // O card especial agora é o primeiro item da lista de modelos padrão.
+    {
+        id: 50, 
+        title: "🐸 Card Especial FocusFrog N.1", 
+        quadrant: 'do', 
+        description: "O FocusFrog é a sua arquitetura mental, transformando o caos TDAH em rotinas visuais e gerenciáveis. Ele ativa a Dopamina de micro-recompensa para te dar foco e paz", 
+        category: "FocusFrog🐸", 
+        pomodoroEstimate: 0, 
+        subtasks: [
+            { text: "Siga nossa página ➕🐸" },
+            { text: "Acesse o link da bio pelo navegador 🔗🐸" },
+            { text: "Baixe o FocusFrog no seu celular 🐸💖" },
+            { text: "Crie rotinas e marque @focus.frog 💬🐸" },
+            { text: "Inspire outras pessoas com suas rotinas e estratégias próprias 🐸📅 " }
+        ],
+        isDefault: true 
+    },
     { id: 10, title: "Esvaziar a mente", quadrant: 'do', description: "Use a técnica de \'Brain Dump\'. Tire tudo da cabeça e ponha no app para reduzir a ansiedade.", category: "Pessoal", pomodoroEstimate: 0, isDefault: true },
     { id: 11, title: "Separar a roupa de amanhã", quadrant: 'do', description: "Elimine a fadiga de decisão da sua manhã seguinte.", category: "Pessoal", pomodoroEstimate: 0, isDefault: true },
     { id: 12, title: "Preparar a mochila ou bolsa", quadrant: 'do', description: "Verifique chaves, carteira, carregador. Deixe tudo pronto na porta.", category: "Pessoal", pomodoroEstimate: 0, isDefault: true },

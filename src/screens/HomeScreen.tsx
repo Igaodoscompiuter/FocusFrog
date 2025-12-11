@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '../context/TasksContext';
 import { useUI } from '../context/UIContext';
 import { usePomodoro } from '../context/PomodoroContext';
@@ -70,12 +71,29 @@ export const HomeScreen: React.FC = () => {
     const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
     const [selectedFrogId, setSelectedFrogId] = useState<string | null>(null);
 
-    const greeting = getGreeting();
+    const [greeting, setGreeting] = useState(() => getGreeting());
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                setGreeting(getGreeting());
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
     const frogTask = useMemo(() => tasks.find(t => t.id === frogTaskId && t.status !== 'done'), [tasks, frogTaskId]);
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
     
     const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
     const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
+
+    const isSpecialFrog = useMemo(() => frogTask?.title === "🐸 Card Especial FocusFrog N.1", [frogTask]);
 
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
@@ -105,6 +123,11 @@ export const HomeScreen: React.FC = () => {
     };
 
     const handleEatFrog = () => {
+        if (isSpecialFrog) {
+            window.open('https://www.instagram.com/focus.frog/', '_blank');
+            return;
+        }
+
         if (!frogTask || hasSubtasks) return;
 
         if (frogTask.pomodoroEstimate > 0) {
@@ -127,6 +150,7 @@ export const HomeScreen: React.FC = () => {
     );
     
     const getFrogButtonText = () => {
+        if (isSpecialFrog) return "Visitar o Instagram 🐸";
         if (isFrogFocused) return <><Icon path={icons.zap} /> Focando no Sapo</>;
         if (hasSubtasks) {
             if (uncompletedSubtasks > 1) return `Faltam ${uncompletedSubtasks} subtarefas`;
@@ -205,7 +229,7 @@ export const HomeScreen: React.FC = () => {
                                 className="btn btn-primary" 
                                 style={{width: '100%'}} 
                                 onClick={handleEatFrog}
-                                disabled={isFrogFocused || hasSubtasks}
+                                disabled={isFrogFocused || (hasSubtasks && !isSpecialFrog)}
                             >
                                {getFrogButtonText()}
                             </button>

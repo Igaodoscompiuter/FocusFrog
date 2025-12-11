@@ -12,6 +12,7 @@
   flex-grow: 1;
   overflow-y: auto; /* Permite scroll apenas no conteúdo principal */
   padding-bottom: 80px; /* Garante que o conteúdo não fique atrás da nav */
+  overscroll-behavior-y: contain; /* Impede o pull-to-refresh */
 }
 
 .footerNav {
