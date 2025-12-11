@@ -97,8 +97,6 @@
     border: 1px solid var(--surface-highlight-color);
 }
 
-.mainActions { /* Botão Play/Pause no centro da grid */ }
-
 .mainActionButton {
     width: 70px;
     height: 70px;

@@ -2,6 +2,8 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 export type Quadrant = 'inbox' | 'do' | 'schedule' | 'delegate' | 'someday';
+export type EnergyLevel = 'low' | 'medium' | 'high';
+export type TimeOfDay = 'morning' | 'afternoon' | 'night';
 
 export interface Task {
   id: string;
@@ -16,7 +18,8 @@ export interface Task {
   completedAt?: string;
   tagId?: number;
   subtasks?: Subtask[];
-  energyNeeded?: number;
+  energyNeeded?: EnergyLevel;
+  timeOfDay?: TimeOfDay;
   customDuration?: number;
   templateId?: number;
 }
@@ -40,7 +43,8 @@ export interface TaskTemplate {
   description?: string;
   quadrant?: Quadrant;
   pomodoroEstimate?: number;
-  energyNeeded?: number;
+  energyNeeded?: EnergyLevel;
+  timeOfDay?: TimeOfDay;
   customDuration?: number;
   subtasks?: { text: string }[];
   isDefault?: boolean;

@@ -6,6 +6,7 @@ import { usePomodoro } from '../../context/PomodoroContext';
 import { useUI } from '../../context/UIContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
+// [CORREÇÃO] Importa os tipos EnergyLevel e TimeOfDay que agora existem em types.ts
 import type { Task, Subtask, Quadrant, TimeOfDay, EnergyLevel, Tag } from '../../types';
 import { quadrants } from '../../constants';
 import styles from './TaskModal.module.css'; 
@@ -41,6 +42,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
+            // [CORREÇÃO] O estado inicial agora usa um valor válido para energyNeeded.
             return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, energyNeeded: 'medium', dueDate: `${yyyy}-${mm}-${dd}` };
         };
 
@@ -65,14 +67,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     };
     const handleRemoveSubtask = (id: string) => handleChange('subtasks', task.subtasks?.filter(st => st.id !== id));
 
-    const handleStartFocus = () => {
-        if (task.id && task.title && !isQuickTask) {
-            startFocusOnTask(task.id, task.title);
-            handleNavigate('focus');
-            onClose();
-        }
-    };
-
     const handleSubmit = () => {
         if (!task.title?.trim()) return alert('O título da tarefa é obrigatório.');
         const { ...taskToSave } = task;
@@ -92,13 +86,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
         return null;
     }
     
-    const energyLevels: { id: any, label: string, icon: keyof typeof icons }[] = [
+    const energyLevels: { id: EnergyLevel, label: string, icon: keyof typeof icons }[] = [
         { id: 'low', label: 'Baixa', icon: 'batteryLow' },
         { id: 'medium', label: 'Média', icon: 'batteryMedium' },
         { id: 'high', label: 'Alta', icon: 'battery' },
     ];
     
-    const timeOfDayOptions: { id: any | '', label: string }[] = [
+    const timeOfDayOptions: { id: TimeOfDay | '', label: string }[] = [
         { id: 'morning', label: 'Manhã' },
         { id: 'afternoon', label: 'Tarde' },
         { id: 'night', label: 'Noite' },
@@ -110,11 +104,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
             <header className="g-modal-header">
                 <div className={styles.headerTitleGroup}>
                     <h3><Icon path={icons.pencil} /> {task.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3>
-                    {task.id && !isQuickTask && (
-                        <button onClick={handleStartFocus} className="btn btn-primary btn-icon" title="Iniciar Foco na Tarefa">
-                            <Icon path={icons.play} />
-                        </button>
-                    )}
                 </div>
                 <button onClick={onClose} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button>
             </header>
@@ -207,7 +196,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                     </div>
                 </div>
             </main>
-            {/* [CORREÇÃO] O rodapé agora agrupa corretamente as ações */}
             <footer className="g-modal-footer">
                 <div className={styles.footerActions}> 
                     {task.id && <button className="btn btn-tertiary btn-danger" onClick={handleDelete}><Icon path={icons.trash} /> Excluir</button>}
