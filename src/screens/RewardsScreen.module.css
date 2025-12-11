@@ -1,239 +1,368 @@
-/* RewardsScreen.module.css - CORRIGIDO com variáveis de tema unificadas */
 
-/* --- Layout Geral e Cabeçalho --- */
+/* === Estrutura Principal e Navegação === */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    padding: 1rem 1.2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
 }
 
-.pointsDisplay {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--accent-color);
-    background-color: var(--accent-color-glow, rgba(245, 158, 11, 0.1));
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--border-radius-full);
-    border: 1px solid var(--accent-color-hover, var(--accent-color));
-}
-
-/* --- Grupo de Abas --- */
-.tabGroup {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.tabButton {
-    background: none;
-    border: none;
-    color: var(--text-secondary-color);
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    position: relative;
-    transition: color 0.2s ease;
-}
-
-.tabButton:hover {
-    color: var(--text-color);
-}
-
-.tabButton.active {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-.tabButton.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--primary-color);
-    border-radius: 2px 2px 0 0;
+.header h2 {
+    font-size: 1.5rem;
+    color: var(--color-text-primary);
+    margin: 0;
 }
 
 .tabContent { 
-    position: relative; /* Essencial para a sobreposição */
-    animation: fadeIn 0.4s ease-in-out; 
-}
-@keyframes fadeIn { 
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); } 
+    animation: fadeIn 0.3s ease-in-out;
 }
 
-/* --- Loja de Recompensas --- */
-.shopGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.25rem;
+.settingsGroup {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
-.shopItem {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    padding: 1rem;
+
+.settingsGroup:hover {
+    background-color: var(--color-background-hover);
+}
+
+.navRow {
     display: flex;
-    flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.shopItem:hover { transform: translateY(-4px); box-shadow: var(--shadow-medium); }
-.itemHeader { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-.itemPreview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border-subtle-color); }
-.itemIcon { font-size: 1.5rem; color: var(--text-secondary-color); }
-.itemName { margin: 0; font-size: 1rem; font-weight: 600; }
-.itemDescription { color: var(--text-secondary-color); font-size: 0.9rem; margin: 0.25rem 0 1rem 0; flex-grow: 1; min-height: 40px; }
-.itemFooter { margin-top: auto; }
-.itemFooter button { width: 100%; }
-
-/* --- NOVOS ESTILOS PARA SOBREPOSIÇÃO "EM BREVE" --- */
-.comingSoonContainer {
-    position: relative;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
-.blurContent {
-    filter: blur(4px);
-    opacity: 0.6;
-    pointer-events: none;
-    user-select: none;
+.navRowIconWrapper {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 8px;
+    padding: 8px;
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.comingSoonOverlay {
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
+.navRowText h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+}
+
+.navRowText p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.navRowChevron {
+    margin-left: auto;
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+}
+
+.settingsGroup:hover .navRowChevron {
+    transform: translateX(3px);
+}
+
+/* === Sub-telas (Header e Conteúdo) === */
+.subScreenHeader {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.subScreenHeader h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    text-align: center;
+    flex-grow: 1;
+    color: var(--color-text-primary);
+}
+
+.backButton {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: -0.5rem; /* Alinhamento */
+}
+
+/* === Tela de Perfil e Autenticação === */
+.profileScreen {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.authCard {
+    background: var(--color-background-elevated);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 1rem auto;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.authIcon {
+    color: var(--color-accent);
+}
+
+.authIconSuccess {
+    color: var(--color-success);
+}
+
+.authCard h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.authCard p {
+    color: var(--color-text-secondary);
+    margin-top: 0;
+    line-height: 1.5;
+}
+
+.authCard strong {
+    font-size: 1rem;
+    color: var(--color-text-primary);
+}
+
+.authCard small {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.signOutButton {
+    margin-top: 1rem;
     width: 100%;
 }
 
-.comingSoonIcon {
-    width: 150px;
-    height: auto;
-    opacity: 0.9;
-}
-
-.comingSoonMessage {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-color);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-/* --- FIM DOS NOVOS ESTILOS --- */
-
-
-/* --- Secção de Configurações (Melhorada) --- */
-.settingsGroup {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-.settingsGroup h3 {
-    padding: 1rem 1.25rem;
-    margin: 0;
+/* Botão Google - Definido globalmente no RewardsScreen, estilizado aqui */
+.g-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-background-elevated);
+    color: var(--color-text-primary);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
     font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-color);
-    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
 }
+
+.g-button:hover {
+    background-color: var(--color-background-hover);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* === Tela de Dados do Aplicativo === */
+.dataActions {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dataActions .btn {
+    width: 100%;
+    padding: 12px;
+    font-weight: bold;
+}
+
+.buttonDanger {
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger-fg);
+    border: 1px solid var(--color-danger-border);
+}
+
+.buttonDanger:hover {
+    background-color: var(--color-danger-bg-hover);
+}
+
+/* === Tela de Aparência (Switch e SegmentedControl) === */
 .settingRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-}
-.settingRow:last-child { border-bottom: none; }
-.settingRow label { font-weight: 500; color: var(--text-color); }
-.dataActions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 1.25rem;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
-/* --- Controlos de Formulário Customizados --- */
-.select {
-    appearance: none;
-    background-color: var(--surface-secondary-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
-    font-size: 0.9rem;
-    color: var(--text-color);
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.75rem center;
-    background-repeat: no-repeat;
-    background-size: 1em;
-    transition: border-color 0.2s ease;
+.settingRow label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-text-primary);
 }
-.select:hover { border-color: var(--primary-color); }
 
 .switch {
     position: relative;
     display: inline-block;
-    width: 44px;
-    height: 24px;
+    width: 50px;
+    height: 28px;
 }
-.switch input { opacity: 0; width: 0; height: 0; }
+
+.switch input { display: none; }
 
 .switchSlider {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--surface-secondary-color);
-    border: 1px solid var(--border-color);
-    border-radius: 34px;
-    transition: background-color 0.2s ease;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
 }
+
 .switchSlider:before {
     position: absolute;
     content: "";
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-    background-color: var(--text-secondary-color);
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
     border-radius: 50%;
-    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.switch input:checked + .switchSlider {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color-hover);
-}
-.switch input:checked + .switchSlider:before {
-    transform: translateX(20px);
-    background-color: var(--text-on-primary);
+input:checked + .switchSlider {
+    background-color: var(--color-primary);
 }
 
-.button {
+input:checked + .switchSlider:before {
+    transform: translateX(22px);
+}
+
+.segmentedControl {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.segmentedControl button {
+    flex: 1;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
     font-size: 0.9rem;
-    padding: 0.6rem 1rem;
+    transition: background-color 0.2s ease;
 }
 
-.buttonDanger {
-    background-color: var(--danger-color);
-    color: var(--text-on-accent);
-}
-.buttonDanger:hover {
-    filter: brightness(0.9);
+.segmentedControl button.active {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: bold;
 }
 
-/* --- App Version --- */
-.appVersion { text-align: center; color: var(--text-secondary-color); font-size: 0.85rem; margin-top: 1rem; user-select: none; cursor: pointer; }
+/* === Tela Sobre === */
+.aboutScreen {
+    padding: 1rem 1.5rem 2rem 1.5rem;
+    display: flex; /* Garante que o wrapper possa centralizar */
+    flex-direction: column;
+    align-items: center;
+}
+
+.aboutContentWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 500px; /* Evita que o texto fique muito largo em telas grandes */
+    width: 100%;
+}
+
+.aboutHeader {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.aboutIcon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+}
+
+.aboutHeader h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.aboutHeader p { font-size: 1rem; color: var(--color-text-secondary); margin: 0.5rem 0; }
+
+.aboutSection {
+    margin-bottom: 2rem;
+    text-align: center; /* Centraliza texto das seções */
+    width: 100%;
+}
+
+.aboutSection h3 {
+    font-size: 1.1rem;
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    display: inline-block; /* Permite que a borda se ajuste ao texto */
+}
+
+.aboutChecklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: inline-block; /* Para centralizar a lista */
+    text-align: left; /* Alinha o texto da lista à esquerda */
+}
+
+.aboutChecklist li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+.aboutChecklist li svg {
+    color: var(--color-success);
+}
+
+.socialLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #333;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 2rem 0;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    max-width: 300px; /* Limita a largura do botão social */
+}
+
+.socialLink:hover { background-color: #444; }
+
+.appVersion {
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem; /* Aumentado para melhor legibilidade */
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

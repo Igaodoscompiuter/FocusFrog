@@ -2,269 +2,124 @@
     TaskCard.module.css
 */
 
-.cardWrapper {
-    position: relative;
-}
+.cardWrapper { position: relative; }
 
-.swipeBackground {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1rem;
-    color: white;
-    font-weight: 500;
-    border-radius: 12px; 
-}
-
-.completeBackground {
-    background-color: #28a745; /* Verde para completar */
-    justify-content: flex-start;
-}
-
-.deleteBackground {
-    background-color: #dc3545; /* Vermelho para excluir */
-    justify-content: flex-end;
-}
-
-.swipeIcon {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+.swipeBackground { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; color: white; font-weight: 500; border-radius: var(--border-radius-large); }
+.completeBackground { background-color: #28a745; justify-content: flex-start; }
+.deleteBackground { background-color: #dc3545; justify-content: flex-end; }
+.swipeIcon { display: flex; align-items: center; gap: 0.5rem; }
 
 .taskCard {
-    background-color: var(--color-card);
-    border-radius: 12px;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-large);
     padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-small);
     cursor: grab;
     position: relative;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--border-color);
     transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-    touch-action: pan-y; /* FIX: Permite a rolagem vertical em dispositivos de toque */
+    touch-action: pan-y; 
 }
 
-.statusDone {
-    opacity: 0.6;
-    background-color: var(--color-background-lighter);
-}
-.statusDone .taskCardTitleGroup h4 {
-    text-decoration: line-through;
-    color: var(--color-text-secondary);
-}
+.statusDone { opacity: 0.6; }
+.statusDone .taskCardTitleGroup h4 { text-decoration: line-through; color: var(--text-secondary-color); }
 
-.dragging {
-    cursor: grabbing;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    transform: scale(1.02);
-    z-index: 1000;
-}
+.dragging { cursor: grabbing; box-shadow: var(--shadow-large); transform: scale(1.02); z-index: 1000; }
+.inboxCard { background-color: var(--surface-secondary-color); border-color: transparent; }
 
-.inboxCard {
-    background-color: var(--color-background-accent);
-    border-color: transparent;
-}
+.taskCardContent { display: flex; flex-direction: column; gap: 0.5rem; }
+.taskCardHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
 
-.taskCardContent {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.taskCardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-}
-
-.taskCardTitleGroup {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-    min-width: 0; 
-}
+.taskCardTitleGroup { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
 
 .taskCardTitleGroup h4 {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--font-size-lg);      /* REATORADO */
+    line-height: var(--line-height-lg); /* REATORADO */
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.checkbox {
-    min-width: 18px;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--color-border-strong);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
+.checkbox { min-width: 18px; width: 18px; height: 18px; border: 2px solid var(--border-subtle-color); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.checkbox.disabled { border-color: var(--border-color); cursor: not-allowed; opacity: 0.7; }
 
-.checkbox.disabled {
-    border-color: var(--color-border);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
+.actionPlaceholder { min-width: 18px; width: 18px; height: 18px; }
+.taskCardActions { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
 
-.actionPlaceholder {
-    min-width: 18px;
-    width: 18px;
-    height: 18px;
-}
-
-.taskCardActions {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    flex-shrink: 0;
-}
-
-.headerPlayButton.activeFocus {
-    color: var(--color-accent-secondary);
-    transform: scale(1.1);
-}
-
-.frogIconActive {
-    color: var(--color-warning);
-    transform: scale(1.1);
-}
+.headerPlayButton.activeFocus { color: var(--accent-color); transform: scale(1.1); }
+.frogIconActive { color: var(--accent-color); transform: scale(1.1); }
 
 .taskCardDescription {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);      /* REATORADO */
+    line-height: var(--line-height-sm); /* REATORADO */
+    color: var(--text-secondary-color);
     margin: 0;
     padding-left: 2.2rem; 
 }
 
-.isFrog {
-    border: 2px solid var(--color-warning);
-}
+.isFrog { border: 2px solid var(--accent-color); }
 
-.subtasksSection {
-    padding-left: 0.5rem; 
-    margin-top: 0.5rem;
-    overflow: hidden;
-}
-
+.subtasksSection { padding-left: 0.5rem; margin-top: 0.5rem; overflow: hidden; }
 .subtasksHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    color: var(--color-text-secondary);
-    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);      /* REATORADO */
+    line-height: var(--line-height-xs); /* REATORADO */
     padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    background-color: var(--color-background);
+    border-radius: var(--border-radius-medium);
+    background-color: var(--background-color);
 }
 
-.collapsibleChevron {
-    transition: transform 0.2s ease-in-out;
-}
-
-.subtasksSection.collapsed .collapsibleChevron {
-    transform: rotate(-90deg);
-}
-
-.subtasksContent {
-    padding-top: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
+.collapsibleChevron { transition: transform 0.2s ease-in-out; }
+.subtasksSection.collapsed .collapsibleChevron { transform: rotate(-90deg); }
+.subtasksContent { padding-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
 .subtaskItem {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);      /* REATORADO */
+    line-height: var(--line-height-sm); /* REATORADO */
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     transition: background-color 0.15s ease;
 }
 
-.subtaskItem.clickable {
-    cursor: pointer;
-}
+.subtaskItem.clickable { cursor: pointer; }
+.subtaskItem.completed span { text-decoration: line-through; color: var(--text-disabled-color); }
 
-.subtaskItem.completed span {
-    text-decoration: line-through;
-    color: var(--color-text-tertiary);
-}
+.subtaskCheckbox { min-width: 14px; width: 14px; height: 14px; border: 1px solid var(--border-subtle-color); border-radius: 4px; transition: background-color 0.2s ease, border-color 0.2s ease; }
 
-.subtaskCheckbox {
-    min-width: 14px;
-    width: 14px;
-    height: 14px;
-    border: 1px solid var(--color-border-strong);
-    border-radius: 4px;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
+.subtaskItem.completed .subtaskCheckbox { background-color: var(--primary-color); border-color: var(--primary-color); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); }
 
-.subtaskItem.completed .subtaskCheckbox {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
-}
+.subtaskCheckOrPlay { display: flex; align-items: center; justify-content: center; height: 24px; width: 24px; }
+.subtaskPlayButton { color: var(--text-secondary-color); }
+.subtaskPlayButton.activeFocus { color: var(--accent-color); }
+.subtaskPlayButton.disabled { opacity: 0.4; cursor: not-allowed; }
 
-.subtaskCheckOrPlay {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 24px;
-    width: 24px;
-}
+.clickableText { cursor: pointer; }
 
-.subtaskPlayButton {
-    color: var(--color-text-secondary);
-}
-
-.subtaskPlayButton.activeFocus {
-    color: var(--color-accent-secondary);
-}
-
-.subtaskPlayButton.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.clickableText {
-    cursor: pointer;
-}
-
-.footerTags {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
+.footerTags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .footerTag {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);      /* REATORADO */
+    line-height: var(--line-height-xs); /* REATORADO */
     padding: 2px 8px;
     border-radius: 12px;
-    background-color: var(--color-background);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-primary);
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary-color);
     display: flex;
     align-items: center;
 }
 
-.energyTag {
-    gap: 0.25rem;
-}
+.energyTag { gap: 0.25rem; }
 
 @media (max-width: 480px) {
-    .taskCardTitleGroup h4 {
-        white-space: normal;
-    }
+    .taskCardTitleGroup h4 { white-space: normal; }
 }

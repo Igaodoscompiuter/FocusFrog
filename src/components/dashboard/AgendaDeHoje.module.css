@@ -2,34 +2,38 @@
 
 .card {
   background-color: var(--surface-color);
-  padding: var(--sp-lg);
-  border-radius: var(--border-radius-lg);
+  padding: 1rem;
+  border-radius: var(--border-radius-large);
   border: 1px solid var(--border-color);
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: var(--sp-lg); /* Adicionado para espaçamento */
+  margin-bottom: 1rem; 
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--sp-md);
+  margin-bottom: 0.75rem;
 }
 
 .header h3 {
-  font-size: 1.1rem;
+  margin: 0;
+  font-size: var(--font-size-xl);      /* REATORADO */
+  line-height: var(--line-height-xl); /* REATORADO */
   font-weight: 600;
 }
 
 .taskList {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-md);
+  gap: 0.75rem;
 }
 
 .emptyState {
   text-align: center;
   color: var(--text-secondary-color);
-  padding: var(--sp-md) 0;
+  padding: 1rem 0;
+  font-size: var(--font-size-sm);      /* REATORADO */
+  line-height: var(--line-height-sm); /* REATORADO */
 }

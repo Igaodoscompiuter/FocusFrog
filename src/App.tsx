@@ -1,36 +1,39 @@
 
 import './global-components.css';
-import React, { useState, useEffect } from 'react';
+import './App.css'; // Garantindo que App.css seja importado
+import React, { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useUser } from './context/UserContext';
 import { useUI } from './context/UIContext';
 import { PWAInstallProvider } from './context/PWAInstallProvider';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { OnboardingNameScreen } from './screens/OnboardingNameScreen';
-import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
 import { SplashScreen } from './screens/SplashScreen';
 import { Layout } from './components/layout/Layout';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
 
 function App() {
-  const { onboardingCompleted, userName } = useUser();
-  const { showWelcomeScreen } = useUI();
+  const { onboardingCompleted } = useUser();
+  const { fontSize } = useUI(); // Obtendo o estado do tamanho da fonte
 
   const [showSplash, setShowSplash] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
+  // EFEITO GLOBAL PARA O TAMANHO DA FONTE
   useEffect(() => {
-    // Lógica da animação da splash screen web
-    const fadeOutTimer = setTimeout(() => {
-      setIsFadingOut(true);
-    }, 2000);
+    const body = document.body;
+    // Limpa classes de fonte anteriores
+    body.classList.remove('font-size-small', 'font-size-normal', 'font-size-large');
+    // Adiciona a classe atual
+    body.classList.add(`font-size-${fontSize}`);
+  }, [fontSize]); // Roda sempre que o `fontSize` mudar
 
+
+  useEffect(() => {
+    const fadeOutTimer = setTimeout(() => setIsFadingOut(true), 2000);
     const removeSplashTimer = setTimeout(() => {
-      // Sincronização: Esconde a splash nativa antes de remover a da web
       if (Capacitor.isNativePlatform()) {
-        CapacitorSplashScreen.hide({
-          fadeOutDuration: 300
-        });
+        CapacitorSplashScreen.hide({ fadeOutDuration: 300 });
       }
       setShowSplash(false);
     }, 2800);
@@ -41,23 +44,30 @@ function App() {
     };
   }, []);
 
+  // A lógica da splash screen e do onboarding permanece a mesma
   if (showSplash) {
     return <SplashScreen isFadingOut={isFadingOut} />;
   }
 
+  if (!onboardingCompleted) {
+        return (
+            <PWAInstallProvider>
+                <div id="app-container">
+                    <Layout>
+                        <OnboardingNameScreen />
+                    </Layout>
+                </div>
+            </PWAInstallProvider>
+        );
+    }
+
   return (
     <PWAInstallProvider>
-      <Layout>
-        {!onboardingCompleted ? (
-          !userName ? (
-            <OnboardingNameScreen />
-          ) : (
-            <OnboardingWelcomeScreen />
-          )
-        ) : (
+      <div id="app-container">
+        <Layout>
           <DashboardScreen />
-        )}
-      </Layout>
+        </Layout>
+      </div>
     </PWAInstallProvider>
   );
 }

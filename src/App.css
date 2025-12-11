@@ -72,12 +72,17 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   line-height: 1.6;
-  font-size: calc(1rem * var(--font-scale));
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   overscroll-behavior-y: contain; /* Previne o pull-to-refresh globalmente */
 }
+
+/* --- Regras Globais para Tamanho de Fonte --- */
+body.font-size-small { font-size: 14px; }
+body.font-size-normal { font-size: 16px; }
+body.font-size-large { font-size: 18px; }
+
 
 input, textarea, [contenteditable] {
   user-select: text;

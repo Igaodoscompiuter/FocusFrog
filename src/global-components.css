@@ -2,204 +2,125 @@
 /* src/global-components.css */
 
 /* =================================================================
-   THEME & DESIGN SYSTEM VARIABLES (DUAL SYSTEM)
+   THEME & DESIGN SYSTEM VARIABLES
 ================================================================= */
 
 :root {
     /* -----------------------------------------------------------------
-       SISTEMA ANTIGO (BASE) - Define os valores de cor fixos.
-    ----------------------------------------------------------------- */
-    
-    /* Cores Base */
-    --color-primary-light: #4dabf7; /* Azul claro para hover/foco */
-    --color-primary: #339af0;       /* Azul principal para interatividade */
-    --color-primary-dark: #228be6;  /* Azul escuro para cliques/ativo */
-    --color-primary-light-transparent: rgba(51, 154, 240, 0.1);
-
-    --color-success-light: #69db7c; /* Verde claro */
-    --color-success: #51cf66;       /* Verde principal */
-    --color-success-dark: #40c057;  /* Verde escuro */
-
-    --color-danger-light: #ff8787;  /* Vermelho claro */
-    --color-danger: #fa5252;        /* Vermelho principal */
-    --color-danger-dark: #f03e3e;   /* Vermelho escuro */
-
-    --color-warning-light: #ffc078; /* Amarelo claro */
-    --color-warning: #fab005;       /* Amarelo principal */
-    --color-warning-dark: #f59f00;  /* Amarelo escuro */
-
-    --color-grey-extralight: #f8f9fa; 
-    --color-grey-light: #f1f3f5;
-    --color-grey-medium: #dee2e6;
-    --color-grey-dark: #adb5bd;
-
-    /* Tema Escuro (Padrão) */
-    --color-background: #1A1B1E;       /* Fundo principal profundo e escuro */
-    --color-card: #25262B;             /* Fundo dos cards, um pouco mais claro */
-    --color-background-hover: #2C2E33;  /* Hover para itens sutis */
-    --color-border: #373A40;           /* Bordas de divisores e cards */
-    --color-border-hover: #495057;      /* Borda ao passar o mouse */
-    --color-border-strong: #495057;     /* Bordas que precisam de mais destaque */
-    --color-text-primary: #F8F9FA;     /* Texto principal, quase branco */
-    --color-text-secondary: #C1C2C5;   /* Texto secundário, para descrições */
-    --color-text-tertiary: #868E96;    /* Texto menos importante, como placeholders */
-
-    /* Sombras, Raios e Tipografia */
-    --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.06);
-    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-    --border-radius-small: 4px;
-    --border-radius-medium: 8px;
-    --border-radius-large: 12px;
-    --border-radius-xl: 16px;
-    --border-radius-round: 50%;
-    --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --font-family-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
-    /* -----------------------------------------------------------------
-       NOVO SISTEMA (TRADUÇÃO) - Mapeia para os nomes semânticos
-       que o sistema de temas da loja irá usar.
+       CORES (SISTEMA DE TRADUÇÃO)
     ----------------------------------------------------------------- */
     
     /* Cores de Ação */
-    --primary-color: var(--color-primary);
-    --primary-color-hover: var(--color-primary-dark);
-    --text-on-primary: #FFFFFF; /* Texto em botões primários é quase sempre branco */
+    --primary-color: #339af0;
+    --primary-color-hover: #228be6;
+    --text-on-primary: #FFFFFF;
     
-    --danger-color: var(--color-danger);
-    --danger-color-hover: var(--color-danger-dark);
-    --text-on-accent: #FFFFFF; /* Texto em botões de perigo/aviso */
+    --danger-color: #fa5252;
+    --danger-color-hover: #f03e3e;
+    --text-on-accent: #FFFFFF;
 
-    /* Cor de Destaque (usada para pontos, etc.) */
-    --accent-color: var(--color-warning);
-    --accent-color-hover: var(--color-warning-dark);
+    /* Cor de Destaque */
+    --accent-color: #fab005;
+    --accent-color-hover: #f59f00;
     --accent-color-glow: rgba(250, 176, 5, 0.1);
 
-    /* Cores de Superfície e Fundo */
-    --background-color: var(--color-background);
-    --surface-color: var(--color-card);
-    --surface-secondary-color: var(--color-background-hover);
+    /* Cores de Superfície e Fundo (Tema Escuro Padrão) */
+    --background-color: #1A1B1E;
+    --surface-color: #25262B;
+    --surface-secondary-color: #2C2E33;
     
     /* Cores de Borda */
-    --border-color: var(--color-border);
-    --border-subtle-color: var(--color-border-hover);
+    --border-color: #373A40;
+    --border-subtle-color: #495057;
     
     /* Cores de Texto */
-    --text-color: var(--color-text-primary);
-    --text-secondary-color: var(--color-text-secondary);
-    --text-disabled-color: var(--color-text-tertiary);
+    --text-color: #F8F9FA;
+    --text-secondary-color: #C1C2C5;
+    --text-disabled-color: #868E96;
+
+    /* -----------------------------------------------------------------
+       TIPOGRAFIA, SOMBRAS E RAIOS
+    ----------------------------------------------------------------- */
+
+    /* Sistema de Escala de Tipografia */
+    --font-size-xs: 0.75rem;  /* 12px */
+    --font-size-sm: 0.875rem; /* 14px */
+    --font-size-md: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem; /* 18px */
+    --font-size-xl: 1.25rem;  /* 20px */
+    --font-size-xxl: 1.5rem; /* 24px */
+
+    /* Alturas de Linha Correspondentes */
+    --line-height-xs: 1.125rem;
+    --line-height-sm: 1.25rem;
+    --line-height-md: 1.5rem;
+    --line-height-lg: 1.75rem;
+    --line-height-xl: 1.75rem;
+    --line-height-xxl: 2rem;
+
+    /* Fontes */
+    --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-family-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* Outros */
+    --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --border-radius-medium: 8px;
+    --border-radius-large: 12px;
 }
 
 /* =================================================================
-   ESTILOS GLOBAIS - Usam o sistema antigo por enquanto.
+   AJUSTES DINÂMICOS DE TAMANHO DE FONTE
+================================================================= */
+
+/* Configuração para TAMANHO PEQUENO */
+[data-font-size='small'] {
+    --font-size-xs: 0.6875rem; /* 11px */
+    --font-size-sm: 0.8125rem; /* 13px */
+    --font-size-md: 0.9375rem; /* 15px */
+    --font-size-lg: 1.0625rem; /* 17px */
+    --font-size-xl: 1.1875rem; /* 19px */
+    --font-size-xxl: 1.4375rem;/* 23px */
+}
+
+/* Configuração para TAMANHO GRANDE */
+[data-font-size='large'] {
+    --font-size-xs: 0.8125rem;  /* 13px */
+    --font-size-sm: 0.9375rem;  /* 15px */
+    --font-size-md: 1.125rem;   /* 18px */
+    --font-size-lg: 1.25rem;    /* 20px */
+    --font-size-xl: 1.375rem;   /* 22px */
+    --font-size-xxl: 1.625rem;  /* 26px */
+}
+
+/* =================================================================
+   ESTILOS GLOBAIS
 ================================================================= */
 
 body {
     font-family: var(--font-family-sans);
-    background-color: var(--color-background);
-    color: var(--color-text-primary);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: var(--font-size-md); /* USA A NOVA VARIÁVEL */
+    line-height: var(--line-height-md); /* USA A NOVA VARIÁVEL */
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* [CORREÇÃO] Impede o gesto de "puxar para recarregar" em PWAs. */
     overscroll-behavior-y: contain;
 }
 
-/* ... (O resto do ficheiro permanece inalterado, usando o sistema antigo) ... */
+/* ... (O resto do CSS para modais e inputs continua o mesmo por enquanto) ... */
 
-.g-modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    backdrop-filter: blur(5px);
-    padding: 1rem;
-    animation: g-modal-fadeIn 0.3s ease;
-}
-
-.g-modal {
-    background-color: var(--color-card);
-    border-radius: var(--border-radius-large);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-large);
-    animation: g-modal-slideUp 0.3s ease;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    width: 100%; 
-    max-width: 550px;
-}
-
-.g-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-    gap: 1rem;
-}
-
-.g-modal-header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.g-modal-body {
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex-grow: 1;
-    -webkit-overflow-scrolling: touch;
-}
-
-.g-modal-footer {
-    padding-top: 1rem;
-    margin-top: 1.5rem;
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    gap: 0.75rem;
-    flex-shrink: 0;
-    justify-content: flex-end;
-}
-
-.g-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.g-input, .g-textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    border-radius: var(--border-radius-medium);
-    border: 1px solid var(--color-border-strong);
-    background-color: var(--color-background);
-    color: var(--color-text-primary);
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.g-textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-.g-input:focus, .g-textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background-color: var(--color-card);
-}
-
+.g-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(5px); padding: 1rem; animation: g-modal-fadeIn 0.3s ease; }
+.g-modal { background-color: var(--surface-color); border-radius: var(--border-radius-large); border: 1px solid var(--border-color); box-shadow: var(--shadow-large); animation: g-modal-slideUp 0.3s ease; padding: 1.5rem; display: flex; flex-direction: column; max-height: 90vh; width: 100%; max-width: 550px; }
+.g-modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0; gap: 1rem; }
+.g-modal-header h3 { margin: 0; font-size: var(--font-size-xl); font-weight: 600; display: inline-flex; align-items: center; gap: 0.75rem; }
+.g-modal-body { overflow-y: auto; flex-grow: 1; }
+.g-modal-footer { padding-top: 1rem; margin-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.75rem; flex-shrink: 0; justify-content: flex-end; }
+.g-input-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.g-input, .g-textarea { width: 100%; padding: 0.75rem 1rem; font-size: var(--font-size-md); border-radius: var(--border-radius-medium); border: 1px solid var(--border-subtle-color); background-color: var(--background-color); color: var(--text-color); transition: border-color 0.2s, background-color 0.2s; }
+.g-textarea { resize: vertical; min-height: 100px; }
+.g-input:focus, .g-textarea:focus { outline: none; border-color: var(--primary-color); background-color: var(--surface-color); }
 @keyframes g-modal-fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes g-modal-slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
