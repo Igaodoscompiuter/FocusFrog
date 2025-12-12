@@ -1,37 +1,38 @@
 
+/* Define o layout principal para todas as telas de onboarding */
 .onboarding-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh; /* Garante que o container ocupe a tela inteira */
   background-color: var(--background-color);
-  padding: var(--sp-lg);
+  padding: 1rem; /* Espaçamento nas bordas */
 }
 
+/* O card central que contém o conteúdo do onboarding */
 .onboarding-card {
   background-color: var(--surface-color);
-  padding: var(--sp-xl);
-  border-radius: var(--border-radius-xl);
+  padding: 2rem; /* Espaçamento interno generoso */
+  border-radius: 12px;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
-  max-width: 450px;
+  box-shadow: var(--shadow-large);
+  max-width: 600px; /* Largura máxima maior para a tela de boas-vindas */
   width: 100%;
   text-align: center;
-
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-md);
+  gap: 1.5rem; /* Aumentado para melhor espaçamento na tela de welcome */
 }
 
 .onboarding-logo {
   width: 80px;
   height: 80px;
-  margin-bottom: var(--sp-md);
+  margin-bottom: 1rem;
 }
 
 .onboarding-title {
-  font-size: 1.5rem; /* Ajustado para h2 */
+  font-size: 1.5rem;
   color: var(--text-color);
   font-weight: 600;
 }
@@ -39,12 +40,104 @@
 .onboarding-subtitle {
   font-size: 1rem;
   color: var(--text-secondary-color);
-  margin-bottom: var(--sp-lg);
+  margin-bottom: 1.5rem;
+  max-width: 90%;
+}
+
+.onboarding-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem; /* Espaço entre grupos de botões/divisores */
 }
 
 .onboarding-input-group {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-md);
+  gap: 0.75rem;
+}
+
+/* =================================================================
+   ESTILOS PARA A LISTA DE FUNCIONALIDADES (TELA DE BOAS-VINDAS)
+================================================================= */
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Uma coluna em telas menores */
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.feature-item {
+  background-color: var(--surface-secondary-color); /* Fundo escuro */
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle-color);
+  display: flex; /* Adicionado para controle de alinhamento */
+  flex-direction: column; /* Organiza o conteúdo em coluna */
+  align-items: center; /* Centraliza o conteúdo horizontalmente */
+  text-align: center; /* Garante que o texto dentro esteja centralizado */
+}
+
+.feature-item h3 {
+  font-size: 1rem;
+  color: var(--text-color);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  min-height: 2.8em; /* Garante altura mínima para alinhar os parágrafos */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-item p {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  line-height: 1.5;
+}
+
+/* =================================================================
+   MELHORIAS DE TIPOGRAFIA (TELA DE BOAS-VINDAS)
+================================================================= */
+
+/* Aumenta o tamanho do título principal */
+.welcome-screen-typography .onboarding-title {
+  font-size: 2rem; /* Maior e com mais impacto */
+}
+
+/* Melhora a legibilidade do subtítulo */
+.welcome-screen-typography .onboarding-subtitle {
+  line-height: 1.6; /* Mais espaço entre as linhas */
+}
+
+/* Melhora a legibilidade da descrição das funcionalidades */
+.welcome-screen-typography .feature-item p {
+  line-height: 1.7; /* Ainda mais espaço para blocos de texto */
+}
+
+/* Grid com duas colunas em telas maiores */
+@media (min-width: 550px) {
+  .features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* =================================================================
+   AJUSTES RESPONSIVOS
+================================================================= */
+@media (max-width: 480px) {
+  .onboarding-card {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  .onboarding-title {
+    font-size: 1.3rem;
+  }
+  
+  /* Ajuste responsivo para o título da tela de boas-vindas */
+  .welcome-screen-typography .onboarding-title {
+    font-size: 1.6rem;
+  }
 }

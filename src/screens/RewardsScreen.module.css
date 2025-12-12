@@ -1,368 +1,87 @@
 
 /* === Estrutura Principal e Navegação === */
-.header {
-    padding: 1rem 1.2rem;
-    text-align: center;
-    border-bottom: 1px solid var(--color-border);
-}
+.header { padding: 1rem 1.2rem; text-align: center; border-bottom: 1px solid var(--color-border); }
+.header h2 { font-size: 1.5rem; color: var(--color-text-primary); margin: 0; }
+.tabContent { animation: fadeIn 0.3s ease-in-out; }
+.settingsGroup { cursor: pointer; transition: background-color 0.2s ease; }
+.settingsGroup:hover { background-color: var(--color-background-hover); }
+.navRow { display: flex; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--color-border); }
+.navRowIconWrapper { background-color: var(--color-primary-light); color: var(--color-primary); border-radius: 8px; padding: 8px; margin-right: 16px; display: flex; align-items: center; justify-content: center; }
+.navRowText h4 { margin: 0; font-size: 1rem; color: var(--color-text-primary); }
+.navRowText p { margin: 0; font-size: 0.85rem; color: var(--color-text-secondary); }
+.navRowChevron { margin-left: auto; color: var(--color-text-secondary); transition: transform 0.2s ease; }
+.settingsGroup:hover .navRowChevron { transform: translateX(3px); }
 
-.header h2 {
-    font-size: 1.5rem;
-    color: var(--color-text-primary);
-    margin: 0;
-}
-
-.tabContent { 
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.settingsGroup {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.settingsGroup:hover {
-    background-color: var(--color-background-hover);
-}
-
-.navRow {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.navRowIconWrapper {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary);
-    border-radius: 8px;
-    padding: 8px;
-    margin-right: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.navRowText h4 {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--color-text-primary);
-}
-
-.navRowText p {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-}
-
-.navRowChevron {
-    margin-left: auto;
-    color: var(--color-text-secondary);
-    transition: transform 0.2s ease;
-}
-
-.settingsGroup:hover .navRowChevron {
-    transform: translateX(3px);
-}
-
-/* === Sub-telas (Header e Conteúdo) === */
-.subScreenHeader {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.subScreenHeader h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    text-align: center;
-    flex-grow: 1;
-    color: var(--color-text-primary);
-}
-
-.backButton {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    margin-left: -0.5rem; /* Alinhamento */
-}
+/* === Sub-telas (com título centralizado) === */
+.subScreenHeader { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--color-border); position: relative; }
+.subScreenHeader h3 { grid-column: 2; font-size: 1.2rem; text-align: center; color: var(--color-text-primary); margin: 0; position: relative; padding-bottom: 8px; }
+.subScreenHeader h3::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 50%; height: 3px; background: linear-gradient(90deg, #FFC107, #FF9800); border-radius: 2px; }
+.backButton { grid-column: 1; justify-self: start; background: none; border: none; color: var(--color-primary); font-size: 1.5rem; cursor: pointer; padding: 0.5rem; }
 
 /* === Tela de Perfil e Autenticação === */
-.profileScreen {
-    padding: 1.5rem;
-    text-align: center;
-}
+.profileScreen { padding: 1.5rem; text-align: center; }
+.authCard { background: var(--color-background-elevated); border-radius: 12px; padding: 2rem; margin: 1rem auto; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.authIcon { color: var(--color-accent); }
+.authIconSuccess { color: var(--color-success); }
+.authCard h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+.authCard p { color: var(--color-text-secondary); margin-top: 0; line-height: 1.5; }
+.g-button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--color-border); background-color: var(--color-background-elevated); color: var(--color-text-primary); padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.2s ease-in-out; width: 100%; }
+.g-button:hover { background-color: var(--color-background-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-.authCard {
-    background: var(--color-background-elevated);
-    border-radius: 12px;
-    padding: 2rem;
-    margin: 1rem auto;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
+/* === Tela de Dados === */
+.dataActions { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.dataActions .btn { width: 100%; padding: 12px; font-weight: bold; }
+.buttonDanger { background-color: var(--color-danger-bg); color: var(--color-danger-fg); border: 1px solid var(--color-danger-border); }
+.buttonDanger:hover { background-color: var(--color-danger-bg-hover); }
 
-.authIcon {
-    color: var(--color-accent);
-}
-
-.authIconSuccess {
-    color: var(--color-success);
-}
-
-.authCard h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-}
-
-.authCard p {
-    color: var(--color-text-secondary);
-    margin-top: 0;
-    line-height: 1.5;
-}
-
-.authCard strong {
-    font-size: 1rem;
-    color: var(--color-text-primary);
-}
-
-.authCard small {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-}
-
-.signOutButton {
-    margin-top: 1rem;
-    width: 100%;
-}
-
-/* Botão Google - Definido globalmente no RewardsScreen, estilizado aqui */
-.g-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--color-border);
-    background-color: var(--color-background-elevated);
-    color: var(--color-text-primary);
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    width: 100%;
-}
-
-.g-button:hover {
-    background-color: var(--color-background-hover);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* === Tela de Dados do Aplicativo === */
-.dataActions {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.dataActions .btn {
-    width: 100%;
-    padding: 12px;
-    font-weight: bold;
-}
-
-.buttonDanger {
-    background-color: var(--color-danger-bg);
-    color: var(--color-danger-fg);
-    border: 1px solid var(--color-danger-border);
-}
-
-.buttonDanger:hover {
-    background-color: var(--color-danger-bg-hover);
-}
-
-/* === Tela de Aparência (Switch e SegmentedControl) === */
-.settingRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.settingRow label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--color-text-primary);
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 28px;
-}
-
+/* === Tela de Aparência === */
+.settingRow { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--color-border); }
+.settingRow label { display: flex; align-items: center; gap: 10px; color: var(--color-text-primary); }
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
 .switch input { display: none; }
+.switchSlider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+.switchSlider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .switchSlider { background-color: var(--color-primary); }
+input:checked + .switchSlider:before { transform: translateX(22px); }
+.segmentedControl { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border); }
+.segmentedControl button { flex: 1; padding: 8px 12px; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease; }
+.segmentedControl button.active { background-color: var(--color-primary); color: white; font-weight: bold; }
 
-.switchSlider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 28px;
-}
+/* === NOVA Tela Sobre (Refinada) === */
+.aboutScreen { padding: 1rem 1.2rem 2rem 1.2rem; }
+.aboutContentWrapper { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: 100%; max-width: 550px; margin: 0 auto; }
+.aboutAppIcon { width: 100px; height: 100px; border-radius: 24px; margin-bottom: 0.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
 
-.switchSlider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
+/* Card do Fundador */
+.founderCard { background: var(--color-background-elevated); border-radius: var(--border-radius-xl); padding: 2rem; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.founderHeader { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.founderIcon { font-size: 2.5rem; color: var(--color-text-secondary); flex-shrink: 0; }
+.founderGreeting { margin: 0; font-size: 1rem; color: var(--color-text-primary); line-height: 1.6; flex-grow: 1; text-align: center; }
+.founderGreeting strong { color: var(--color-text-primary); }
 
-input:checked + .switchSlider {
-    background-color: var(--color-primary);
-}
+.founderBody { text-align: center; }
+.founderBody p { margin: 0 0 1rem 0; line-height: 1.7; color: var(--color-text-secondary); }
+.founderBody p:last-child { margin-bottom: 0; }
+.founderBody strong { color: var(--color-text-primary); font-weight: 600; }
 
-input:checked + .switchSlider:before {
-    transform: translateX(22px);
-}
+/* Card de Apoio */
+.supportCard { text-align: center; background: var(--color-background-elevated); border-radius: var(--border-radius-xl); padding: 2rem; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.missionStatement { margin-bottom: 1.5rem; }
+.missionIcon { color: var(--color-accent); font-size: 1.8rem; margin-bottom: 0.5rem; }
+.missionStatement h3 { font-size: 1.3rem; color: var(--color-text-primary); margin-bottom: 0.5rem; }
+.missionStatement p { font-size: 1rem; color: var(--color-text-primary); }
+.missionStatement strong { font-weight: 800; }
+.supportCard > p { color: var(--color-text-secondary); margin-bottom: 0; line-height: 1.5; }
 
-.segmentedControl {
-    display: flex;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-}
+/* Bloco Social */
+.socialActions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; margin-top: 1rem; }
+.coffeeButton, .instagramButton { text-decoration: none; padding: 12px; border-radius: var(--border-radius-lg); display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; transition: all 0.2s ease; }
+.coffeeButton { background: linear-gradient(145deg, #FFC107, #FF9800); color: #000; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3); }
+.coffeeButton:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4); }
+.coffeeButton:active { transform: translateY(0); filter: brightness(0.95); }
+.instagramButton { background-color: var(--color-surface-secondary); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+.instagramButton:hover { background-color: var(--color-background-hover); border-color: var(--color-primary); color: var(--color-primary); }
 
-.segmentedControl button {
-    flex: 1;
-    padding: 8px 12px;
-    background: none;
-    border: none;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
-}
+.appVersion { cursor: pointer; text-align: center; color: var(--color-text-secondary); font-size: 0.9rem; margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
 
-.segmentedControl button.active {
-    background-color: var(--color-primary);
-    color: white;
-    font-weight: bold;
-}
-
-/* === Tela Sobre === */
-.aboutScreen {
-    padding: 1rem 1.5rem 2rem 1.5rem;
-    display: flex; /* Garante que o wrapper possa centralizar */
-    flex-direction: column;
-    align-items: center;
-}
-
-.aboutContentWrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 500px; /* Evita que o texto fique muito largo em telas grandes */
-    width: 100%;
-}
-
-.aboutHeader {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.aboutIcon {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 1rem;
-}
-
-.aboutHeader h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
-.aboutHeader p { font-size: 1rem; color: var(--color-text-secondary); margin: 0.5rem 0; }
-
-.aboutSection {
-    margin-bottom: 2rem;
-    text-align: center; /* Centraliza texto das seções */
-    width: 100%;
-}
-
-.aboutSection h3 {
-    font-size: 1.1rem;
-    color: var(--color-text-primary);
-    border-bottom: 2px solid var(--color-primary);
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-    display: inline-block; /* Permite que a borda se ajuste ao texto */
-}
-
-.aboutChecklist {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: inline-block; /* Para centralizar a lista */
-    text-align: left; /* Alinha o texto da lista à esquerda */
-}
-
-.aboutChecklist li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 0.5rem;
-    color: var(--color-text-secondary);
-}
-
-.aboutChecklist li svg {
-    color: var(--color-success);
-}
-
-.socialLink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background-color: #333;
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    margin: 2rem 0;
-    transition: background-color 0.2s ease;
-    width: 100%;
-    max-width: 300px; /* Limita a largura do botão social */
-}
-
-.socialLink:hover { background-color: #444; }
-
-.appVersion {
-    text-align: center;
-    color: var(--color-text-secondary);
-    font-size: 0.9rem; /* Aumentado para melhor legibilidade */
-    margin-top: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

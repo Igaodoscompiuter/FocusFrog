@@ -1,16 +1,19 @@
 
 import React from 'react';
 import { useUser } from '../context/UserContext';
-import './OnboardingWelcomeScreen.css'; // Estilos atualizados
+import './Onboarding.css'; // Importa os estilos de botão
+import './OnboardingNameScreen.css'; // Importa os estilos de layout unificados
 
 export const OnboardingWelcomeScreen: React.FC = () => {
   const { userName, completeOnboarding } = useUser();
 
   return (
-    <div className="welcome-container">
-      <div className="welcome-card">
-        <h1 className="welcome-title">Bem-vindo, {userName}!</h1>
-        <p className="welcome-subtitle">
+    // Usa as classes padronizadas para o layout e estilo corretos
+    <div className="onboarding-container">
+      {/* Adiciona a classe 'welcome-screen-typography' para escopo de estilo */}
+      <div className="onboarding-card welcome-screen-typography">
+        <h1 className="onboarding-title">Bem-vindo, {userName}!</h1>
+        <p className="onboarding-subtitle">
           O FocusFrog é uma caixa de ferramentas para acalmar a mente e te ajudar a focar no que realmente importa. Veja como:
         </p>
 
@@ -33,6 +36,7 @@ export const OnboardingWelcomeScreen: React.FC = () => {
           </div>
         </div>
 
+        {/* Este botão agora será estilizado corretamente */}
         <button onClick={completeOnboarding} className="g-button g-button--primary">
           Estou pronto para focar!
         </button>

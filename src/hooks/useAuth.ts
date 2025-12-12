@@ -1,12 +1,20 @@
 
 import { useState, useEffect } from 'react';
 import { getAuthInstance } from '../firebase';
-import { onAuthStateChanged, User, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup, linkWithCredential } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  User, 
+  signOut as firebaseSignOut, 
+  GoogleAuthProvider, 
+  signInWithRedirect,
+  getRedirectResult // 1. IMPORTAR A FUNÇÃO ESSENCIAL
+} from 'firebase/auth';
 
 export interface AuthState {
   user: User | null;
   isAnonymous: boolean;
-  isLoading: boolean;
+  isLoading: boolean; // Renomeado de isAuthLoading para consistência
+  isGoogleUser: boolean; // Adicionado para clareza no roteamento
   upgradeToGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -17,8 +25,19 @@ export const useAuth = (): AuthState => {
 
   useEffect(() => {
     const auth = getAuthInstance();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+
+    // 2. PROCESSAR O RESULTADO DO REDIRECIONAMENTO AO CARREGAR O APP
+    // Isso captura os dados do login do Google quando o usuário retorna.
+    getRedirectResult(auth)
+      .catch((error) => {
+        // Lidar com erros que podem ocorrer durante o processo de login
+        console.error("Erro ao processar o resultado do redirecionamento do Google:", error);
+      });
+
+    // O `onAuthStateChanged` agora será acionado com o usuário correto (Google ou anônimo)
+    // porque `getRedirectResult` resolveu o login pendente.
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setIsLoading(false);
     });
 
@@ -28,32 +47,26 @@ export const useAuth = (): AuthState => {
   const upgradeToGoogle = async () => {
     const auth = getAuthInstance();
     const provider = new GoogleAuthProvider();
-    if (auth.currentUser) {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            // This will link the anonymous account to the Google account.
-            // If the user was anonymous, Firebase automatically handles the upgrade.
-            // If they already had a Google account, it signs them in.
-        } catch (error: any) {
-            // Handle cases where the user might already have an account with the same email
-            // For this app, we'll assume a simple path, but production apps might need more handling
-            console.error("Erro ao vincular conta Google:", error.message);
-            // Potentially alert the user that they might need to sign in directly
-        }
-    }
+    // Inicia o fluxo de redirecionamento. O código acima cuidará do resultado.
+    await signInWithRedirect(auth, provider);
   };
 
   const signOut = async () => {
     const auth = getAuthInstance();
     await firebaseSignOut(auth);
-    // After signing out, Firebase will automatically sign the user in as an anonymous user
-    // as per our setup in `firebase.ts`
+    // Firebase irá automaticamente fazer o login anônimo após o logout,
+    // conforme nossa configuração em `firebase.ts`.
   };
+
+  // 3. DERIVAR isGoogleUser DO ESTADO DO USUÁRIO
+  // Um usuário do Google não é anônimo e seu provedor é 'google.com'.
+  const isGoogleUser = user ? !user.isAnonymous && user.providerData.some(p => p.providerId === 'google.com') : false;
 
   return {
     user,
     isAnonymous: user ? user.isAnonymous : true,
     isLoading,
+    isGoogleUser,
     upgradeToGoogle,
     signOut,
   };

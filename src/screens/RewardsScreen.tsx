@@ -2,10 +2,10 @@
 import React, { useState, useRef } from 'react';
 import { useUI } from '../context/UIContext';
 import { useUserData } from '../hooks/useUserData';
-import { useAuth, AuthState } from '../hooks/useAuth'; // Importando o novo hook
+import { useAuth, AuthState } from '../hooks/useAuth';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
-import { FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiUpload, FiTrash2, FiCheck, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle } from 'react-icons/fi';
+import { FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiUpload, FiTrash2, FiCheck, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee } from 'react-icons/fi';
 import appIcon from '../assets/icon.png';
 import { FontSize } from '../context/UIContext';
 
@@ -44,7 +44,6 @@ const SegmentedControl: React.FC<{options: {label: string, value: FontSize}[], v
     </div>
 );
 
-// NOVO: Componente para a tela de Perfil
 const ProfileScreen: React.FC<{auth: AuthState, onBack: () => void}> = ({ auth, onBack }) => {
     const { user, isAnonymous, upgradeToGoogle, signOut } = auth;
 
@@ -90,7 +89,7 @@ export const RewardsScreen: React.FC = () => {
         setDevModeEnabled, fontSize, setFontSize
     } = useUI();
     const { exportData, importData, resetData } = useUserData();
-    const auth = useAuth(); // Usando o hook de autenticação
+    const auth = useAuth();
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
     const [isResetModalVisible, setIsResetModalVisible] = useState(false);
@@ -127,6 +126,10 @@ export const RewardsScreen: React.FC = () => {
     const handleHapticsChange = (enabled: boolean) => {
         setHapticsEnabled(enabled);
         if (enabled && navigator.vibrate) navigator.vibrate(50);
+    };
+
+    const handleCoffeeClick = () => {
+        window.open('https://shop.beacons.ai/focus.frog/667fee49-a713-4a08-b541-e40ae2321696?pageViewSource=lib_view&referrer=https%3A%2F%2Fbeacons.ai%2Ffocus.frog&show_back_button=true', '_blank');
     };
 
     const renderSettingsContent = () => {
@@ -175,12 +178,38 @@ export const RewardsScreen: React.FC = () => {
             case 'about':
                  return (
                     <div className={`${styles.tabContent} ${styles.aboutScreen}`}>
-                        <SubScreenHeader title="Sobre" onBack={() => setActiveSettingsScreen('main')} />
+                        <SubScreenHeader title="De Usuário para Usuário 🐸" onBack={() => setActiveSettingsScreen('main')} />
                         <div className={styles.aboutContentWrapper}>
-                            <div className={styles.aboutHeader}><img src={appIcon} alt="FocusFrog Icon" className={styles.aboutIcon} /><h1>FocusFrog</h1><strong>Produtividade Calma para Mentes Criativas e com TDAH</strong><p>Um sistema que te apoie, em vez de apenas te cobrar.</p></div>
-                            <div className={styles.aboutSection}><h3>Para quem é o FocusFrog?</h3><ul className={styles.aboutChecklist}><li><FiCheck /> Tem dificuldade em decidir por onde começar</li><li><FiCheck /> Sente que sua lista de tarefas é uma fonte de estresse</li><li><FiCheck /> Precisa de ajuda para focar em uma coisa de cada vez</li></ul></div>
-                            <div className={styles.aboutSection}><h3>Sua Caixa de Ferramentas</h3><p>O FocusFrog oferece ferramentas simples para combater a paralisia da escolha e encontrar clareza.</p></div>
-                            <a href="https://www.instagram.com/focus.frog" target="_blank" rel="noopener noreferrer" className={styles.socialLink}><FiInstagram /><span>Siga-nos no Instagram</span></a>
+                            <img src={appIcon} alt="FocusFrog Icon" className={styles.aboutAppIcon} />
+                            <div className={styles.founderCard}>
+                                <div className={styles.founderHeader}>
+                                    <FiUser className={styles.founderIcon} />
+                                    <p className={styles.founderGreeting}>Olá! Eu sou o Igor, e antes de ser o fundador, eu sou o<br /><strong>usuário #1</strong> do FocusFrog.</p>
+                                </div>
+                                <div className={styles.founderBody}>
+                                    <p>Esta ferramenta não nasceu de um plano de negócios, mas da <strong>necessidade real</strong>. Eu luto diariamente contra a paralisia da escolha, o caos nas rotinas e o esquecimento constante, <strong>assim como você</strong>.</p>
+                                    <p>Entendi que o cérebro com TDAH e criatividade precisa de <strong>apoio</strong>, não de cobrança. Por isso, construí o FocusFrog: um sistema que realmente funciona para mim.</p>
+                                </div>
+                            </div>
+
+                            <div className={styles.supportCard}>
+                                <div className={styles.missionStatement}>
+                                     <FiHeart className={styles.missionIcon}/>
+                                    <h3>Nossa Missão</h3>
+                                    <p>Levar <strong>PRODUTIVIDADE CALMA</strong> e clareza para todos que se sentem sobrecarregados.</p>
+                                </div>
+                                <p>Ao apoiar esta missão, você garante que o FocusFrog permaneça <strong>livre de anúncios</strong> e continue a evoluir para a nossa comunidade.</p>
+                            </div>
+
+                            <div className={styles.socialActions}>
+                                <button className={styles.coffeeButton} onClick={handleCoffeeClick}>
+                                    <FiCoffee /> Apoie com um café
+                                </button>
+                                <a href="https://www.instagram.com/focus.frog" target="_blank" rel="noopener noreferrer" className={styles.instagramButton}>
+                                    <FiInstagram /> Siga-nos
+                                </a>
+                            </div>
+
                             <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v2.0.0 • Feito com 💚🐸</div>
                         </div>
                     </div>
@@ -193,7 +222,7 @@ export const RewardsScreen: React.FC = () => {
                         <SettingsNavRow icon={FiUser} title="Perfil e Sincronização" description="Faça backup e acesse seus dados em qualquer lugar." onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Preferências" description="Ajuste sons, vibração e aparência." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Dados do Aplicativo" description="Exporte, importe ou resete seus dados." onClick={() => setActiveSettingsScreen('data')} />
-                        <SettingsNavRow icon={FiInfo} title="Sobre" description="Informações da versão e créditos." onClick={() => setActiveSettingsScreen('about')} />
+                        <SettingsNavRow icon={FiInfo} title="Sobre" description="Nossa história e missão." onClick={() => setActiveSettingsScreen('about')} />
                     </div>
                 );
         }

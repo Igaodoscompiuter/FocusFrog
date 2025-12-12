@@ -19,7 +19,7 @@ const firebaseConfig = {
     storageBucket: "focusfroggit-81838821-bbab8.firebasestorage.app",
     messagingSenderId: "878346894346",
     appId: "1:878346894346:web:c0517918bd73569e1f73f3",
-    measurementId: "G-JKRZJN6W6J"
+    measurementId: "G-REN0MZQYW6"
   };
 
 // Initialize Firebase

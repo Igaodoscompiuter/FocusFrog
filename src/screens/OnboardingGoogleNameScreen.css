@@ -1,0 +1,11 @@
+
+.onboarding-actions.vertical {
+  flex-direction: column;
+  width: 100%;
+  gap: 1rem; /* Add some space between the vertical buttons */
+}
+
+.onboarding-actions.vertical .g-button {
+  width: 100%; /* Make buttons take full width */
+}
+
