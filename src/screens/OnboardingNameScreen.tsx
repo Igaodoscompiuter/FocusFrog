@@ -19,7 +19,7 @@ export const OnboardingNameScreen: React.FC = () => {
       
       // Se a app for instalável, mostra o popup de sugestão
       if (canInstall) {
-        showPWAInstallPopup();
+        // showPWAInstallPopup(); // Comentado para desativar o popup fantasma
       }
     }
   };

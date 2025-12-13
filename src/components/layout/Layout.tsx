@@ -15,7 +15,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             
             {/* Containers globais que podem aparecer sobre qualquer tela */}
             <NotificationContainer />
-            <PWAInstallPopup />
+            {/* <PWAInstallPopup /> // Comentado para desativar o popup fantasma */}
         </main>
     );
 };
