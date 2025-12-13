@@ -17,11 +17,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FocusFrog</title>
     <meta name="description" content="Um aplicativo de produtividade gamificado para mentes criativas.">
+    <link rel="manifest" href="/manifest.webmanifest" />
   </head>
   <body>
     <div id="root"></div>
     <div id="notification-root"></div>
     <div id="modal-root"></div> 
     <script type="module" src="/src/index.tsx"></script>
+
+    <!-- Script para registar o Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('Service Worker registado com sucesso:', registration);
+          }).catch(error => {
+            console.log('Falha ao registar o Service Worker:', error);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

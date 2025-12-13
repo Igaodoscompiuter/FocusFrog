@@ -28,58 +28,46 @@ export const usePWAInstall = () => useContext(PWAInstallContext);
 
 // O componente Provider
 export const PWAInstallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Usamos useRef para guardar o evento. É mais seguro que useState para objetos não-reativos.
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
-  
-  // Estado para indicar à UI se o botão de instalar deve ser mostrado
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Impede o mini-infobar do Chrome de aparecer
+      // Impede o mini-infobar nativo de aparecer para que possamos usar a nossa UI.
       e.preventDefault();
       // Guarda o evento para que possa ser acionado mais tarde.
       deferredPrompt.current = e as BeforeInstallPromptEvent;
       // Define o estado para que a UI possa mostrar o botão de instalação.
       setIsInstallable(true);
-      console.log('Evento beforeinstallprompt capturado!');
+      console.log('Evento beforeinstallprompt capturado com sucesso!');
     };
 
-    // Adiciona o event listener
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Listener para quando a app é instalada com sucesso
-    window.addEventListener('appinstalled', () => {
+    const handleAppInstalled = () => {
         console.log('PWA instalado com sucesso!');
-        // Esconde o botão de instalação pois a app já foi instalada
+        // Esconde o botão de instalação pois a app já foi instalada.
         setIsInstallable(false);
         deferredPrompt.current = null;
-    });
+    };
+    
+    window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Cleanup: remove o listener quando o componente é desmontado
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', () => {
-        console.log('PWA instalado com sucesso!');
-        setIsInstallable(false);
-        deferredPrompt.current = null;
-    });
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
-  // Função que será chamada pelo nosso botão de instalação
   const triggerInstall = async () => {
     if (deferredPrompt.current) {
       console.log('A acionar o prompt de instalação...');
-      // Mostra o prompt de instalação
       await deferredPrompt.current.prompt();
 
-      // Espera pela escolha do utilizador
       const { outcome } = await deferredPrompt.current.userChoice;
       console.log(`Escolha do utilizador: ${outcome}`);
 
-      // O evento só pode ser usado uma vez, limpamos a referência.
-      // O browser não vai disparar 'beforeinstallprompt' novamente na mesma sessão.
+      // Limpa a referência após o uso. O evento não pode ser usado novamente.
       if (outcome === 'accepted') {
           setIsInstallable(false);
           deferredPrompt.current = null;

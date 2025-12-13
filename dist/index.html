@@ -17,12 +17,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FocusFrog</title>
     <meta name="description" content="Um aplicativo de produtividade gamificado para mentes criativas.">
-    <script type="module" crossorigin src="/assets/index-C0zDN9Ql.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="module" crossorigin src="/assets/index-B1mE-8Ce.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-DrERY1-f.css">
-  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
+  </head>
   <body>
     <div id="root"></div>
     <div id="notification-root"></div>
     <div id="modal-root"></div> 
+
+    <!-- Script para registar o Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('Service Worker registado com sucesso:', registration);
+          }).catch(error => {
+            console.log('Falha ao registar o Service Worker:', error);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

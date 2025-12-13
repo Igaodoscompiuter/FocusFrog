@@ -6,19 +6,23 @@ import { Capacitor } from '@capacitor/core';
 import { useUser } from './context/UserContext';
 import { useUI } from './context/UIContext';
 import { useAuth } from './hooks/useAuth';
-import { PWAInstallProvider } from './context/PWAInstallProvider';
+import { usePWAInstall } from './context/PWAInstallProvider'; // Importado aqui
 import { DashboardScreen } from './screens/DashboardScreen';
 import { OnboardingNameScreen } from './screens/OnboardingNameScreen';
 import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
 import { SplashScreen } from './screens/SplashScreen';
 import { Layout } from './components/layout/Layout';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
+import InstallPromptPopup from './components/InstallPromptPopup'; // Importado aqui
 
 function App() {
   const { userName, onboardingCompleted } = useUser();
-  // Hook de autenticação simplificado
   const { isLoading } = useAuth(); 
   const { fontSize } = useUI();
+  
+  // Lógica do Pop-up de Instalação
+  const { canInstall, triggerInstall } = usePWAInstall();
+  const [showInstallPopup, setShowInstallPopup] = useState(false);
 
   const [showSplash, setShowSplash] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -28,7 +32,6 @@ function App() {
   }, [fontSize]);
 
   useEffect(() => {
-    // A splash só deve sumir APÓS a autenticação carregar
     if (!isLoading) {
       const fadeOutTimer = setTimeout(() => setIsFadingOut(true), 50);
       const removeSplashTimer = setTimeout(() => {
@@ -44,33 +47,49 @@ function App() {
       };
     }
   }, [isLoading]);
+  
+  // Mostra o pop-up de instalação se possível
+  useEffect(() => {
+    if (canInstall) {
+      // Mostra o pop-up após um pequeno atraso para não ser muito abrupto
+      const timer = setTimeout(() => setShowInstallPopup(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [canInstall]);
 
-  // Mostra a splash enquanto a autenticação está carregando
+  const handleInstall = () => {
+    setShowInstallPopup(false);
+    triggerInstall();
+  };
+
+  const handleDismiss = () => {
+    setShowInstallPopup(false);
+  };
+
   if (isLoading || showSplash) {
     return <SplashScreen isFadingOut={isFadingOut} />;
   }
 
-  // --- LÓGICA DE ROTEAMENTO SIMPLIFICADA ---
   let screenContent;
   if (!onboardingCompleted) {
-    // Se o nome ainda não foi definido, pede o nome.
     if (!userName) {
       screenContent = <OnboardingNameScreen />;
     } else {
-      // Se o nome já existe, mostra a tela de boas-vindas.
       screenContent = <OnboardingWelcomeScreen />;
     }
   } else {
-    // Se o onboarding estiver completo, mostra o dashboard.
     screenContent = <DashboardScreen />;
   }
 
   return (
-    <PWAInstallProvider>
-      <div id="app-container">
-        <Layout>{screenContent}</Layout>
-      </div>
-    </PWAInstallProvider>
+    <div id="app-container">
+      <Layout>{screenContent}</Layout>
+      <InstallPromptPopup 
+        show={showInstallPopup}
+        onInstall={handleInstall}
+        onDismiss={handleDismiss}
+      />
+    </div>
   );
 }
 
