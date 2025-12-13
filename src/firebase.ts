@@ -6,12 +6,10 @@ import { getMessaging, Messaging } from "firebase/messaging";
 import { 
     getAuth, 
     onAuthStateChanged, 
-    signInAnonymously, 
     Auth 
 } from "firebase/auth";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyC4iDYWSOU9Naqp9O29f1pvzXfS8v6K5fU",
     authDomain: "focusfroggit-81838821-bbab8.firebaseapp.com",
@@ -37,7 +35,11 @@ export const getAuthInstance = (): Auth => {
     return auth;
 };
 
-export const getAnalyticsInstance = (): Analytics => {
+// Analytics will only be initialized in the production environment
+export const getAnalyticsInstance = (): Analytics | null => {
+    if (process.env.NODE_ENV !== 'production') {
+        return null;
+    }
     if (!analytics) {
         analytics = getAnalytics(app);
     }
@@ -51,17 +53,13 @@ export const getMessagingInstance = (): Messaging | null => {
     return messaging;
 };
 
-// Ensure user is signed in and set user ID for Analytics
+// Set user ID for Analytics when a user signs in, only in production.
 onAuthStateChanged(getAuthInstance(), (user) => {
     if (user) {
-        // User is signed in.
         const analyticsInstance = getAnalyticsInstance();
-        setUserId(analyticsInstance, user.uid);
-    } else {
-        // User is signed out. Sign in anonymously.
-        signInAnonymously(getAuthInstance()).catch((error) => {
-            console.error("Anonymous sign-in failed:", error);
-        });
+        if (analyticsInstance) {
+            setUserId(analyticsInstance, user.uid);
+        }
     }
 });
 

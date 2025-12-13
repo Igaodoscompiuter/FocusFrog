@@ -50,7 +50,14 @@ input:checked + .switchSlider:before { transform: translateX(22px); }
 /* === NOVA Tela Sobre (Refinada) === */
 .aboutScreen { padding: 1rem 1.2rem 2rem 1.2rem; }
 .aboutContentWrapper { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: 100%; max-width: 550px; margin: 0 auto; }
-.aboutAppIcon { width: 100px; height: 100px; border-radius: 24px; margin-bottom: 0.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+.aboutAppIcon { 
+    width: 140px; 
+    height: 140px; 
+    border-radius: 50%; 
+    margin-bottom: 1rem; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border: 3px solid white;
+}
 
 /* Card do Fundador */
 .founderCard { background: var(--color-background-elevated); border-radius: var(--border-radius-xl); padding: 2rem; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }

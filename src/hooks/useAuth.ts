@@ -6,7 +6,8 @@ import {
   User, 
   signOut as firebaseSignOut, 
   GoogleAuthProvider, 
-  signInWithPopup // Alterado de redirect para popup
+  signInWithPopup,
+  signInAnonymously as firebaseSignInAnonymously
 } from 'firebase/auth';
 
 export interface AuthState {
@@ -16,6 +17,7 @@ export interface AuthState {
   isGoogleUser: boolean;
   upgradeToGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  signInAnonymouslyIfNeeded: () => Promise<void>;
 }
 
 export const useAuth = (): AuthState => {
@@ -24,7 +26,6 @@ export const useAuth = (): AuthState => {
 
   useEffect(() => {
     const auth = getAuthInstance();
-    // A lógica de getRedirectResult foi removida, pois não é necessária com o signInWithPopup.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsLoading(false);
@@ -37,11 +38,8 @@ export const useAuth = (): AuthState => {
     const auth = getAuthInstance();
     const provider = new GoogleAuthProvider();
     try {
-      // A função foi alterada para usar o fluxo de popup.
       await signInWithPopup(auth, provider);
-      // O onAuthStateChanged tratará da atualização do estado do usuário após o login.
     } catch (error) { 
-      // É uma boa prática tratar erros, como o utilizador fechar o popup.
       console.error("Erro durante o login com o popup do Google:", error);
     }
   };
@@ -49,17 +47,31 @@ export const useAuth = (): AuthState => {
   const signOut = async () => {
     const auth = getAuthInstance();
     await firebaseSignOut(auth);
-    // O Firebase fará o login anônimo automaticamente após o logout.
+    // After signing out of a Google account, we now do nothing. The user becomes logged out.
+  };
+
+  const signInAnonymouslyIfNeeded = async () => {
+    const auth = getAuthInstance();
+    if (!auth.currentUser) {
+        try {
+            await firebaseSignInAnonymously(auth);
+        } catch (error) {
+            console.error("Anonymous sign-in failed on demand:", error);
+        }
+    }
   };
 
   const isGoogleUser = user ? !user.isAnonymous && user.providerData.some(p => p.providerId === 'google.com') : false;
 
   return {
     user,
-    isAnonymous: user ? user.isAnonymous : true,
+    // If there's no user object, they are not anonymous in the firebase sense, they are simply logged-out.
+    // We can treat them as "anonymous" in the UI context, but firebase doesn't have a user record for them.
+    isAnonymous: user ? user.isAnonymous : false, 
     isLoading,
     isGoogleUser,
     upgradeToGoogle,
     signOut,
+    signInAnonymouslyIfNeeded,
   };
 };

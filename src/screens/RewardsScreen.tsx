@@ -6,7 +6,7 @@ import { useAuth, AuthState } from '../hooks/useAuth';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 import { FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiUpload, FiTrash2, FiCheck, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee } from 'react-icons/fi';
-import appIcon from '../assets/icon.png';
+import focusfrogCoffee from '../assets/focusfrog-coffee.png'; // Alterado de appIcon
 import { FontSize } from '../context/UIContext';
 
 // --- COMPONENTES INTERNOS ---
@@ -180,7 +180,7 @@ export const RewardsScreen: React.FC = () => {
                     <div className={`${styles.tabContent} ${styles.aboutScreen}`}>
                         <SubScreenHeader title="De Usuário para Usuário 🐸" onBack={() => setActiveSettingsScreen('main')} />
                         <div className={styles.aboutContentWrapper}>
-                            <img src={appIcon} alt="FocusFrog Icon" className={styles.aboutAppIcon} />
+                            <img src={focusfrogCoffee} alt="Mascote FocusFrog com café" style={{borderRadius: '50%', objectFit: 'cover'}} className={styles.aboutAppIcon} />
                             <div className={styles.founderCard}>
                                 <div className={styles.founderHeader}>
                                     <FiUser className={styles.founderIcon} />

@@ -4,6 +4,7 @@ import type { Task } from '../../types';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import styles from '../../screens/HomeScreen.module.css';
+import { useAuth } from '../../hooks/useAuth'; // Import useAuth
 
 interface FrogOfTheDayCardProps {
     frogTask: Task | undefined;
@@ -21,9 +22,11 @@ export const FrogOfTheDayCard: React.FC<FrogOfTheDayCardProps> = ({
     onUnsetFrog 
 }) => {
 
+    const { signInAnonymouslyIfNeeded } = useAuth(); // Get the function from our hook
     const isSpecialFrog = frogTask?.title === "🐸 Card Especial FocusFrog N.1";
 
-    const handleSpecialFrogClick = () => {
+    const handleSpecialFrogClick = async () => {
+        await signInAnonymouslyIfNeeded(); // Create user on-demand
         window.open('https://www.instagram.com/focus.frog/', '_blank');
     };
 
