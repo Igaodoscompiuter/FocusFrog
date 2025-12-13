@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   signInAnonymously as firebaseSignInAnonymously
 } from 'firebase/auth';
+import { trackLogin } from '../analytics'; // Importa a nossa função de tracking
 
 export interface AuthState {
   user: User | null;
@@ -39,6 +40,8 @@ export const useAuth = (): AuthState => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
+      // Se o login for bem-sucedido, rastreamos o evento!
+      trackLogin('google');
     } catch (error) { 
       console.error("Erro durante o login com o popup do Google:", error);
     }

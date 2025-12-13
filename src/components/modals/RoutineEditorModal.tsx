@@ -7,6 +7,7 @@ import { useTasks } from '../../context/TasksContext';
 import { routineIcons } from '../../constants';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import styles from './RoutineEditorModal.module.css';
+import { trackNewRoutineCreated } from '../../analytics';
 
 // Componente da lista de seleção de tarefas
 const TaskSelectionList = ({ 
@@ -156,6 +157,9 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: {
     const handleSubmit = () => {
         if (!routine.name.trim()) {
             return;
+        }
+        if (!isEditing) {
+            trackNewRoutineCreated();
         }
         onSave(routine);
     };

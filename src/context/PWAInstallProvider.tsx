@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { trackPWAInstall } from '../analytics'; // Importa a nossa nova função de tracking
 
 // Define a interface para o evento 'beforeinstallprompt' para ter tipagem forte
 interface BeforeInstallPromptEvent extends Event {
@@ -33,11 +34,8 @@ export const PWAInstallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Impede o mini-infobar nativo de aparecer para que possamos usar a nossa UI.
       e.preventDefault();
-      // Guarda o evento para que possa ser acionado mais tarde.
       deferredPrompt.current = e as BeforeInstallPromptEvent;
-      // Define o estado para que a UI possa mostrar o botão de instalação.
       setIsInstallable(true);
       console.log('Evento beforeinstallprompt capturado com sucesso!');
     };
@@ -46,7 +44,8 @@ export const PWAInstallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const handleAppInstalled = () => {
         console.log('PWA instalado com sucesso!');
-        // Esconde o botão de instalação pois a app já foi instalada.
+        // Aqui também poderíamos rastrear, mas rastrear no userChoice é mais direto
+        // para atribuir a fonte do clique.
         setIsInstallable(false);
         deferredPrompt.current = null;
     };
@@ -67,8 +66,10 @@ export const PWAInstallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const { outcome } = await deferredPrompt.current.userChoice;
       console.log(`Escolha do utilizador: ${outcome}`);
 
-      // Limpa a referência após o uso. O evento não pode ser usado novamente.
       if (outcome === 'accepted') {
+          console.log('O utilizador aceitou a instalação. A rastrear o evento...');
+          // Rastreia o evento de instalação com a fonte correta, como definido no manual!
+          trackPWAInstall('install_button');
           setIsInstallable(false);
           deferredPrompt.current = null;
       }
