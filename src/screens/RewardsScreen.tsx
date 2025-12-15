@@ -6,7 +6,7 @@ import { useAuth, AuthState } from '../hooks/useAuth';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 import { FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiUpload, FiTrash2, FiCheck, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee } from 'react-icons/fi';
-import focusfrogCoffee from '../assets/focusfrog-coffee.png'; // Alterado de appIcon
+import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 
 // --- COMPONENTES INTERNOS ---
@@ -18,7 +18,7 @@ const SettingsNavRow: React.FC<{icon: React.ElementType, title: string, descript
                 <h4>{title}</h4>
                 <p>{description}</p>
             </div>
-            <FiChevronRight className={styles.navRowChevron} />
+            <span className={styles.navRowChevron}><FiChevronRight /></span>
         </div>
     </div>
 );
@@ -45,14 +45,30 @@ const SegmentedControl: React.FC<{options: {label: string, value: FontSize}[], v
 );
 
 const ProfileScreen: React.FC<{auth: AuthState, onBack: () => void}> = ({ auth, onBack }) => {
-    const { user, isAnonymous, upgradeToGoogle, signOut } = auth;
+    const { user, isGoogleUser, upgradeToGoogle, signOut } = auth;
 
-    if (isAnonymous) {
+    if (isGoogleUser) {
+        return (
+             <div className={`${styles.tabContent} ${styles.profileScreen}`}>
+                <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
+                <div className={styles.authCard}>
+                    <span className={styles.authIconSuccess}><FiCheckCircle size={40} /></span>
+                    <h3>Tudo Sincronizado!</h3>
+                    <p>Você está logado como:</p>
+                    <strong>{user?.displayName || 'Usuário'}</strong>
+                    <small>{user?.email}</small>
+                    <button onClick={signOut} className={`btn ${styles.buttonDanger} ${styles.signOutButton}`}>
+                        <FiLogOut/> Sair
+                    </button>
+                </div>
+            </div>
+        );
+    } else {
         return (
             <div className={`${styles.tabContent} ${styles.profileScreen}`}>
                 <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
                 <div className={styles.authCard}>
-                    <FiLogIn size={40} className={styles.authIcon} />
+                    <span className={styles.authIcon}><FiLogIn size={40} /></span>
                     <h3>Salve seu Progresso</h3>
                     <p>Crie uma conta gratuita para fazer backup e sincronizar suas tarefas e conquistas em todos os seus dispositivos.</p>
                     <button onClick={upgradeToGoogle} className="g-button">
@@ -63,22 +79,6 @@ const ProfileScreen: React.FC<{auth: AuthState, onBack: () => void}> = ({ auth, 
             </div>
         );
     }
-
-    return (
-         <div className={`${styles.tabContent} ${styles.profileScreen}`}>
-            <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
-            <div className={styles.authCard}>
-                <FiCheckCircle size={40} className={styles.authIconSuccess} />
-                <h3>Tudo Sincronizado!</h3>
-                <p>Você está logado como:</p>
-                <strong>{user?.displayName || 'Usuário'}</strong>
-                <small>{user?.email}</small>
-                <button onClick={signOut} className={`btn ${styles.buttonDanger} ${styles.signOutButton}`}>
-                    <FiLogOut/> Sair
-                </button>
-            </div>
-        </div>
-    );
 }
 
 
@@ -183,7 +183,7 @@ export const RewardsScreen: React.FC = () => {
                             <img src={focusfrogCoffee} alt="Mascote FocusFrog com café" style={{borderRadius: '50%', objectFit: 'cover'}} className={styles.aboutAppIcon} />
                             <div className={styles.founderCard}>
                                 <div className={styles.founderHeader}>
-                                    <FiUser className={styles.founderIcon} />
+                                    <span className={styles.founderIcon}><FiUser /></span>
                                     <p className={styles.founderGreeting}>Olá! Eu sou o Igor, e antes de ser o fundador, eu sou o<br /><strong>usuário #1</strong> do FocusFrog.</p>
                                 </div>
                                 <div className={styles.founderBody}>
@@ -194,7 +194,7 @@ export const RewardsScreen: React.FC = () => {
 
                             <div className={styles.supportCard}>
                                 <div className={styles.missionStatement}>
-                                     <FiHeart className={styles.missionIcon}/>
+                                     <span className={styles.missionIcon}><FiHeart /></span>
                                     <h3>Nossa Missão</h3>
                                     <p>Levar <strong>PRODUTIVIDADE CALMA</strong> e clareza para todos que se sentem sobrecarregados.</p>
                                 </div>

@@ -57,15 +57,14 @@
     border-radius: var(--border-radius-lg);
     background-color: var(--surface-secondary-color);
     color: var(--text-color);
-    transition: all var(--transition-fast);
-    /* [CORREÇÃO] Usa a mesma técnica de borda do modal */
+    /* [OTIMIZAÇÃO] Em vez de 'all', especifica as propriedades a serem transicionadas. */
+    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     border: 2px solid transparent;
 }
 
 .brainDumpForm input:focus {
     outline: none;
     background-color: var(--surface-color);
-    /* [CORREÇÃO] Replica o estilo de foco do modal */
     box-shadow: 0 0 0 2px var(--accent-color);
 }
 
@@ -75,7 +74,8 @@
     border-radius: var(--border-radius-lg);
     border: 2px solid var(--border-color);
     margin-bottom: var(--sp-lg);
-    transition: all var(--transition-slow);
+    /* [OTIMIZAÇÃO] Em vez de 'all', especifica as propriedades a serem transicionadas. */
+    transition: border-color var(--transition-slow), box-shadow var(--transition-slow);
 }
 
 .hasFrog {
