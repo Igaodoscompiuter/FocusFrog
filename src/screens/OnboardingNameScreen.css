@@ -59,6 +59,24 @@
   gap: 0.75rem;
 }
 
+.onboarding-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+  color: var(--text-secondary-color);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.onboarding-divider::before,
+.onboarding-divider::after {
+  content: '';
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
 /* =================================================================
    ESTILOS PARA A LISTA DE FUNCIONALIDADES (TELA DE BOAS-VINDAS)
 ================================================================= */

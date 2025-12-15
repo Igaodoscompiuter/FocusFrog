@@ -26,7 +26,6 @@ function App() {
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   // --- LÓGICA DA SPLASH SCREEN MELHORADA ---
-  // Estados para controlar as condições de saída da splash
   const [authFinished, setAuthFinished] = useState(false);
   const [minTimePassed, setMinTimePassed] = useState(false);
 
@@ -34,24 +33,20 @@ function App() {
     document.body.className = `font-size-${fontSize}`;
   }, [fontSize]);
 
-  // Efeito para verificar quando a autenticação termina
   useEffect(() => {
     if (!isLoading) {
       setAuthFinished(true);
     }
   }, [isLoading]);
 
-  // Efeito para garantir o tempo mínimo de exibição
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinTimePassed(true);
-    }, 2500); // 2.5 segundos de tempo mínimo
+    }, 2500);
     return () => clearTimeout(timer);
-  }, []); // Executa apenas uma vez
+  }, []);
 
-  // Efeito principal que decide quando esconder a splash
   useEffect(() => {
-    // Apenas age quando AMBAS as condições são verdadeiras
     if (authFinished && minTimePassed) {
       const fadeOutTimer = setTimeout(() => setIsFadingOut(true), 50);
       const removeSplashTimer = setTimeout(() => {
@@ -59,19 +54,18 @@ function App() {
           CapacitorSplashScreen.hide({ fadeOutDuration: 300 });
         }
         setShowSplash(false);
-      }, 800); // Duração da animação de fade-out
+      }, 800);
 
       return () => {
         clearTimeout(fadeOutTimer);
         clearTimeout(removeSplashTimer);
       };
     }
-  }, [authFinished, minTimePassed]); // Dispara quando uma das condições muda
+  }, [authFinished, minTimePassed]);
 
-  // Mostra o pop-up de instalação se possível
   useEffect(() => {
     if (canInstall) {
-      const timer = setTimeout(() => setShowInstallPopup(true), 3500); // Atraso maior para não sobrepor a splash
+      const timer = setTimeout(() => setShowInstallPopup(true), 3500);
       return () => clearTimeout(timer);
     }
   }, [canInstall]);
@@ -85,7 +79,6 @@ function App() {
     setShowInstallPopup(false);
   };
 
-  // A condição de renderização agora implicitamente depende da nova lógica
   if (showSplash) {
     return <SplashScreen isFadingOut={isFadingOut} />;
   }

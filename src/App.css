@@ -186,6 +186,11 @@ a {
     background-color: var(--border-color);
 }
 
+.btn-accent {
+    background-color: var(--accent-color);
+    color: var(--text-on-accent);
+}
+
 .btn-small {
     padding: var(--sp-xs) var(--sp-md);
     font-size: 0.8rem;
