@@ -10,7 +10,7 @@ const LOGO_URL = '/icon-512.png';
 export const OnboardingNameScreen: React.FC = () => {
   const [name, setName] = useState('');
   const { setUserName } = useUser();
-  const { upgradeToGoogle } = useAuth();
+  const { signInWithGoogle } = useAuth();
 
   const handleNameSubmit = () => {
     if (name.trim()) {
@@ -20,7 +20,7 @@ export const OnboardingNameScreen: React.FC = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      await upgradeToGoogle();
+      await signInWithGoogle();
     } catch (error) {
       console.error("Erro ao fazer login com o Google:", error);
     }
