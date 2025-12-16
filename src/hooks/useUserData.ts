@@ -1,8 +1,10 @@
 
 import { useUI } from '../context/UIContext';
-import { initialRoutines, initialTaskTemplates } from '../constants';
+// 1. A importação problemática de 'defaultLeavingHomeItems' foi removida.
+import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
+import { supabase } from '../supabaseClient';
+import { User } from '@supabase/supabase-js';
 
-// A lista de chaves permanece a mesma
 const USER_DATA_KEYS = [
     'focusfrog_tasks',
     'focusfrog_tags',
@@ -19,106 +21,155 @@ const USER_DATA_KEYS = [
     'focusfrog_ui_settings'
 ];
 
-const BACKUP_VERSION = '1.0.1'; // Versão incrementada devido à mudança de lógica
+const BACKUP_VERSION = '2.1.0';
+
+const createBackupObjectFromLocalStorage = () => {
+    const backupData: { [key: string]: any } = {
+        backupVersion: BACKUP_VERSION,
+        exportedAt: new Date().toISOString(),
+    };
+
+    USER_DATA_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value !== null) {
+            try {
+                 backupData[key] = JSON.parse(value);
+            } catch (e) {
+                console.warn(`Could not parse localStorage item ${key}:`, value, e);
+            }
+        }
+    });
+    return backupData;
+};
+
+const restoreLocalStorageFromBackupObject = (data: { [key: string]: any }) => {
+    localStorage.clear();
+
+    const userRoutines = data['focusfrog_routines'] || [];
+    data['focusfrog_routines'] = [...initialRoutines, ...userRoutines.filter((r: any) => !r.isDefault)];
+
+    const userTemplates = data['focusfrog_taskTemplates'] || [];
+    data['focusfrog_taskTemplates'] = [...initialTaskTemplates, ...userTemplates.filter((t: any) => !t.isDefault)];
+    
+    if (!data['focusfrog_tags']) data['focusfrog_tags'] = defaultTags;
+    
+    // 2. A linha que usava a variável inexistente foi removida.
+    // if (!data['focusfrog_leavingHomeItems']) data['focusfrog_leavingHomeItems'] = defaultLeavingHomeItems;
+
+    Object.keys(data).forEach(key => {
+        if (USER_DATA_KEYS.includes(key)) {
+            localStorage.setItem(key, JSON.stringify(data[key]));
+        }
+    });
+};
 
 export const useUserData = () => {
     const { addNotification } = useUI();
 
+    const syncLocalToSupabase = async (user: User) => {
+        if (!user) return;
+        addNotification('Sincronizando com a nuvem...', '☁️', 'info');
+        try {
+            const localBackup = createBackupObjectFromLocalStorage();
+            const userName = JSON.parse(localStorage.getItem('focusfrog_userName') || '""');
+
+            const { error } = await supabase.from('profiles').upsert({
+                id: user.id,
+                updated_at: new Date().toISOString(),
+                username: userName,
+                data: localBackup
+            });
+
+            if (error) throw error;
+
+            addNotification('Backup salvo na nuvem!', '✅', 'success');
+
+        } catch (error: any) {
+            console.error("Falha ao sincronizar com a nuvem:", error);
+            addNotification(`Erro na nuvem: ${error.message}`, '❌', 'error');
+        }
+    };
+
+    const downloadAndRestoreFromSupabase = async (user: User) => {
+        addNotification('Buscando seu backup na nuvem...', '☁️', 'info');
+        try {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('data')
+                .eq('id', user.id)
+                .single();
+
+            if (error) throw error;
+
+            if (!profile || !profile.data) {
+                addNotification('Nenhum backup encontrado na nuvem.', '🤷', 'info');
+                return;
+            }
+
+            restoreLocalStorageFromBackupObject(profile.data);
+
+            addNotification('Backup da nuvem restaurado! Reiniciando...', '📥', 'success');
+            setTimeout(() => window.location.reload(), 1500);
+
+        } catch (error: any) {
+            console.error("Falha ao restaurar da nuvem:", error);
+            addNotification(`Erro na nuvem: ${error.message}`, '❌', 'error');
+        }
+    };
+    
     const exportData = () => {
         try {
-            const backupData: { [key: string]: any } = {
-                backupVersion: BACKUP_VERSION,
-                exportedAt: new Date().toISOString(),
-            };
-
-            USER_DATA_KEYS.forEach(key => {
-                const value = localStorage.getItem(key);
-                if (value === null) return;
-
-                let dataToStore = JSON.parse(value);
-
-                // **AQUI ESTÁ A CORREÇÃO CRÍTICA**
-                // Filtra para salvar apenas os itens criados pelo usuário.
-                if (key === 'focusfrog_routines' || key === 'focusfrog_taskTemplates') {
-                    if (Array.isArray(dataToStore)) {
-                        dataToStore = dataToStore.filter(item => !item.isDefault);
-                    }
-                }
-                
-                backupData[key] = dataToStore;
-            });
+            const backupData = createBackupObjectFromLocalStorage();
+            
+            backupData['focusfrog_routines'] = (backupData['focusfrog_routines'] || []).filter((item: any) => !item.isDefault);
+            backupData['focusfrog_taskTemplates'] = (backupData['focusfrog_taskTemplates'] || []).filter((item: any) => !item.isDefault);
 
             const dataStr = JSON.stringify(backupData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement('a');
             a.href = url;
-
-            const userNameRaw = localStorage.getItem('focusfrog_userName');
-            const userName = userNameRaw ? JSON.parse(userNameRaw) : 'usuario';
+            const userName = backupData['focusfrog_userName'] || 'usuario';
             const sanitizedUserName = String(userName).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
             const dateStamp = new Date().toISOString().split('T')[0];
             a.download = `focusfrog_backup_${sanitizedUserName}_${dateStamp}.json`;
-
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-
-            addNotification('Backup criado com sucesso', '📤', 'success');
+            addNotification('Backup local criado com sucesso', '📤', 'success');
         } catch (error) {
-            console.error("Falha ao criar backup:", error);
-            addNotification('Ocorreu um erro ao criar o backup', '❌', 'error');
+            console.error("Falha ao criar backup local:", error);
+            addNotification('Erro ao criar backup local.', '❌', 'error');
         }
     };
 
-    const importData = (file: File) => {
+    const importDataFromFile = (file: File, user: User | null) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target?.result as string);
-
                 if (typeof data !== 'object' || data === null || !data.backupVersion) {
-                    throw new Error('Arquivo de backup inválido ou formato não reconhecido.');
+                    throw new Error('Arquivo de backup inválido.');
                 }
 
-                // Lida com a versão antiga que salvava tudo
-                if (data.backupVersion !== BACKUP_VERSION && data.backupVersion !== '1.0.0') {
-                    addNotification(`Backup incompatível (v${data.backupVersion})`, '⚠️', 'error');
-                    return;
+                restoreLocalStorageFromBackupObject(data);
+                addNotification('Dados importados com sucesso!', '📥', 'success');
+                
+                if (user) {
+                    await syncLocalToSupabase(user);
                 }
 
-                localStorage.clear();
+                setTimeout(() => window.location.reload(), user ? 2500 : 1500);
 
-                // **LÓGICA DE IMPORTAÇÃO MELHORADA**
-                // Mescla os dados do backup com os dados padrão do app
-                const userRoutines = data['focusfrog_routines'] || [];
-                const fullRoutines = [...initialRoutines, ...userRoutines.filter((r: any) => !r.isDefault)];
-                data['focusfrog_routines'] = fullRoutines;
-
-                const userTemplates = data['focusfrog_taskTemplates'] || [];
-                const fullTemplates = [...initialTaskTemplates, ...userTemplates.filter((t: any) => !t.isDefault)];
-                data['focusfrog_taskTemplates'] = fullTemplates;
-
-
-                Object.keys(data).forEach(key => {
-                    if (USER_DATA_KEYS.includes(key) || key === 'focusfrog_tasks_v2_migrated') { // Inclui a chave de migração
-                        localStorage.setItem(key, JSON.stringify(data[key]));
-                    }
-                });
-
-                addNotification('Dados importados com sucesso! Reiniciando...', '📥', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-
-            } catch (error) {
-                console.error("Falha ao importar dados:", error);
-                addNotification('Arquivo de backup inválido ou corrompido.', '📄', 'error');
+            } catch (error: any) {
+                console.error("Falha ao importar arquivo:", error);
+                addNotification(error.message, '📄', 'error');
             }
         };
         reader.readAsText(file);
     };
-
+    
     const resetData = () => {
         try {
             localStorage.clear();
@@ -130,5 +181,11 @@ export const useUserData = () => {
         }
     };
 
-    return { exportData, importData, resetData };
+    return { 
+        exportData, 
+        importDataFromFile, 
+        resetData, 
+        downloadAndRestoreFromSupabase,
+        syncLocalToSupabase
+    };
 };

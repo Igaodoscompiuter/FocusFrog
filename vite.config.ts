@@ -16,6 +16,8 @@ export default defineConfig(({ mode }) => {
     };
 
     return {
+      // ADICIONADO: Garante que os caminhos dos assets sejam relativos.
+      base: './',
       plugins: [
         react(),
       ],

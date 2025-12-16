@@ -3,12 +3,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './App.css';
+// A importação agora aponta explicitamente para o arquivo .tsx
+import { AuthProvider } from './hooks/useAuth.tsx'; 
 import { UserProvider } from './context/UserContext';
 import { UIProvider } from './context/UIContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { TasksProvider } from './context/TasksContext';
 import { PomodoroProvider } from './context/PomodoroContext';
-import { PWAInstallProvider } from './context/PWAInstallProvider'; // Importado aqui
+import { PWAInstallProvider } from './context/PWAInstallProvider';
 import { Workbox } from 'workbox-window';
 
 const rootElement = document.getElementById('root');
@@ -37,17 +39,19 @@ const root = ReactDOM.createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
-    {/* O PWAInstallProvider agora envolve tudo */}
     <PWAInstallProvider>
       <UIProvider>
         <ThemeProvider>
-          <UserProvider>
-            <PomodoroProvider>
-              <TasksProvider>
-                <App />
-              </TasksProvider>
-            </PomodoroProvider>
-          </UserProvider>
+          {/* AuthProvider envolve os contextos que dependem da autenticação */}
+          <AuthProvider>
+            <UserProvider>
+              <PomodoroProvider>
+                <TasksProvider>
+                  <App />
+                </TasksProvider>
+              </PomodoroProvider>
+            </UserProvider>
+          </AuthProvider>
         </ThemeProvider>
       </UIProvider>
     </PWAInstallProvider>

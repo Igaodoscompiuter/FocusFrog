@@ -1,9 +1,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useAuth } from '../hooks/useAuth'; // Importa o hook de autenticação
-import { getAuthInstance } from '../firebase';
-import { updateProfile } from 'firebase/auth';
+import { useAuth } from '../hooks/useAuth'; // Importa nosso novo hook de autenticação Supabase
 
 interface UserContextType {
   userName: string | null;
@@ -26,19 +24,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userName, setUserNameInternal] = useLocalStorage<string | null>('focusfrog_userName', null);
   const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboardingCompleted', false);
   
-  const { user: authUser, isGoogleUser } = useAuth(); // Pega o usuário da autenticação
+  // Pega o usuário do novo hook useAuth (Supabase)
+  const { user: authUser } = useAuth(); 
 
-  // Função para definir o nome do usuário
-  const setUserName = async (name: string) => {
-    setUserNameInternal(name); // Salva localmente
-    const auth = getAuthInstance();
-    if (auth.currentUser) {
-      try {
-        await updateProfile(auth.currentUser, { displayName: name });
-      } catch (error) {
-        console.error("Erro ao atualizar o perfil do Firebase:", error);
-      }
-    }
+  // Função para definir o nome do usuário - agora salva APENAS localmente.
+  // A sincronização com a nuvem será tratada em outro lugar.
+  const setUserName = (name: string) => {
+    setUserNameInternal(name);
   };
 
   // Função para marcar o onboarding como concluído
@@ -46,23 +38,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setOnboardingCompleted(true);
   };
 
-  // EFEITO: Pega o nome do usuário do Google durante o onboarding
+  // EFEITO: Pega o nome do usuário do perfil do Google (via Supabase) durante o onboarding
   useEffect(() => {
     // Condições:
-    // 1. É um usuário do Google.
+    // 1. O usuário está logado (authUser existe).
     // 2. O onboarding ainda não foi concluído.
     // 3. O nome de usuário local ainda não foi definido.
-    // 4. O objeto de usuário do Google (authUser) existe e tem um nome.
-    if (isGoogleUser && !onboardingCompleted && !userName && authUser?.displayName) {
+    // 4. O objeto de usuário do Supabase tem o nome completo em user_metadata.
+    if (authUser && !onboardingCompleted && !userName && authUser.user_metadata?.full_name) {
       
-      // Pega o primeiro nome do displayName do Google
-      const firstName = authUser.displayName.split(' ')[0];
+      // Pega o primeiro nome do full_name do Supabase
+      const firstName = authUser.user_metadata.full_name.split(' ')[0];
       
-      // Define o nome de usuário, que irá acionar a transição para a próxima tela de onboarding
+      // Define o nome de usuário localmente
       setUserName(firstName);
     }
     // Dependências: o efeito roda quando o status do usuário muda ou o onboarding é completado
-  }, [isGoogleUser, authUser, onboardingCompleted, userName]);
+  }, [authUser, onboardingCompleted, userName, setUserName]);
 
   const value = {
     userName,
