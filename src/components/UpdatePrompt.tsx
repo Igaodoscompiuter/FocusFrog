@@ -1,54 +1,45 @@
-import React from 'react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import styles from './UpdatePrompt.module.css';
-import { Icon } from './Icon';
-import { icons } from './Icons';
 
-export const UpdatePrompt: React.FC = () => {
-  const { offlineReady: [offlineReady, setOfflineReady], needRefresh: [needRefresh, setNeedRefresh], updateServiceWorker } = useRegisterSW({
+import React from 'react';
+import './UpdatePrompt.css';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+
+/**
+ * Este componente usa a abordagem de render-props do `useRegisterSW`
+ * para evitar re-renderizações e loops de efeito colateral.
+ */
+export function UpdatePrompt() {
+  const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
     onRegistered(r) {
-      // console.log('SW Registered: ' + r);
+      console.log('Service Worker registrado com sucesso.');
     },
     onRegisterError(error) {
-      console.log('SW registration error', error);
+      console.error('Erro ao registrar o Service Worker:', error);
     },
   });
 
-  const close = () => {
-    setOfflineReady(false);
-    setNeedRefresh(false);
-  };
-
   const handleUpdate = () => {
+    // O `true` aqui força o service worker a pular a fase de "espera" e ativar imediatamente.
     updateServiceWorker(true);
   };
 
-  if (offlineReady) {
-    return (
-      <div className={styles.toastContainer}>
-        <div className={styles.toast}>
-          <span>O aplicativo está pronto para funcionar offline.</span>
-          <button className={styles.closeButton} onClick={() => close()}>
-            <Icon path={icons.close} />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // Renderiza o pop-up apenas quando uma atualização é necessária.
   if (needRefresh) {
     return (
-      <div className={styles.toastContainer}>
-        <div className={styles.toast}>
-          <span>Nova versão disponível!</span>
-          <button className="btn btn-sm btn-primary" onClick={handleUpdate}>Atualizar</button>
-          <button className={styles.closeButton} onClick={() => close()}>
-            <Icon path={icons.close} />
+      <div className="update-prompt-container" role="alert">
+        <div className="update-prompt-content">
+          <p>Uma nova versão está disponível!</p>
+          <button 
+            onClick={handleUpdate} 
+            // Aplicando o estilo de botão padrão do app
+            className="btn btn-primary update-prompt-button"
+          >
+            Atualizar Agora
           </button>
         </div>
       </div>
     );
   }
 
+  // Não renderiza nada se não houver necessidade de atualização.
   return null;
-};
+}

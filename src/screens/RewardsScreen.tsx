@@ -6,6 +6,8 @@ import { useAuth } from '../hooks/useAuth';
 import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
+// Importando o componente de atualização
+import { UpdatePrompt } from '../components/UpdatePrompt';
 import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
@@ -137,8 +139,14 @@ const DataScreen: React.FC<{
 // --- COMPONENTE PRINCIPAL ---
 export const RewardsScreen: React.FC = () => {
     const { 
-        addNotification, soundEnabled, setSoundEnabled, hapticsEnabled, setHapticsEnabled, 
-        setDevModeEnabled, fontSize, setFontSize
+        addNotification, 
+        soundEnabled, 
+        toggleSoundEnabled, // <-- Usando a nova função!
+        hapticsEnabled, 
+        setHapticsEnabled, 
+        setDevModeEnabled, 
+        fontSize, 
+        setFontSize
     } = useUI();
     const { exportData, importDataFromFile, resetData, downloadAndRestoreFromSupabase } = useUserData();
     const { user, isLoading, signInWithGoogle, signOut } = useAuth();
@@ -188,7 +196,8 @@ export const RewardsScreen: React.FC = () => {
                         <div className={styles.settingRow}>
                             <label><FiVolume2 /> Efeitos sonoros</label>
                             <label className={styles.switch}>
-                                <input type="checkbox" checked={soundEnabled} onChange={(e) => setSoundEnabled(e.target.checked)} />
+                                {/* AQUI ESTÁ A CORREÇÃO! */}
+                                <input type="checkbox" checked={soundEnabled} onChange={toggleSoundEnabled} />
                                 <span className={styles.switchSlider}></span>
                             </label>
                         </div>
@@ -275,6 +284,8 @@ export const RewardsScreen: React.FC = () => {
         <main className="screen-content">
              {isResetModalVisible && <ConfirmationModal title="Resetar Todos os Dados" message="Tem a certeza? Esta ação é irreversível e irá apagar todas as suas tarefas, pontos e personalizações." confirmText="Sim, Resetar Tudo" cancelText="Cancelar" onConfirm={confirmReset} onCancel={hideResetModal} variant="danger" icon="trash" />}
             {isLoading ? <p>Carregando...</p> : renderSettingsContent()}
+            {/* O componente de atualização foi adicionado aqui */}
+            <UpdatePrompt />
         </main>
     );
 };

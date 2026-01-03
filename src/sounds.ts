@@ -2,14 +2,18 @@
 // Web Audio API Sound Generators
 // Using these avoids needing to host and load audio files.
 
-// Modified signature: generators now receive the destination node (usually a GainNode)
-// so they can build internal chains (Source -> Filter -> Destination)
-type SoundGenerator = (context: AudioContext, destination: AudioNode) => AudioScheduledSourceNode;
+type SoundGenerator = (context: AudioContext, destination: AudioNode) => void;
+type EffectGenerator = (context: AudioContext, destination: AudioNode) => void;
 
-export interface Sound { // <--- ADICIONADO O 'EXPORT'
+export interface Sound {
     id: string;
     name: string;
     generator: SoundGenerator;
+}
+
+export interface Effect {
+    id: string;
+    generator: EffectGenerator;
 }
 
 // --- Noise Functions ---
@@ -45,110 +49,135 @@ const createPinkNoiseBuffer = (context: AudioContext): AudioBuffer => {
     return buffer;
 }
 
-// --- Generators ---
+// --- AMBIENT SOUND GENERATORS ---
 
-// 1. Rain: White Noise + LowPass Filter (Removes high pitch hiss)
 const rainGenerator: SoundGenerator = (context, destination) => {
     const buffer = createWhiteNoiseBuffer(context);
     const source = context.createBufferSource();
     source.buffer = buffer;
     source.loop = true;
 
-    // Filter to make it sound like heavy rain instead of TV static
     const filter = context.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 400; // Cut off high frequencies
-    filter.Q.value = 1; // Resonance
+    filter.frequency.value = 400;
+    filter.Q.value = 1;
 
     source.connect(filter);
     filter.connect(destination);
-
-    return source;
+    source.start();
 };
 
-// 2. Waves/Wind: Pink Noise (Naturally deeper) + Dynamic Filter (Optional)
 const wavesGenerator: SoundGenerator = (context, destination) => {
     const buffer = createPinkNoiseBuffer(context);
     const source = context.createBufferSource();
     source.buffer = buffer;
     source.loop = true;
 
-    // Pink noise is already good, but let's soften it slightly
     const filter = context.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 800;
 
     source.connect(filter);
     filter.connect(destination);
-
-    return source;
+    source.start();
 };
 
-// 3. Forest: Pink Noise + HighPass (Leaves rustling)
 const forestGenerator: SoundGenerator = (context, destination) => {
     const buffer = createPinkNoiseBuffer(context);
     const source = context.createBufferSource();
     source.buffer = buffer;
     source.loop = true;
 
-    // Focus on mid/high frequencies for "rustling" sound
     const filter = context.createBiquadFilter();
     filter.type = 'highpass';
     filter.frequency.value = 400;
 
     source.connect(filter);
     filter.connect(destination);
-
-    return source;
+    source.start();
 };
 
-// 4. Piano/Drone: Sine wave (unchanged)
 const simpleToneGenerator: SoundGenerator = (context, destination) => {
     const oscillator = context.createOscillator();
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(220, context.currentTime); // A3 (Lower/Calmer)
+    oscillator.frequency.setValueAtTime(220, context.currentTime); 
 
-    // Add a slight LFO (Low Frequency Oscillator) to make it throb gently
-    const lfo = context.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.5; // 0.5 Hz
-
-    const lfoGain = context.createGain();
-    lfoGain.gain.value = 50; // Depth of modulation
-
-    lfo.connect(lfoGain);
-    // lfoGain.connect(oscillator.frequency); // Vibrato effect
-    
     oscillator.connect(destination);
-    // lfo.start(); // Optional: start LFO if connected
-
-    return oscillator;
+    oscillator.start();
 };
 
-export const sounds: { [key: string]: Sound } = {
+// --- UI EFFECT GENERATORS ---
+
+const timerStartGenerator: EffectGenerator = (context, destination) => {
+    const osc = context.createOscillator();
+    const gainNode = context.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, context.currentTime); // A4
+    osc.frequency.linearRampToValueAtTime(880, context.currentTime + 0.1); // ramp to A5
+
+    gainNode.gain.setValueAtTime(0.5, context.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.2);
+
+    osc.connect(gainNode);
+    gainNode.connect(destination);
+    
+    osc.start(context.currentTime);
+    osc.stop(context.currentTime + 0.2);
+};
+
+const timerEndGenerator: EffectGenerator = (context, destination) => {
+    const osc = context.createOscillator();
+    const gainNode = context.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(523.25, context.currentTime); // C5
+
+    gainNode.gain.setValueAtTime(0.4, context.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.8);
+    
+    osc.connect(gainNode);
+    gainNode.connect(destination);
+
+    osc.start(context.currentTime);
+    osc.stop(context.currentTime + 1.0);
+};
+
+export const ambientSounds: { [key: string]: Sound } = {
   'none': {
     id: 'none',
     name: 'Silêncio',
-    generator: () => { throw new Error('Cannot generate silence'); },
+    generator: () => { /* Do nothing */ },
   },
-  'rain-sound': {
-    id: 'rain-sound',
+  'rain': {
+    id: 'rain',
     name: 'Chuva',
     generator: rainGenerator,
   },
-  'waves-sound': {
-    id: 'waves-sound',
+  'waves': {
+    id: 'waves',
     name: 'Ondas',
     generator: wavesGenerator,
   },
-  'forest-sound': {
-    id: 'forest-sound',
+  'forest': {
+    id: 'forest',
     name: 'Floresta',
     generator: forestGenerator,
   },
-  'piano-sound': {
-    id: 'piano-sound',
+  'piano': {
+    id: 'piano',
     name: 'Piano (Drone)',
     generator: simpleToneGenerator,
   }
 };
+
+export const uiEffects: { [key: string]: Effect } = {
+    timerStart: {
+        id: 'timerStart',
+        generator: timerStartGenerator,
+    },
+    timerEnd: {
+        id: 'timerEnd',
+        generator: timerEndGenerator,
+    }
+}

@@ -1,0 +1,46 @@
+
+.update-prompt-container {
+  position: fixed; /* Fica fixo na tela */
+  bottom: 20px; /* Um pouco acima da borda inferior */
+  left: 50%; /* Centraliza horizontalmente */
+  transform: translateX(-50%); /* Ajuste fino para centralização perfeita */
+  padding: 16px;
+  border: 1px solid #4a4a4a; /* Cor da borda sutil */
+  border-radius: 12px; /* Cantos arredondados */
+  background-color: #2a2a2a; /* Cor de fundo sólida */
+  color: #f0f0f0; /* Cor do texto */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidade */
+  z-index: 1000; /* Z-index alto para ficar acima de outros elementos */
+  animation: slide-up 0.3s ease-out; /* Animação de entrada */
+  width: calc(100% - 40px); /* Largura total menos as margens laterais */
+  max-width: 400px; /* Largura máxima para telas maiores */
+}
+
+.update-prompt-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px; /* Espaço entre o texto e o botão */
+}
+
+.update-prompt-content p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.update-prompt-button {
+  flex-shrink: 0; /* Impede que o botão encolha */
+  white-space: nowrap; /* Impede a quebra de linha no texto do botão */
+}
+
+/* Animação para o pop-up deslizar de baixo para cima */
+@keyframes slide-up {
+  from {
+    transform: translate(-50%, 30px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}

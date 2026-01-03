@@ -18,18 +18,19 @@ const screenMap: Record<Screen, React.ComponentType> = {
     focus: FocusScreen,
     stats: StatsScreen,
     rewards: RewardsScreen,
+    moodboard: DashboardScreen,
 };
 
 export const AppLayout: React.FC = () => {
-    const { activeScreen, density, isImmersiveMode } = useUI();
+    const { activeScreen, isImmersiveMode } = useUI();
 
     const ActiveScreenComponent = screenMap[activeScreen];
 
     return (
-        <div className={`app-container screen-${activeScreen} density-${density} ${isImmersiveMode ? 'immersive-mode' : ''}`}>
+        <div className={`app-container screen-${activeScreen} ${isImmersiveMode ? 'immersive-mode' : ''}`}>
             <TasksProvider>
                 <div className="screen-content">
-                    <ActiveScreenComponent />
+                    {ActiveScreenComponent ? <ActiveScreenComponent /> : <div>Ecrã não encontrado</div>}
                 </div>
             </TasksProvider>
             

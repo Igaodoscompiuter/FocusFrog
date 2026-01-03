@@ -102,6 +102,7 @@ function App() {
         onInstall={handleInstall}
         onDismiss={handleDismiss}
       />
+      {/* O UpdatePrompt foi removido daqui */}
     </div>
   );
 }

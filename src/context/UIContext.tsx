@@ -1,15 +1,38 @@
 
-import React, { useState, createContext, useContext, ReactNode, useCallback, useReducer } from 'react';
+import React, { useState, createContext, useContext, ReactNode, useCallback, useReducer, useEffect } from 'react';
 import type { Screen, Task, Notification as NotificationType } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { notificationConfig } from '../config/notificationConfig';
+import { Effect } from '../sounds'; // <-- CORRIGIDO: Importa apenas o tipo Effect
+
+// --- ÁUDIO CENTRALIZADO ---
+const AudioEngine: {
+    context: AudioContext | null;
+    effectsGain: GainNode | null;
+} = {
+    context: null,
+    effectsGain: null,
+};
+
+const initializeAudio = () => {
+    if (typeof window !== 'undefined' && !AudioEngine.context) {
+        try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            AudioEngine.context = new AudioContext();
+            AudioEngine.effectsGain = AudioEngine.context.createGain();
+            AudioEngine.effectsGain.gain.value = 0.4;
+            AudioEngine.effectsGain.connect(AudioEngine.context.destination);
+            console.log("Audio Engine Initialized.");
+        } catch (e) {
+            console.error("Failed to initialize AudioContext:", e);
+        }
+    }
+};
 
 export type NotificationCategory = 'victory' | 'success' | 'info' | 'error';
-export type FontSize = 'small' | 'normal' | 'large'; // NOVO TIPO
+export type FontSize = 'small' | 'normal' | 'large';
 
-export interface Notification extends NotificationType {
-    category: NotificationCategory;
-}
+export interface Notification extends NotificationType { category: NotificationCategory; }
 
 // --- Reducer (sem alterações) ---
 interface NotificationsState { visible: Notification[]; queue: Notification[]; showClearAll: boolean; }
@@ -36,6 +59,7 @@ const createNotificationReducer = (config: typeof notificationConfig) => (state:
     return nextState;
 };
 
+
 // --- Tipos e Contexto ---
 export interface UIContextType {
     activeScreen: Screen;
@@ -54,7 +78,8 @@ export interface UIContextType {
     promoteNotification: () => void;
     clearAllNotifications: () => void;
     soundEnabled: boolean;
-    setSoundEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+    toggleSoundEnabled: () => void;
+    playEffect: (effect: Effect) => void;
     hapticsEnabled: boolean;
     setHapticsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
     isImmersiveMode: boolean;
@@ -62,8 +87,6 @@ export interface UIContextType {
     isPWAInstallPopupVisible: boolean;
     showPWAInstallPopup: () => void;
     hidePWAInstallPopup: () => void;
-
-    // NOVOS ESTADOS ADICIONADOS
     fontSize: FontSize;
     setFontSize: React.Dispatch<React.SetStateAction<FontSize>>;
     devModeEnabled: boolean;
@@ -78,8 +101,11 @@ export const useUI = () => {
     return context;
 };
 
+
 // --- Provedor ---
 export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    useEffect(() => initializeAudio(), []);
+
     const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
     const [taskInFocus, setTaskInFocus] = useState<Task | null>(null);
     const [subtaskInFocusId, setSubtaskInFocusId] = useState<string | null>(null);
@@ -87,14 +113,40 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isPWAInstallPopupVisible, setIsPWAInstallPopupVisible] = useState(false);
     const [quickTaskForCompletion, setQuickTaskForCompletion] = useState<Task | null>(null);
 
-    // ESTADOS COM PERSISTÊNCIA
     const [hapticsEnabled, setHapticsEnabled] = useLocalStorage<boolean>('focusfrog_haptics_enabled', true);
     const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>('focusfrog_sound_enabled', true);
-    const [fontSize, setFontSize] = useLocalStorage<FontSize>('focusfrog_fontsize', 'normal'); // NOVO
-    const [devModeEnabled, setDevModeEnabled] = useLocalStorage<boolean>('focusfrog_dev_mode', false); // NOVO
+    const [fontSize, setFontSize] = useLocalStorage<FontSize>('focusfrog_fontsize', 'normal');
+    const [devModeEnabled, setDevModeEnabled] = useLocalStorage<boolean>('focusfrog_dev_mode', false);
 
     const notificationReducer = createNotificationReducer(notificationConfig);
     const [notificationsState, dispatch] = useReducer(notificationReducer, { visible: [], queue: [], showClearAll: false });
+
+    // --- LÓGICA DE ÁUDIO CORRIGIDA ---
+    const playEffect = useCallback((effect: Effect) => {
+        if (soundEnabled && AudioEngine.context && AudioEngine.effectsGain) {
+            // Chama o gerador de som diretamente, que é a "receita" para o som.
+            effect.generator(AudioEngine.context, AudioEngine.effectsGain);
+        } else if (soundEnabled) {
+            console.warn("PlayEffect called, but audio engine not ready.");
+        }
+    }, [soundEnabled]);
+
+    const toggleSoundEnabled = useCallback(() => {
+        initializeAudio();
+        const context = AudioEngine.context;
+        if (!context) {
+            console.error("Cannot toggle sound, AudioContext failed to initialize.");
+            return;
+        }
+        if (context.state === 'suspended') {
+            context.resume().then(() => {
+                console.log("AudioContext Resumed!");
+                setSoundEnabled(current => !current);
+            });
+        } else {
+            setSoundEnabled(current => !current);
+        }
+    }, [setSoundEnabled]);
 
     const addNotification = useCallback((message: string, icon: string, category: NotificationCategory = 'info', action?: { label: string; onAction: () => void; }) => {
         const newNotification: Notification = { id: Date.now() + Math.random(), message, icon, category, action };
@@ -129,11 +181,12 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         queueCount: notificationsState.queue.length,
         showClearAllButton: notificationsState.showClearAll,
         addNotification, removeNotification, promoteNotification, clearAllNotifications,
-        soundEnabled, setSoundEnabled,
+        soundEnabled, 
+        toggleSoundEnabled,
+        playEffect, 
         hapticsEnabled, setHapticsEnabled,
         isImmersiveMode, setIsImmersiveMode,
         isPWAInstallPopupVisible, showPWAInstallPopup, hidePWAInstallPopup,
-        // VALORES EXPOSTOS
         fontSize, setFontSize,
         devModeEnabled, setDevModeEnabled
     };

@@ -1,21 +1,21 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useUI } from './UIContext';
+import { useUI } from './UIContext'; // <- Acesso à UI centralizada
 import { useTheme } from './ThemeContext';
-import { sounds } from '../sounds';
+import { uiEffects } from '../sounds'; // <- Apenas os efeitos, não mais a lógica de play
+import { postMessageToSW } from '../sw-helpers';
+
 
 type TimerMode = 'focus'; 
 type PomodoroStatus = 'idle' | 'running' | 'paused'; 
 
-const DEFAULT_FOCUS_DURATION = 25 * 60; // Duração padrão de 25 minutos em segundos
+const DEFAULT_FOCUS_DURATION = 25 * 60;
 
-const playSound = (sound: HTMLAudioElement, volume: number) => {
-    if (sound) {
-        sound.volume = volume;
-        sound.play().catch(err => console.error('Erro ao tocar som:', err));
-    }
-};
+// ***************************************************************
+// TODA A LÓGICA DE ÁUDIO FOI REMOVIDA DESTE ARQUIVO.
+// Agora é gerenciada de forma centralizada pelo UIContext.
+// ***************************************************************
 
 interface PomodoroContextType {
     pomodorosCompleted: number;
@@ -49,7 +49,8 @@ export const usePomodoro = () => {
 };
 
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { soundEnabled } = useUI();
+    // Acessando o playEffect do UIContext!
+    const { playEffect } = useUI(); 
     const { setPontosFoco } = useTheme();
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
@@ -75,6 +76,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setTimeRemaining(sessionDuration);
         setActiveTaskId(null);
         setActiveTaskTitle(null);
+        postMessageToSW({ type: 'CANCEL_NOTIFICATION' });
     }, [sessionDuration, setActiveTaskId, setActiveTaskTitle]);
 
     useEffect(() => {
@@ -86,7 +88,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                     clearInterval(timerRef.current!); 
                     
                     setTimeout(() => {
-                        if (soundEnabled) playSound(sounds.levelEnd, 0.5);
+                        // Usando a função centralizada!
+                        playEffect(uiEffects.timerEnd); 
                         setPomodorosCompleted(p => p + 1);
                         setPontosFoco(p => p + 25);
 
@@ -106,30 +109,56 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         return () => {
             if(timerRef.current) clearInterval(timerRef.current);
         };
-    }, [status, soundEnabled, setPontosFoco, activeTaskId, setPomodorosCompleted, stopAndResetTimer, setLastCompletedFocus]);
+    }, [status, playEffect, setPontosFoco, activeTaskId, setPomodorosCompleted, stopAndResetTimer, setLastCompletedFocus]);
 
-    const startTimer = useCallback((duration: number) => {
+    const startTimer = useCallback((duration: number, title: string, body: string) => {
+        // Usando a função centralizada!
+        playEffect(uiEffects.timerStart);
         setTimeRemaining(duration);
         setStatus('running');
-    }, []);
-
+        postMessageToSW({
+            type: 'SCHEDULE_NOTIFICATION',
+            payload: {
+                title,
+                body,
+                timestamp: Date.now() + duration * 1000,
+            },
+        });
+    }, [playEffect]);
+    
     const startCycle = useCallback(() => {
         if (activeTaskId) {
            stopAndResetTimer();
         }
-        startTimer(sessionDuration);
+        startTimer(sessionDuration, 'Sessão de Foco Concluída!', 'Hora de fazer uma pausa.');
     }, [activeTaskId, sessionDuration, startTimer, stopAndResetTimer]);
 
     const startFocusOnTask = useCallback((taskId: string, taskTitle: string, durationInMinutes?: number) => {
         const durationInSeconds = durationInMinutes ? durationInMinutes * 60 : sessionDuration;
         setActiveTaskId(taskId); 
         setActiveTaskTitle(taskTitle); 
-        startTimer(durationInSeconds);
+        startTimer(durationInSeconds, 'Sessão de Foco Concluída!', `A tarefa "${taskTitle}" terminou. Bom trabalho!`);
     }, [sessionDuration, startTimer, setActiveTaskId, setActiveTaskTitle]);
 
-    const pauseCycle = useCallback(() => setStatus('paused'), []);
+    const pauseCycle = useCallback(() => {
+        setStatus('paused');
+        postMessageToSW({ type: 'CANCEL_NOTIFICATION' });
+    }, []);
 
-    const resumeCycle = useCallback(() => setStatus('running'), []);
+    const resumeCycle = useCallback(() => {
+        setStatus('running');
+        const body = activeTaskTitle
+            ? `A tarefa "${activeTaskTitle}" terminou. Bom trabalho!`
+            : 'Hora de fazer uma pausa.';
+        postMessageToSW({
+            type: 'SCHEDULE_NOTIFICATION',
+            payload: {
+                title: 'Sessão de Foco Concluída!',
+                body,
+                timestamp: Date.now() + timeRemaining * 1000,
+            },
+        });
+    }, [activeTaskTitle, timeRemaining]);
 
     const setFocusDuration = useCallback((minutes: number) => {
         const newDuration = minutes * 60;
