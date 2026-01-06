@@ -60,6 +60,12 @@ export default defineConfig(({ mode }) => {
             alias: {
                 '@': path.resolve(__dirname, './src'),
             }
+        },
+        server: {
+            hmr: {
+                host: process.env.IDE_HOST,
+                clientPort: 443
+            }
         }
     };
 });
