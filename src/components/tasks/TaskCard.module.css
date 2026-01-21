@@ -42,7 +42,7 @@
     text-overflow: ellipsis;
 }
 
-.checkbox { min-width: 18px; width: 18px; height: 18px; border: 2px solid var(--border-subtle-color); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.checkbox { min-width: 18px; width: 18px; height: 18px; border: 2px solid var(--border-color); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
 .checkbox.disabled { border-color: var(--border-color); cursor: not-allowed; opacity: 0.7; }
 
 .actionPlaceholder { min-width: 18px; width: 18px; height: 18px; }
@@ -93,7 +93,7 @@
 .subtaskItem.clickable { cursor: pointer; }
 .subtaskItem.completed span { text-decoration: line-through; color: var(--text-disabled-color); }
 
-.subtaskCheckbox { min-width: 14px; width: 14px; height: 14px; border: 1px solid var(--border-subtle-color); border-radius: 4px; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.subtaskCheckbox { min-width: 14px; width: 14px; height: 14px; border: 1px solid var(--border-color); border-radius: 4px; transition: background-color 0.2s ease, border-color 0.2s ease; }
 
 .subtaskItem.completed .subtaskCheckbox { background-color: var(--primary-color); border-color: var(--primary-color); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); }
 

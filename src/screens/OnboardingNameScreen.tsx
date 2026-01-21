@@ -36,19 +36,6 @@ export const OnboardingNameScreen: React.FC = () => {
           Seu oásis de produtividade para transformar o caos em clareza.
         </p>
 
-        {/* Ação Principal: Login com Google */}
-        <div className="onboarding-actions">
-          <button onClick={handleGoogleSignIn} className="btn btn-secondary">
-            <FcGoogle />
-            Entrar com o Google
-          </button>
-        </div>
-
-        {/* Divisor */}
-        <div className="onboarding-divider">
-          <span>OU</span>
-        </div>
-
         {/* Ação Secundária: Inserir apenas o nome */}
         <div className="onboarding-actions">
           <div className="onboarding-input-group">

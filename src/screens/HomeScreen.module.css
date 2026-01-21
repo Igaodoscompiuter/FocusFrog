@@ -57,7 +57,6 @@
     border-radius: var(--border-radius-lg);
     background-color: var(--surface-secondary-color);
     color: var(--text-color);
-    /* [OTIMIZAÇÃO] Em vez de 'all', especifica as propriedades a serem transicionadas. */
     transition: background-color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     border: 2px solid transparent;
 }
@@ -74,7 +73,6 @@
     border-radius: var(--border-radius-lg);
     border: 2px solid var(--border-color);
     margin-bottom: var(--sp-lg);
-    /* [OTIMIZAÇÃO] Em vez de 'all', especifica as propriedades a serem transicionadas. */
     transition: border-color var(--transition-slow), box-shadow var(--transition-slow);
 }
 
@@ -193,14 +191,14 @@
     min-width: 14px;
     width: 14px;
     height: 14px;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .frogSubtaskItem.completed .frogSubtaskCheckbox {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
     background-position: center;
     background-repeat: no-repeat;

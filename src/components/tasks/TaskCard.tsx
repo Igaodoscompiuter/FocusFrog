@@ -10,6 +10,7 @@ import styles from './TaskCard.module.css';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
+// CORRECTED: SubtaskItem is now defined at the top level of the module.
 const SubtaskItem: React.FC<any> = ({ subtask, onToggle }) => {
     return (
         <div 
@@ -42,7 +43,7 @@ interface TaskCardProps {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragStart, onDragEnd, isDragging, quadrant, onTriage }) => {
     const { handleCompleteTask, handleSetFrog, frogTaskId, handleDeleteTask, handleToggleSubtask } = useTasks();
     const { startFocusOnTask, activeTaskId, status } = usePomodoro(); 
-    const { addNotification, handleNavigate } = useUI(); // Adicionado handleNavigate
+    const { addNotification, handleNavigate } = useUI();
 
     const [subtasksVisible, setSubtasksVisible] = useState(true);
     const longPressTimer = useRef<NodeJS.Timeout>();
@@ -149,7 +150,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
         e.stopPropagation();
         if (isPomodoroActive) return;
         startFocusOnTask(task.id, task.title, task.customDuration);
-        handleNavigate('focus'); // Navega para a tela de foco
+        handleNavigate('focus');
     };
 
     const taskTag = task.tagId ? tags.find(t => t.id === task.tagId) : null;

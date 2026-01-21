@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./src/assets/icon.png" width="256" alt="FocusFrog Icon" />
+  <img src="./public/icon-512.png" width="256" alt="FocusFrog Icon" />
 
   <h1>🐸 FocusFrog</h1>
 

@@ -1,9 +1,0 @@
-/* Layout.module.css */
-
-.container {
-    width: 100%;
-    /* [CORREÇÃO] Aumentada a largura máxima para acomodar o layout de desktop */
-    max-width: 1200px; 
-    margin: 0 auto; /* Centraliza o container na página */
-    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
-}
