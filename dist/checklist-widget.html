@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget Checklist de Saída</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: transparent;
+      border-radius: 16px;
+    }
+    .widget-content {
+      padding: 16px;
+      background-color: #1F2937;
+      color: #F3F4F6;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    #checklist-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    .checklist-item input {
+      margin-right: 8px;
+    }
+    .placeholder {
+      color: #9CA3AF;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-content">
+    <ul id="checklist-items">
+      <li class="placeholder">Carregando checklist...</li>
+    </ul>
+  </div>
+  <script src="/checklist-widget.js" defer></script>
+</body>
+</html>

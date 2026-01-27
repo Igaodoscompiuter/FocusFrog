@@ -35,15 +35,15 @@
           return auth;
       };
       
-      // Analytics will only be initialized in the production environment
+      // Analytics will only be initialized on the production domain
       export const getAnalyticsInstance = (): Analytics | null => {
-          if (process.env.NODE_ENV !== 'production') {
-              return null;
+          if (typeof window !== 'undefined' && window.location.hostname === 'focusfrog-2.web.app') {
+            if (!analytics) {
+                analytics = getAnalytics(app);
+            }
+            return analytics;
           }
-          if (!analytics) {
-              analytics = getAnalytics(app);
-          }
-          return analytics;
+          return null;
       };
       
       export const getMessagingInstance = (): Messaging | null => {
@@ -53,7 +53,8 @@
           return messaging;
       };
       
-      // Set user ID for Analytics when a user signs in, only in production.
+      // Set user ID for Analytics when a user signs in.
+      // The getAnalyticsInstance function now ensures this only happens in production.
       onAuthStateChanged(getAuthInstance(), (user) => {
           if (user) {
               const analyticsInstance = getAnalyticsInstance();

@@ -44,7 +44,7 @@ export const routineIcons: (keyof typeof icons)[] = [
 ];
 
 export const initialTaskTemplates: TaskTemplate[] = [
-    // O card especial agora é o primeiro item da lista de modelos padrão.
+    // ... (outras tarefas permanecem as mesmas)
     {
         id: 50, 
         title: "🐸 Card Especial FocusFrog N.1", 
@@ -60,6 +60,34 @@ export const initialTaskTemplates: TaskTemplate[] = [
             { text: "Inspire outras pessoas com suas rotinas e estratégias próprias 🐸📅 " }
         ],
         isDefault: true 
+    },
+    // [MELHORIA] Novas tarefas padrão para a categoria 'Trabalho'
+    {
+        id: 60,
+        title: "Planejar o dia de trabalho",
+        quadrant: 'do',
+        description: "Defina as 3 prioridades do dia e estime o tempo necessário para cada uma.",
+        category: "Trabalho",
+        pomodoroEstimate: 1,
+        isDefault: true
+    },
+    {
+        id: 61,
+        title: "Limpar a caixa de entrada de e-mails",
+        quadrant: 'schedule',
+        description: "Processe seus e-mails: responda, arquive ou transforme em tarefas.",
+        category: "Trabalho",
+        pomodoroEstimate: 1,
+        isDefault: true
+    },
+    {
+        id: 62,
+        title: "Revisar as tarefas da semana",
+        quadrant: 'schedule',
+        description: "Olhe para a sua lista de tarefas e ajuste as prioridades para o resto da semana.",
+        category: "Trabalho",
+        pomodoroEstimate: 1,
+        isDefault: true
     },
     { id: 10, title: "Esvaziar a mente", quadrant: 'do', description: "Use a técnica de \'Brain Dump\'. Tire tudo da cabeça e ponha no app para reduzir a ansiedade.", category: "Pessoal", pomodoroEstimate: 0, isDefault: true },
     { id: 11, title: "Separar a roupa de amanhã", quadrant: 'do', description: "Elimine a fadiga de decisão da sua manhã seguinte.", category: "Pessoal", pomodoroEstimate: 0, isDefault: true },

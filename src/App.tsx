@@ -7,11 +7,10 @@ import { useUser } from './context/UserContext';
 import { useUI } from './context/UIContext';
 import { useAuth } from './hooks/useAuth';
 import { usePWAInstall } from './context/PWAInstallProvider';
-import { DashboardScreen } from './screens/DashboardScreen';
 import { OnboardingNameScreen } from './screens/OnboardingNameScreen';
 import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
 import { SplashScreen } from './screens/SplashScreen';
-import { Layout } from './components/layout/Layout';
+import { AppLayout } from './components/AppLayout';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
 import InstallPromptPopup from './components/InstallPromptPopup';
 
@@ -83,6 +82,7 @@ function App() {
     return <SplashScreen isFadingOut={isFadingOut} />;
   }
 
+  // --- LÓGICA DE RENDERIZAÇÃO CORRIGIDA ---
   let screenContent;
   if (!onboardingCompleted) {
     if (!userName) {
@@ -91,18 +91,18 @@ function App() {
       screenContent = <OnboardingWelcomeScreen />;
     }
   } else {
-    screenContent = <DashboardScreen />;
+    // Se o onboarding estiver concluído, renderize o AppLayout
+    screenContent = <AppLayout />;
   }
 
   return (
     <div id="app-container">
-      <Layout>{screenContent}</Layout>
+      {screenContent}
       <InstallPromptPopup 
         show={showInstallPopup}
         onInstall={handleInstall}
         onDismiss={handleDismiss}
       />
-      {/* O UpdatePrompt foi removido daqui */}
     </div>
   );
 }
