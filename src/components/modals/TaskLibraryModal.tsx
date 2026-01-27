@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import type { TaskTemplate, Routine } from '../../types';
+import type { Task, TaskTemplate, Routine } from '../../types';
 import { useTasks } from '../../context/TasksContext';
 import { defaultCategories } from '../../constants';
 import { Icon } from '../Icon';
@@ -16,7 +16,8 @@ interface TaskLibraryModalProps {
 }
 
 export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine, onAddTemplates, onClose }) => {
-    const { routines, taskTemplates, handleDeleteTemplate, handleSaveRoutine, handleDeleteRoutine } = useTasks();
+    // [MUDANÇA] A função handleSaveTask foi importada do contexto
+    const { routines, taskTemplates, handleDeleteTemplate, handleSaveRoutine, handleDeleteRoutine, handleSaveTask } = useTasks();
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<number[]>([]);
     const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'routines' | 'templates'>('routines');
@@ -64,11 +65,28 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
         handleDeleteTemplate(templateId);
     };
 
-    const handleSaveRoutineAndClose = (routine: Routine) => {
-        handleSaveRoutine(routine);
+    // [NOVO] Nova função para lidar com o salvamento da rotina e suas tarefas
+    const handleSaveRoutineWithTasks = async (routineData: Omit<Routine, 'id' | 'taskTemplateIds'>, tasks: Omit<Task, 'id'>[]) => {
+        // 1. Salva a rotina e obtém o objeto da rotina criada (com o novo ID)
+        const savedRoutine = await handleSaveRoutine(routineData as Routine);
+
+        // 2. Se houver novas tarefas para adicionar
+        if (tasks.length > 0 && savedRoutine) {
+            // 3. Associa cada tarefa à rotina recém-criada e salva
+            for (const task of tasks) {
+                const taskWithRoutineId = { 
+                    ...task, 
+                    routineId: savedRoutine.id // Associa a tarefa à rotina
+                };
+                await handleSaveTask(taskWithRoutineId as Task, true); // Salva como um novo template
+            }
+        }
+        
+        // 4. Fecha o modal
         setIsCreatingRoutine(false);
         setEditingRoutine(null);
     };
+
 
     return (
         <div className="g-modal-overlay">
@@ -165,10 +183,11 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                 </footer>
             </div>
 
+            {/* [MUDANÇA] A prop onSave agora passa a nova função que lida com a lógica completa */}
             {(isCreatingRoutine || editingRoutine) && (
                 <RoutineEditorModal 
                     routineToEdit={isCreatingRoutine ? null : editingRoutine}
-                    onSave={handleSaveRoutineAndClose}
+                    onSave={handleSaveRoutineWithTasks}
                     onClose={() => {
                         setIsCreatingRoutine(false);
                         setEditingRoutine(null);

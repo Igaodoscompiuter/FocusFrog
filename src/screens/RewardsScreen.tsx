@@ -6,8 +6,8 @@ import { useAuth } from '../hooks/useAuth';
 import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
-// Importando o componente de atualização
-import { UpdatePrompt } from '../components/UpdatePrompt';
+// Importando o componente de atualização CORRETAMENTE
+import UpdatePrompt from '../components/UpdatePrompt';
 import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';

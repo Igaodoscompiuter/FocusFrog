@@ -1,43 +1,47 @@
 
-import React, { useState, useRef } from 'react';
-import type { Tag } from '../../types';
-import { useClickOutside } from '../../hooks/useClickOutside';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTasks } from '../../context/TasksContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
+import type { Tag } from '../../types';
 import styles from './CustomTagSelector.module.css';
 
 interface CustomTagSelectorProps {
-    tags: Tag[];
-    selectedTagId: string | null;
-    onChange: (tagId: string | null) => void;
+    selectedTagId: number | null;
+    onChange: (tagId: number | null) => void;
     onManageTags: () => void;
-    label: string;
 }
 
-export const CustomTagSelector: React.FC<CustomTagSelectorProps> = ({ tags, selectedTagId, onChange, onManageTags, label }) => {
+export const CustomTagSelector: React.FC<CustomTagSelectorProps> = ({ selectedTagId, onChange, onManageTags }) => {
+    const { tags } = useTasks();
     const [isOpen, setIsOpen] = useState(false);
-    const popoverRef = useRef<HTMLDivElement>(null);
-
-    useClickOutside(popoverRef, () => setIsOpen(false));
+    const selectorRef = useRef<HTMLDivElement>(null);
 
     const selectedTag = tags.find(tag => tag.id === selectedTagId);
 
-    const handleSelect = (tagId: string | null) => {
+    // Fecha o popover se clicar fora
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSelect = (tagId: number | null) => {
         onChange(tagId);
         setIsOpen(false);
     };
 
     return (
-        <div className={styles.selectorContainer} ref={popoverRef}>
-            <label className="form-label"><Icon path={icons.tag} /> {label}</label>
-            <button 
-                className={`${styles.selectorButton} ${isOpen ? styles.open : ''}`}
-                onClick={() => setIsOpen(!isOpen)}
-            >
+        <div className={styles.selectorContainer} ref={selectorRef}>
+            <button className={`${styles.selectorButton} ${isOpen ? styles.open : ''}`} onClick={() => setIsOpen(!isOpen)}>
                 <div className={styles.selectorValue}>
                     {selectedTag ? (
                         <>
-                            <span className={styles.tagColorDot} style={{ backgroundColor: selectedTag.color }}></span>
+                            <div className={styles.tagColorDot} style={{ backgroundColor: selectedTag.color }}></div>
                             <span>{selectedTag.name}</span>
                         </>
                     ) : (
@@ -49,26 +53,33 @@ export const CustomTagSelector: React.FC<CustomTagSelectorProps> = ({ tags, sele
 
             {isOpen && (
                 <div className={styles.popover}>
+                    {/* Opção "Nenhuma etiqueta" */}
                     <div
-                        className={`${styles.popoverItem} ${!selectedTagId ? styles.selected : ''}`}
+                        className={`${styles.popoverItem} ${selectedTagId === null ? styles.selected : ''}`}
                         onClick={() => handleSelect(null)}
                     >
-                         <span className={styles.tagColorDot} style={{ backgroundColor: 'var(--border-color)' }}></span>
-                         Nenhuma etiqueta
+                        <div className={styles.itemLabel}>Nenhuma etiqueta</div>
+                        {selectedTagId === null && <Icon path={icons.check} className={styles.checkIcon} />}
                     </div>
+
+                    {/* Lista de Tags */}
                     {tags.map(tag => (
-                        <div 
+                        <div
                             key={tag.id}
                             className={`${styles.popoverItem} ${selectedTagId === tag.id ? styles.selected : ''}`}
                             onClick={() => handleSelect(tag.id)}
                         >
-                            <span className={styles.tagColorDot} style={{ backgroundColor: tag.color }}></span>
-                            {tag.name}
+                            <div className={styles.itemLabel}>
+                                <div className={styles.tagColorDot} style={{ backgroundColor: tag.color }}></div>
+                                <span>{tag.name}</span>
+                            </div>
+                            {selectedTagId === tag.id && <Icon path={icons.check} className={styles.checkIcon} />}
                         </div>
                     ))}
+                    
                     <div className={styles.manageButton} onClick={onManageTags}>
-                        <Icon path={icons.settings} />
-                        Gerenciar Etiquetas
+                        <Icon path={icons.plusCircle} />
+                        <span>Gerenciar Etiquetas</span>
                     </div>
                 </div>
             )}

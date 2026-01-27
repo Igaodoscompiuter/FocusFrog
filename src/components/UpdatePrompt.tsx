@@ -1,45 +1,39 @@
 
 import React from 'react';
-import './UpdatePrompt.css';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import styles from './UpdatePrompt.module.css';
 
-/**
- * Este componente usa a abordagem de render-props do `useRegisterSW`
- * para evitar re-renderizações e loops de efeito colateral.
- */
-export function UpdatePrompt() {
-  const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
+function UpdatePrompt() {
+  const {
+    needRefresh: [needRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
     onRegistered(r) {
-      console.log('Service Worker registrado com sucesso.');
+      console.log('SW Registered: ' + r);
     },
     onRegisterError(error) {
-      console.error('Erro ao registrar o Service Worker:', error);
+      console.log('SW registration error', error);
     },
   });
 
   const handleUpdate = () => {
-    // O `true` aqui força o service worker a pular a fase de "espera" e ativar imediatamente.
     updateServiceWorker(true);
   };
 
-  // Renderiza o pop-up apenas quando uma atualização é necessária.
-  if (needRefresh) {
-    return (
-      <div className="update-prompt-container" role="alert">
-        <div className="update-prompt-content">
-          <p>Uma nova versão está disponível!</p>
-          <button 
-            onClick={handleUpdate} 
-            // Aplicando o estilo de botão padrão do app
-            className="btn btn-primary update-prompt-button"
-          >
-            Atualizar Agora
-          </button>
-        </div>
-      </div>
-    );
+  if (!needRefresh) {
+    return null;
   }
 
-  // Não renderiza nada se não houver necessidade de atualização.
-  return null;
+  return (
+    <div className={styles.updatePrompt}>
+      <div className={styles.message}>
+        Uma nova versão do aplicativo está disponível!
+      </div>
+      <button className={styles.updateButton} onClick={handleUpdate}>
+        Atualizar
+      </button>
+    </div>
+  );
 }
+
+export default UpdatePrompt;

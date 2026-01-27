@@ -339,20 +339,32 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleSaveTag = useCallback((tag: Partial<Tag>) => {
         setTags(prev => {
             if (tag.id) {
-                addNotification('Tag atualizada com sucesso', '✏️', 'success');
+                // Proteção para não editar etiquetas padrão
+                const originalTag = prev.find(t => t.id === tag.id);
+                if (originalTag?.isDefault) {
+                    addNotification("Etiquetas padrão não podem ser editadas.", '🛡️', 'error');
+                    return prev;
+                }
+                addNotification('Etiqueta atualizada com sucesso', '✏️', 'success');
                 return prev.map(t => t.id === tag.id ? { ...t, ...tag } : t);
             }
-            addNotification('Nova tag criada', '✨', 'success');
-            const newTag: Tag = { id: Date.now(), name: tag.name!, color: tag.color! };
+            addNotification('Nova etiqueta criada', '✨', 'success');
+            const newTag: Tag = { id: Date.now(), name: tag.name!, color: tag.color!, isDefault: false };
             return [...prev, newTag];
         });
     }, [setTags, addNotification]);
 
     const handleDeleteTag = useCallback((tagId: number) => {
+        const tagToDelete = tags.find(t => t.id === tagId);
+        if (tagToDelete?.isDefault) {
+            addNotification("Etiquetas padrão não podem ser excluídas.", '🛡️', 'error');
+            return;
+        }
+        
         setTags(prev => prev.filter(t => t.id !== tagId));
         setTasks(prev => prev.map(t => t.tagId === tagId ? { ...t, tagId: undefined } : t));
-        addNotification('Tag excluída', '🗑️', 'info');
-    }, [setTags, setTasks, addNotification]);
+        addNotification('Etiqueta excluída', '🗑️', 'info');
+    }, [tags, setTags, setTasks, addNotification]);
     
     const handleDuplicateTask = useCallback((taskId: string) => {
         const taskToDuplicate = tasks.find(t => t.id === taskId);
