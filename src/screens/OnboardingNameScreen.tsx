@@ -1,8 +1,6 @@
 
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { useAuth } from '../hooks/useAuth';
-import { FcGoogle } from 'react-icons/fc';
 import './OnboardingNameScreen.css';
 
 const LOGO_URL = '/icon-512.png';
@@ -10,19 +8,10 @@ const LOGO_URL = '/icon-512.png';
 export const OnboardingNameScreen: React.FC = () => {
   const [name, setName] = useState('');
   const { setUserName } = useUser();
-  const { signInWithGoogle } = useAuth();
 
   const handleNameSubmit = () => {
     if (name.trim()) {
       setUserName(name.trim());
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      console.error("Erro ao fazer login com o Google:", error);
     }
   };
 
