@@ -12,14 +12,12 @@ import { FilterPanel } from '../components/tasks/FilterPanel';
 import { TaskLibraryModal } from '../components/modals/TaskLibraryModal';
 import styles from './TasksScreen.module.css';
 
-// [REFINAMENTO] O componente agora usa classes dinâmicas para um layout horizontal perfeito.
 const CollapsibleQuadrant: React.FC<any> = ({ title, quadrant, tasks, tags, onEdit, onStartTriage }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const visibleTasks = isExpanded ? tasks : tasks.slice(0, 2);
     const isHorizontal = quadrant === 'inbox' || quadrant === 'someday';
     const isInbox = quadrant === 'inbox';
 
-    // Determina a classe CSS correta com base no estado expandido/recolhido
     const getTaskListClass = () => {
         if (!isHorizontal) return styles.taskList;
         return isExpanded ? styles.expandedHorizontalList : styles.collapsedHorizontalList;
@@ -123,33 +121,37 @@ export const TasksScreen: React.FC = () => {
             <FilterPanel isOpen={isFilterPanelOpen} onClose={() => setIsFilterPanelOpen(false)} filters={filters} onFilterChange={setFilters} />
 
             <div className="screen-content">
-                <div className={styles.tasksHeader}>
-                    <div className={styles.tasksTitle}><h2>Matriz de Eisenhower</h2></div>
-                    <div className={styles.tasksActions}>
-                         <button className="btn btn-secondary btn-icon" onClick={() => setIsLibraryOpen(true)} title="Biblioteca"><Icon path={icons.bookOpen} /></button>
-                        <button className="btn btn-secondary btn-icon" onClick={() => setIsFilterPanelOpen(true)} title="Filtros"><Icon path={icons.filter} /></button>
-                        <button className="btn btn-primary" onClick={() => handleOpenTaskModal()}><Icon path={icons.plus} /> Nova Tarefa</button>
+                <div className="contentPadding">
+                     <div className={styles.tasksHeader}>
+                        <div className={styles.tasksActions}>
+                            {/* [CORREÇÃO APLICADA] Grupo de ações para o alinhamento à esquerda */}
+                            <div className={styles.tasksActionGroup}>
+                                <button className="btn btn-secondary btn-icon" onClick={() => setIsLibraryOpen(true)} title="Biblioteca"><Icon path={icons.bookOpen} /></button>
+                                <button className="btn btn-secondary btn-icon" onClick={() => setIsFilterPanelOpen(true)} title="Filtros"><Icon path={icons.filter} /></button>
+                            </div>
+                            <button className="btn btn-primary" onClick={() => handleOpenTaskModal()}><Icon path={icons.plus} /> Nova Tarefa</button>
+                        </div>
                     </div>
-                </div>
 
-                <div className={styles.tasksBoard}>
-                    {quadrantsToRender.map(q => {
-                        const CurrentQuadrantComponent = q.component;
-                        const quadrantInfo = quadrantInfoConst.find(info => info.id === q.id);
-                        if (!quadrantInfo) return null;
+                    <div className={styles.tasksBoard}>
+                        {quadrantsToRender.map(q => {
+                            const CurrentQuadrantComponent = q.component;
+                            const quadrantInfo = quadrantInfoConst.find(info => info.id === q.id);
+                            if (!quadrantInfo) return null;
 
-                        return (
-                            <CurrentQuadrantComponent
-                                key={q.id}
-                                quadrant={q.id}
-                                title={quadrantInfo.title}
-                                tasks={tasksByQuadrant[q.id] || []}
-                                tags={tags}
-                                onEdit={handleOpenTaskModal}
-                                {...q.props}
-                            />
-                        );
-                    })}
+                            return (
+                                <CurrentQuadrantComponent
+                                    key={q.id}
+                                    quadrant={q.id}
+                                    title={quadrantInfo.title}
+                                    tasks={tasksByQuadrant[q.id] || []}
+                                    tags={tags}
+                                    onEdit={handleOpenTaskModal}
+                                    {...q.props}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </main>

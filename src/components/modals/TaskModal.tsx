@@ -1,13 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTasks } from '../../context/TasksContext';
-import { usePomodoro } from '../../context/PomodoroContext';
 import { useUI } from '../../context/UIContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-// [CORREÇÃO] Importa os tipos EnergyLevel e TimeOfDay que agora existem em types.ts
-import type { Task, Subtask, Quadrant, TimeOfDay, EnergyLevel, Tag } from '../../types';
+import type { Task, Subtask, Quadrant, TimeOfDay, Tag, TaskTemplate } from '../../types';
 import { quadrants } from '../../constants';
 import styles from './TaskModal.module.css'; 
 import { useClickOutside } from '../../hooks/useClickOutside';
@@ -21,36 +19,50 @@ interface TaskModalProps {
 }
 
 export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags }) => {
-    const { handleAddTask, handleUpdateTask, handleDeleteTask, handleCreateTemplateFromTask } = useTasks();
-    const { startFocusOnTask } = usePomodoro();
+    const { handleAddTask, handleUpdateTask, handleDeleteTask, handleCreateTemplateFromTask, taskTemplates } = useTasks();
     const { handleNavigate } = useUI();
     const [task, setTask] = useState<Partial<Task>>({});
+    const [category, setCategory] = useState<string>('Personalizado');
+    const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+    const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+    const [newCategoryInput, setNewCategoryInput] = useState('');
+
     const [newSubtask, setNewSubtask] = useState('');
     const [currentView, setCurrentView] = useState<'task' | 'tags'>('task');
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
     const modalRef = useClickOutside(onClose);
 
+    useEffect(() => {
+        const allCategories = taskTemplates.map(t => t.category);
+        const uniqueCategories = ['Personalizado', ...Array.from(new Set(allCategories)).filter(c => c !== 'Personalizado')];
+        setAvailableCategories(uniqueCategories);
+    }, [taskTemplates]);
+
     const isQuickTask = task.pomodoroEstimate === 0;
 
     useEffect(() => {
-        const getInitialTaskState = (taskToEdit: Partial<Task> | null): Partial<Task> => {
-            if (taskToEdit && Object.keys(taskToEdit).length > 0) {
-                return { ...taskToEdit, subtasks: taskToEdit.subtasks ? [...taskToEdit.subtasks] : [], pomodoroEstimate: taskToEdit.pomodoroEstimate !== undefined ? taskToEdit.pomodoroEstimate : 1 };
+        const getInitialTaskState = (taskData: Partial<Task> | null): Partial<Task> => {
+            if (taskData && Object.keys(taskData).length > 0) {
+                if (taskData.templateId) {
+                    const template = taskTemplates.find(t => t.id === taskData.templateId);
+                    if (template) setCategory(template.category);
+                }
+                return { ...taskData, subtasks: taskData.subtasks ? [...taskData.subtasks] : [], pomodoroEstimate: taskData.pomodoroEstimate !== undefined ? taskData.pomodoroEstimate : 1 };
             }
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
-            // [CORREÇÃO] O estado inicial agora usa um valor válido para energyNeeded.
-            return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, energyNeeded: 'medium', dueDate: `${yyyy}-${mm}-${dd}` };
+            setCategory('Personalizado');
+            return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, dueDate: `${yyyy}-${mm}-${dd}` };
         };
 
         const initialState = getInitialTaskState(taskToEdit);
         setTask(initialState);
         setCurrentView('task');
         setModalRoot(document.getElementById('modal-root')); 
-    }, [taskToEdit]);
+    }, [taskToEdit, taskTemplates]);
 
     const handleChange = (field: keyof Task, value: any) => setTask(prev => ({ ...prev, [field]: value }));
     const handleTaskTypeChange = (type: 'focus' | 'quick') => {
@@ -67,12 +79,43 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     };
     const handleRemoveSubtask = (id: string) => handleChange('subtasks', task.subtasks?.filter(st => st.id !== id));
 
-    const handleSubmit = () => {
+    const handleUpsertTask = () => {
         if (!task.title?.trim()) return alert('O título da tarefa é obrigatório.');
-        const { ...taskToSave } = task;
+        const taskToSave = { ...task };
+        if (!taskToSave.dueDate) {
+            const today = new Date();
+            taskToSave.dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
         if (taskToSave.id) handleUpdateTask(taskToSave as Task);
         else handleAddTask(taskToSave as Omit<Task, 'id' | 'status'>);
         onClose();
+    };
+
+    const handleSaveAsTemplate = () => {
+        if (!task.title?.trim()) return alert('O título é obrigatório para salvar um modelo.');
+        const templateData: Omit<TaskTemplate, 'id'> = {
+            title: task.title,
+            description: task.description,
+            quadrant: task.quadrant,
+            pomodoroEstimate: task.pomodoroEstimate,
+            customDuration: task.customDuration,
+            subtasks: task.subtasks?.map(st => ({ text: st.text })),
+            category: category || 'Personalizado'
+        };
+        handleCreateTemplateFromTask(templateData);
+        onClose();
+    };
+    
+    const handleConfirmNewCategory = () => {
+        const newCategory = newCategoryInput.trim();
+        if (newCategory && !availableCategories.includes(newCategory)) {
+            setAvailableCategories(prev => [...prev, newCategory]);
+            setCategory(newCategory);
+        } else if (availableCategories.includes(newCategory)) {
+            setCategory(newCategory);
+        }
+        setIsCreatingCategory(false);
+        setNewCategoryInput('');
     };
 
     const handleDelete = () => {
@@ -82,15 +125,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
         }
     };
 
-    if (!taskToEdit || !modalRoot) {
-        return null;
-    }
-    
-    const energyLevels: { id: EnergyLevel, label: string, icon: keyof typeof icons }[] = [
-        { id: 'low', label: 'Baixa', icon: 'batteryLow' },
-        { id: 'medium', label: 'Média', icon: 'batteryMedium' },
-        { id: 'high', label: 'Alta', icon: 'battery' },
-    ];
+    if (!taskToEdit || !modalRoot) return null;
     
     const timeOfDayOptions: { id: TimeOfDay | '', label: string }[] = [
         { id: 'morning', label: 'Manhã' },
@@ -102,9 +137,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     const renderTaskForm = () => (
         <>
             <header className="g-modal-header">
-                <div className={styles.headerTitleGroup}>
-                    <h3><Icon path={icons.pencil} /> {task.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3>
-                </div>
+                <h3><Icon path={icons.pencil} /> {task.id ? 'Editar Tarefa' : 'Nova Tarefa'}</h3>
                 <button onClick={onClose} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button>
             </header>
             <main className="g-modal-body">
@@ -124,6 +157,45 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                         onChange={e => handleChange('description', e.target.value)}
                     />
                     <MatrixSelector task={task} setTask={setTask} />
+                    
+                    <div className={styles.formGroup}>
+                        <label className={styles.categoryTitle}>Categoria do Modelo</label>
+                        {isCreatingCategory ? (
+                            <div className={styles.subtaskAddGroup}>
+                                <input
+                                    type="text"
+                                    className="g-input"
+                                    placeholder="Nome da nova categoria"
+                                    value={newCategoryInput}
+                                    onChange={e => setNewCategoryInput(e.target.value)}
+                                    onKeyPress={e => e.key === 'Enter' && handleConfirmNewCategory()}
+                                    autoFocus
+                                />
+                                <button onClick={handleConfirmNewCategory} className="btn btn-primary btn-icon btn-sm"><Icon path={icons.check}/></button>
+                                <button onClick={() => setIsCreatingCategory(false)} className="btn btn-secondary btn-icon btn-sm"><Icon path={icons.close}/></button>
+                            </div>
+                        ) : (
+                            <div className={styles.categorySelector}>
+                                {availableCategories.map(cat => (
+                                    <div 
+                                        key={cat} 
+                                        className={`${styles.categoryCard} ${category === cat ? styles.selected : ''}`}
+                                        onClick={() => setCategory(cat)}
+                                    >
+                                        {cat}
+                                    </div>
+                                ))}
+                                <div 
+                                    className={`${styles.categoryCard} ${styles.add}`}
+                                    onClick={() => setIsCreatingCategory(true)}
+                                >
+                                    <Icon path={icons.plus} />
+                                    Criar Nova
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div className={styles.grid}>
                          <div className={styles.formGroup}>
                             <label><Icon path={icons.calendar} /> Data</label>
@@ -138,13 +210,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                             </div>
                         </div>
                     </div>
-                    <CustomTagSelector
-                        label="Etiqueta"
-                        tags={tags}
-                        selectedTagId={task.tagId || null}
-                        onChange={(tagId) => handleChange('tagId', tagId)}
-                        onManageTags={() => setCurrentView('tags')} 
-                    />
 
                      <div className={styles.formGroup}>
                         <label><Icon path={icons.target} /> Tipo de Tarefa</label>
@@ -166,17 +231,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                             </div>
                         </div>
                     )}
-
-                    <div className={styles.formGroup}>
-                        <label><Icon path={icons.battery} /> Energia Necessária</label>
-                        <div className={styles.buttonSelector}>
-                            {energyLevels.map(level => (
-                                <button key={level.id} className={task.energyNeeded === level.id ? styles.selected : ''} onClick={() => handleChange('energyNeeded', level.id)}>
-                                    <Icon path={icons[level.icon]} /> {level.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                     
                     <div className={styles.formGroup}>
                         <label><Icon path={icons.checkSquare} /> Subtarefas</label>
@@ -197,12 +251,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                 </div>
             </main>
             <footer className="g-modal-footer">
-                <div className={styles.footerActions}> 
+                <div> 
                     {task.id && <button className="btn btn-tertiary btn-danger" onClick={handleDelete}><Icon path={icons.trash} /> Excluir</button>}
-                    {task.id && <button className="btn btn-tertiary" onClick={() => handleCreateTemplateFromTask(task as Task)}><Icon path={icons.bookOpen} /> Salvar como Modelo</button>}
                 </div>
                 <div className={styles.footerActions}>
-                    <button className="btn btn-primary" onClick={handleSubmit}><Icon path={icons.check} /> Salvar</button>
+                    <button className="btn btn-secondary" onClick={handleSaveAsTemplate}><Icon path={icons.bookOpen} /> Salvar como Modelo</button>
+                    <button className="btn btn-primary" onClick={handleUpsertTask}><Icon path={icons.plus} /> {task.id ? 'Atualizar Tarefa' : 'Adicionar Tarefa'}</button>
                 </div>
             </footer>
         </>

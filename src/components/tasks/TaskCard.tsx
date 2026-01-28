@@ -10,7 +10,6 @@ import styles from './TaskCard.module.css';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
-// CORRECTED: SubtaskItem is now defined at the top level of the module.
 const SubtaskItem: React.FC<any> = ({ subtask, onToggle }) => {
     return (
         <div 
@@ -21,12 +20,6 @@ const SubtaskItem: React.FC<any> = ({ subtask, onToggle }) => {
             <span>{subtask.text}</span>
         </div>
     );
-};
-
-const energyLevelMap: Record<string, { label: string, icon: keyof typeof icons }> = {
-    low: { label: 'Baixa', icon: 'batteryLow' },
-    medium: { label: 'Média', icon: 'batteryMedium' },
-    high: { label: 'Alta', icon: 'batteryFull' },
 };
 
 interface TaskCardProps {
@@ -154,7 +147,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
     };
 
     const taskTag = task.tagId ? tags.find(t => t.id === task.tagId) : null;
-    const energyInfo = task.energyNeeded ? energyLevelMap[task.energyNeeded] : null;
     const isCurrentlyFocusedOnThisTask = activeTaskId === task.id;
     const canBeCompleted = !hasPendingSubtasks || isInInbox;
     
@@ -247,12 +239,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
                         </div>
                     )}
 
-                    {(taskTag || energyInfo) && !isInInbox &&
+                    {taskTag && !isInInbox &&
                         <div className={styles.taskCardFooter}>
                             <div className={styles.footerTags}>
                                 {taskTag && <div className={styles.footerTag} style={{ backgroundColor: taskTag.color }}>{taskTag.name}</div>}
                             </div>
-                            {energyInfo && <div title={`Energia: ${energyInfo.label}`} className={`${styles.footerTag} ${styles.energyTag}`}><Icon path={icons[energyInfo.icon]} /></div>}
                         </div>
                     }
                 </div>

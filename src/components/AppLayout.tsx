@@ -10,7 +10,7 @@ import { useUI } from '../context/UIContext';
 import type { Screen } from '../types';
 import { NotificationContainer } from './NotificationContainer';
 import { TasksProvider } from '../context/TasksContext';
-import { UpdatePrompt } from './UpdatePrompt'; // Importa o novo componente
+import UpdatePrompt from './UpdatePrompt'; // [CORREÇÃO] Importa o componente como default
 
 const screenMap: Record<Screen, React.ComponentType> = {
     dashboard: DashboardScreen,

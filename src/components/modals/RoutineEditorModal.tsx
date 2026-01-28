@@ -3,13 +3,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import type { Routine, Task, Quadrant, TaskTemplate } from '../../types';
-import { routineIcons, quadrants } from '../../constants';
+import { routineIcons, quadrants, defaultCategories } from '../../constants';
 import { useClickOutside } from '../../hooks/useClickOutside';
-import { useTasks } from '../../context/TasksContext'; // [CORREÇÃO] Importa o hook 'useTasks'
+import { useTasks } from '../../context/TasksContext';
 import styles from './RoutineEditorModal.module.css';
 import { trackNewRoutineCreated } from '../../analytics';
 
-type NewTaskForRoutine = Pick<Task, 'title' | 'quadrant' | 'description'> & { pomodoroEstimate: number; tempId: string };
+type NewTaskForRoutine = Pick<Task, 'title' | 'quadrant' | 'description'> & { pomodoroEstimate: number; tempId: string; isDefault?: boolean };
 
 interface RoutineEditorModalProps {
     routineToEdit: Routine | null;
@@ -23,7 +23,7 @@ const quadrantMap = quadrants.reduce((acc, q) => {
 }, {} as Record<Quadrant, string>);
 
 export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEditorModalProps) => {
-    const { taskTemplates } = useTasks(); // [CORREÇÃO] Usa o hook 'useTasks' em vez de useContext diretamente
+    const { taskTemplates } = useTasks();
 
     const [routine, setRoutine] = useState<Partial<Routine>>(
         routineToEdit || { name: '', description: '', icon: 'zap', isDefault: false }
@@ -39,10 +39,10 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
 
     const [activeTab, setActiveTab] = useState('library');
     const [searchTerm, setSearchTerm] = useState('');
-    const [openCategory, setOpenCategory] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState('Todos');
 
     useEffect(() => {
-        if (isEditing && routineToEdit.taskTemplateIds) {
+        if (isEditing && routineToEdit.taskTemplateIds && taskTemplates) {
             const tasksFromTemplates = routineToEdit.taskTemplateIds
                 .map(templateId => taskTemplates.find(t => t.id === templateId))
                 .filter((t): t is TaskTemplate => !!t)
@@ -52,12 +52,34 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                     description: template.description,
                     pomodoroEstimate: template.pomodoroEstimate || 0,
                     quadrant: template.quadrant,
+                    isDefault: template.isDefault, 
                 }));
             setNewTasksForRoutine(tasksFromTemplates);
         }
     }, [isEditing, routineToEdit, taskTemplates]);
 
     const modalRef = useClickOutside(onClose);
+
+    const { categories, filteredTasks } = useMemo(() => {
+        if (!taskTemplates) return { categories: ['Todos'], filteredTasks: [] };
+
+        const allTasks = (isDefaultRoutine ? taskTemplates.filter(t => !t.isDefault) : taskTemplates)
+            .filter(t => 
+                t.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                (t.description && t.description.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+
+        const uniqueCategories = ['Todos', ...Array.from(new Set(taskTemplates.map(t => t.category || 'Outros')))];
+
+        const tasksToShow = selectedCategory === 'Todos' 
+            ? allTasks 
+            : allTasks.filter(t => (t.category || 'Outros') === selectedCategory);
+
+        return { categories: uniqueCategories, filteredTasks: tasksToShow };
+
+    }, [searchTerm, taskTemplates, isDefaultRoutine, selectedCategory]);
+
+    const addedTaskIds = useMemo(() => new Set(newTasksForRoutine.map(t => t.tempId)), [newTasksForRoutine]);
 
     const handleFieldChange = (field: keyof Routine, value: any) => {
         setRoutine(prev => ({ ...prev, [field]: value }));
@@ -71,6 +93,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
             pomodoroEstimate: taskType === 'focus' ? 1 : 0,
             quadrant: taskQuadrant,
             description: '',
+            isDefault: false,
         };
         setNewTasksForRoutine(prev => [...prev, newTask]);
         setTaskName('');
@@ -85,6 +108,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
             description: template.description,
             pomodoroEstimate: template.pomodoroEstimate || 0,
             quadrant: template.quadrant,
+            isDefault: template.isDefault,
         };
         setNewTasksForRoutine(prev => [...prev, newTask]);
     };
@@ -99,28 +123,6 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
         const { id, taskTemplateIds, ...routineData } = routine;
         onSave(routineData as Omit<Routine, 'id' | 'taskTemplateIds'>, newTasksForRoutine.map(({tempId, ...task}) => task));
     };
-
-    const libraryTasks = useMemo(() => {
-        if (isDefaultRoutine) {
-            return taskTemplates.filter(t => !t.isDefault);
-        }
-        return taskTemplates;
-    }, [isDefaultRoutine, taskTemplates]);
-
-    const filteredAndGroupedTasks = useMemo(() => {
-        const filtered = libraryTasks.filter(t => 
-            t.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            (t.description && t.description.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
-        return filtered.reduce((acc, task) => {
-            const category = task.category || 'Outros';
-            if (!acc[category]) acc[category] = [];
-            acc[category].push(task);
-            return acc;
-        }, {} as Record<string, TaskTemplate[]>);
-    }, [searchTerm, libraryTasks]);
-
-    const addedTaskIds = useMemo(() => new Set(newTasksForRoutine.map(t => t.tempId)), [newTasksForRoutine]);
 
     const renderTaskCreationUI = () => (
         <div className={styles.taskCreatorForm}>
@@ -143,34 +145,36 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
     
     const renderLibrary = () => (
         <div className={`${styles.tabContent} ${styles.libraryContainer}`}>
-            <input type="text" placeholder="🔎 Buscar na biblioteca..." className={`g-input ${styles.librarySearchInput}`} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            {Object.entries(filteredAndGroupedTasks).map(([category, tasks]) => (
-                <div key={category}>
-                    <button className={styles.accordionHeader} onClick={() => setOpenCategory(openCategory === category ? null : category)}>
-                        <h5>{category}</h5>
-                        <Icon path={openCategory === category ? icons.chevronUp : icons.chevronDown} />
+            <div className={styles.categoryScroller}>
+                {categories.map(category => (
+                    <button 
+                        key={category} 
+                        className={`${styles.categoryChip} ${selectedCategory === category ? styles.active : ''}`}
+                        onClick={() => setSelectedCategory(category)}
+                    >
+                        {category}
                     </button>
-                    {openCategory === category && (
-                        <div className={styles.accordionContent}>
-                            {tasks.map(task => {
-                                const isAdded = addedTaskIds.has(`template_${task.id}`);
-                                return (
-                                    <div key={task.id} className={styles.libraryTaskItem}>
-                                        <div className={styles.libraryTaskInfo}>
-                                            <h6>{task.title}</h6>
-                                            {task.description && <p>{task.description}</p>}
-                                        </div>
-                                        <button onClick={() => handleAddTaskFromLibrary(task)} disabled={isAdded} className={`${styles.addFromLibButton} ${isAdded ? styles.added : ''}`}>
-                                            <Icon path={isAdded ? icons.check : icons.plus} />
-                                            {isAdded ? 'Adicionado' : 'Adicionar'}
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                ))}
+            </div>
+
+            <input type="text" placeholder="🔎 Buscar em todas as tarefas..." className={`g-input ${styles.librarySearchInput}`} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            
+            <div className={styles.libraryTaskList}>
+                {filteredTasks.map(task => {
+                    const isAdded = addedTaskIds.has(`template_${task.id}`);
+                    return (
+                        <div key={task.id} className={styles.libraryTaskItem}>
+                            <div className={styles.libraryTaskInfo}>
+                                <h6>{task.title}</h6>
+                                {task.description && <p>{task.description}</p>}
+                            </div>
+                            <button onClick={() => handleAddTaskFromLibrary(task)} disabled={isAdded} className={`${styles.addFromLibButton} ${isAdded ? styles.added : ''}`}>
+                                <Icon path={isAdded ? icons.check : icons.plus} />
+                            </button>
                         </div>
-                    )}
-                </div>
-            ))}
+                    );
+                })}
+            </div>
         </div>
     );
 
@@ -208,8 +212,8 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                          <h4 className={styles.sectionHeader}>Tarefas da Rotina</h4>
                         <div className={styles.newTasksList}>
                             {newTasksForRoutine.map((task) => {
-                                const isTemplateTask = task.tempId.startsWith('template_');
-                                const canDelete = !isDefaultRoutine || !isTemplateTask;
+                                // [CORREÇÃO CRÍTICA] A lógica de exclusão foi corrigida aqui
+                                const canDelete = !isDefaultRoutine || !task.isDefault;
                                 const quadrantTitle = quadrantMap[task.quadrant] || task.quadrant;
                                 return (
                                     <div key={task.tempId} className={styles.newTaskItem}>

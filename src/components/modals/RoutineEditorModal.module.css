@@ -1,101 +1,151 @@
-
 /* RoutineEditorModal.module.css */
 
 .routineEditorModal {
-    max-width: 600px; 
-    overflow: hidden;
+    width: 90vw;
+    max-width: 600px;
 }
 
-.routineEditorModal .g-modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-lg); /* Espaçamento base entre os blocos */
-}
-
-.routineInfoBlock, .taskCreationBlock, .taskListBlock {
-    background-color: var(--surface-secondary-color);
-    padding: var(--sp-lg);
+/* [CORREÇÃO DE DESIGN FINAL] Todos os blocos são cards distintos com fundo e margem para separação */
+.routineInfoBlock,
+.taskCreationBlock,
+.taskListBlock {
+    background-color: var(--background-color-darker);
     border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-lg);
+    padding: var(--sp-lg);
+    margin-bottom: var(--sp-lg); /* ESSENCIAL: Cria a separação visual entre os cards */
 }
 
-/* [CORREÇÃO] Adiciona margem explícita para garantir o espaçamento */
-.routineInfoBlock, .taskCreationBlock {
+/* O último bloco não precisa de margem inferior */
+.taskListBlock {
+    margin-bottom: 0;
+}
+
+.taskCreationBlock {
+    padding: 0; /* Padding é gerenciado pelo conteúdo da aba */
+    overflow: hidden; /* Garante que os cantos arredondados das abas fiquem corretos */
+}
+
+.defaultRoutineInfo { display: flex; align-items: center; gap: var(--sp-lg); }
+.defaultRoutineIconContainer { background-color: var(--background-color-light); border-radius: var(--border-radius-lg); padding: var(--sp-lg); display: flex; align-items: center; justify-content: center; }
+.defaultRoutineIconContainer .icon { width: 32px; height: 32px; color: var(--accent-color); }
+.defaultRoutineTextContainer h5 { margin: 0; font-size: var(--font-size-xl); font-weight: 700; }
+.defaultRoutineTextContainer p { margin: 0; color: var(--text-secondary-color); font-size: var(--font-size-md); }
+
+.iconSelector { display: flex; flex-wrap: wrap; gap: var(--sp-sm); padding: var(--sp-sm); border-radius: var(--border-radius-md); }
+.iconSelector button { background: transparent; border: 2px solid transparent; border-radius: var(--border-radius-sm); padding: var(--sp-sm); cursor: pointer; transition: all 0.2s ease; }
+.iconSelector button:hover { background-color: var(--background-color-hover); }
+.iconSelector button.active { border-color: var(--accent-color); }
+.iconSelector button .icon { width: 24px; height: 24px; color: var(--text-primary-color); }
+
+.taskAreaTabs { display: flex; border-bottom: 1px solid var(--border-color); }
+.tabButton { flex: 1; padding: var(--sp-md); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; color: var(--text-secondary-color); font-weight: 500; font-size: var(--font-size-md); transition: all 0.2s ease-in-out; margin-bottom: -1px; }
+.tabButton:hover { color: var(--text-primary-color); background-color: var(--background-color-hover); }
+.tabButton.active { color: var(--accent-color); border-bottom-color: var(--accent-color); font-weight: 700; }
+
+.tabContent { 
+    padding: var(--sp-lg);
+}
+
+.taskCreatorForm { display: flex; flex-direction: column; gap: var(--sp-md); }
+.taskInput { font-size: var(--font-size-md); }
+.taskControls { display: flex; flex-wrap: wrap; gap: var(--sp-md); align-items: center; }
+.segmentedControl, .quadrantSelector div { display: flex; background-color: var(--background-color-light); border-radius: var(--border-radius-sm); padding: 4px; }
+.segment, .quadrantSelector button { flex: 1; padding: var(--sp-sm) var(--sp-md); border: none; background: transparent; color: var(--text-secondary-color); cursor: pointer; transition: all 0.2s ease; border-radius: var(--border-radius-xs); font-size: 13px; font-weight: 500; }
+.segment.active, .quadrantSelector button.active { background-color: var(--background-color-darker); color: var(--text-primary-color); font-weight: 700; }
+.addButton { margin-left: auto; }
+
+.sectionHeader { font-size: var(--font-size-lg); margin-bottom: var(--sp-md); color: var(--text-primary-color); }
+.newTasksList { display: flex; flex-direction: column; gap: var(--sp-sm); }
+.newTaskItem { display: flex; align-items: center; background-color: var(--background-color-light); padding: var(--sp-sm) var(--sp-md); border-radius: var(--border-radius-sm); font-weight: 500; }
+.taskItemDetails { display: flex; align-items: center; gap: var(--sp-md); margin-left: auto; }
+.taskBadge { background-color: var(--background-color-darker); padding: 4px 8px; border-radius: var(--border-radius-xs); font-size: 12px; font-weight: 600; color: var(--text-secondary-color); }
+.removeTaskButton { background: none; border: none; cursor: pointer; color: var(--text-secondary-color); padding: 0; display: flex; align-items: center; justify-content: center; }
+.removeTaskButton:hover { color: var(--danger-color); }
+
+.libraryContainer { 
+    max-height: 45vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.categoryScroller {
+    flex-shrink: 0;
+    display: flex;
+    overflow-x: auto;
+    gap: var(--sp-sm);
+    margin-bottom: var(--sp-lg);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.categoryScroller::-webkit-scrollbar { display: none; }
+
+.categoryChip {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background-color: var(--background-color-light);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary-color);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.categoryChip:hover { background-color: var(--background-color-hover); border-color: var(--border-color-light); }
+.categoryChip.active { background-color: var(--accent-color-light); color: var(--accent-color-dark); border-color: var(--accent-color-light); font-weight: 700; }
+
+.librarySearchInput {
+    flex-shrink: 0;
     margin-bottom: var(--sp-lg);
 }
 
-.sectionHeader { font-size: 1.1rem; font-weight: 600; color: var(--text-primary-color); padding-bottom: var(--sp-md); border-bottom: 1px solid var(--border-color); margin-bottom: var(--sp-sm); }
-
-/* --- Abas --- */
-.taskAreaTabs { display: flex; border-bottom: 1px solid var(--border-color); }
-.tabButton { padding: var(--sp-sm) var(--sp-md); font-size: 0.95rem; font-weight: 600; cursor: pointer; color: var(--text-secondary-color); border-bottom: 3px solid transparent; transform: translateY(1px); transition: color 0.2s, border-color 0.2s; }
-.tabButton:disabled { color: var(--disabled-color); cursor: not-allowed; }
-.tabButton.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
-.tabContent { padding-top: var(--sp-lg); }
-
-/* --- Biblioteca --- */
-.libraryContainer { display: flex; flex-direction: column; gap: var(--sp-md); }
-.librarySearchInput { width: 100%; padding: var(--sp-md); }
-.accordionHeader { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: var(--sp-md); background-color: var(--surface-color); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); cursor: pointer; margin-top: var(--sp-sm); }
-.accordionHeader h5 { margin: 0; font-size: 1rem; }
-.accordionContent { padding: var(--sp-sm) 0; display: flex; flex-direction: column; gap: var(--sp-sm); }
-.libraryTaskItem { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-md); padding: var(--sp-sm) var(--sp-md); background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); }
-.libraryTaskInfo h6 { margin: 0; font-weight: 600; }
-.libraryTaskInfo p { margin: 0; font-size: 0.85rem; color: var(--text-secondary-color); }
-
-/* --- Criador de Tarefa --- */
-.taskCreatorForm { display: grid; grid-template-columns: 1fr auto; gap: var(--sp-md); align-items: center; }
-.taskInput { grid-column: 1 / -1; }
-.taskControls { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: var(--sp-lg); }
-.addButton { margin-left: auto; }
-
-/* --- [CORREÇÃO] Seletor de Tipo de Tarefa --- */
-.segmentedControl {
+.libraryTaskList {
+    flex-grow: 1;
     display: flex;
-    background-color: var(--surface-color);
-    border-radius: var(--border-radius-lg);
-    padding: 4px;
-    border: 1px solid var(--border-color);
-    flex-shrink: 0; /* Impede que o controle encolha */
+    flex-direction: column;
+    gap: var(--sp-sm);
+    overflow-y: auto; 
+    padding-right: 4px;
 }
 
-.segment {
-    /* flex: 1; */ /* REMOVIDO para impedir o crescimento excessivo */
-    padding: var(--sp-xs) var(--sp-md); /* Padding ajustado para um visual mais fino */
-    text-align: center;
-    font-size: 0.9rem;
-    font-weight: 600;
+.libraryTaskItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-md);
+    padding: var(--sp-sm) var(--sp-md);
+    border-radius: var(--border-radius-lg);
+    background-color: var(--background-color-light);
+    border: 1px solid var(--border-color);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.libraryTaskItem:hover { 
+    background-color: var(--background-color-hover);
+    border-color: var(--border-color-light);
+}
+
+.libraryTaskInfo { flex-grow: 1; overflow: hidden; }
+.libraryTaskInfo h6 { margin: 0; font-size: var(--font-size-md); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.libraryTaskInfo p { display: none; }
+
+.addFromLibButton {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
     color: var(--text-secondary-color);
     cursor: pointer;
-    border-radius: var(--border-radius-md);
-    transition: background-color 0.2s, color 0.2s;
-    white-space: nowrap; /* Impede que o texto quebre */
+    transition: all 0.2s ease;
 }
 
-.segment.active { background-color: var(--accent-color); color: var(--text-on-accent); }
-
-/* --- Lista de Tarefas --- */
-.newTasksList { display: flex; flex-direction: column; gap: var(--sp-sm); min-height: 50px; }
-.newTaskItem { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-md); background-color: var(--surface-color); padding: var(--sp-sm) var(--sp-md); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); }
-.taskItemDetails { display: flex; align-items: center; gap: var(--sp-sm); }
-.taskBadge { background-color: var(--surface-secondary-color); color: var(--text-secondary-color); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
-
-.removeTaskButton { background: none; border: none; cursor: pointer; padding: var(--sp-xs); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary-color); transition: background-color 0.2s, color 0.2s; }
-.removeTaskButton:hover { background-color: var(--danger-color-light-bg); color: var(--danger-color); }
-
-/* [CORREÇÃO] Força o SVG a herdar a cor para garantir visibilidade */
-.removeTaskButton svg {
-    fill: currentColor;
-}
-
-/* --- Outros Componentes --- */
-.iconSelector { display: flex; flex-wrap: wrap; gap: var(--sp-sm); }
-.iconSelector button { /* ... */ }
-.iconSelector button.active { /* ... */ }
-.quadrantSelector div { display: flex; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); overflow: hidden; }
-.quadrantSelector button { padding: var(--sp-xs) var(--sp-sm); background-color: var(--surface-color); border: none; cursor: pointer; color: var(--text-secondary-color); transition: background-color 0.2s, color 0.2s; font-size: 0.85rem; }
-.quadrantSelector button.active { background-color: var(--accent-color); color: var(--text-on-accent); font-weight: 600; }
-.defaultRoutineInfo { /* ... */ }
+.addFromLibButton .icon { width: 20px; height: 20px; }
+.addFromLibButton:hover:not(:disabled) { background-color: var(--accent-color-light); color: var(--accent-color-dark); border-color: var(--accent-color-light); }
+.addFromLibButton.added { background-color: var(--accent-color); color: black; border-color: var(--accent-color-dark); cursor: not-allowed; }
+.addFromLibButton.added:hover { background-color: var(--accent-color); color: black; }

@@ -110,19 +110,19 @@ export const DailyAgenda: React.FC<{ tasks: Task[], frogTaskId: string | null, o
 
     const priorityOrder: Quadrant[] = ['do', 'schedule', 'delegate', 'eliminate'];
 
-    const todayTasks = useMemo(() => 
-        tasks.filter(t => t.dueDate === todayString), 
+    const futureTasks = useMemo(() => 
+        tasks.filter(t => t.dueDate >= todayString), 
     [tasks, todayString]);
 
     const scheduledTasks = useMemo(() => 
-        todayTasks.filter(t => !!t.timeOfDay && t.status !== 'done'), 
-    [todayTasks]);
+        futureTasks.filter(t => !!t.timeOfDay && t.status !== 'done'), 
+    [futureTasks]);
     
     const unscheduledTasks = useMemo(() => 
-        todayTasks
+        futureTasks
             .filter(t => !t.timeOfDay && t.status !== 'done')
             .sort((a, b) => priorityOrder.indexOf(a.quadrant) - priorityOrder.indexOf(b.quadrant)),
-    [todayTasks]);
+    [futureTasks]);
 
     const getTasksForPeriod = (period: TimeOfDay) => {
         return scheduledTasks
@@ -137,17 +137,17 @@ export const DailyAgenda: React.FC<{ tasks: Task[], frogTaskId: string | null, o
     ];
     
     const allScheduledTasks = useMemo(() => 
-        todayTasks.filter(t => !!t.timeOfDay), 
-    [todayTasks]);
+        futureTasks.filter(t => !!t.timeOfDay), 
+    [futureTasks]);
 
     const allUnscheduledTasks = useMemo(() => 
-        todayTasks
+        futureTasks
             .filter(t => !t.timeOfDay)
             .sort((a, b) => {
                 if (a.status === b.status) return priorityOrder.indexOf(a.quadrant) - priorityOrder.indexOf(b.quadrant);
                 return a.status === 'done' ? 1 : -1; // Done tasks at bottom
             }),
-    [todayTasks]);
+    [futureTasks]);
     
     const getAllTasksForPeriod = (period: TimeOfDay) => {
          return allScheduledTasks
@@ -158,18 +158,18 @@ export const DailyAgenda: React.FC<{ tasks: Task[], frogTaskId: string | null, o
             });
     };
 
-    if (todayTasks.length === 0) {
+    if (futureTasks.length === 0) {
         return (
              <div className="card">
-                <h3>Agenda de Hoje</h3>
-                <p className="empty-agenda-message">Nenhuma tarefa para hoje. Adicione uma tarefa com a data de hoje para vê-la aqui!</p>
+                <h3>Agenda</h3>
+                <p className="empty-agenda-message">Nenhuma tarefa para hoje ou para o futuro. Adicione uma para vê-la aqui!</p>
             </div>
         );
     }
 
     return (
         <div className="card">
-            <h3>Agenda de Hoje</h3>
+            <h3>Agenda</h3>
             <div className="daily-agenda">
                 {allUnscheduledTasks.length > 0 && (
                     <div className="agenda-period-column">

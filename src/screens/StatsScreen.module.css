@@ -1,9 +1,11 @@
 /* screens/StatsScreen.module.css */
 
+/* [CORREÇÃO APLICADA] Adiciona margem no topo para compensar a remoção do título. */
 .statsContainer {
     display: flex;
     flex-direction: column;
     gap: var(--sp-lg);
+    margin-top: var(--sp-lg); /* Adiciona espaço no topo */
 }
 
 .statsHeader {

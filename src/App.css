@@ -126,14 +126,22 @@ a {
   background-color: var(--background-color);
 }
 
+/* [CORREÇÃO APLICADA] */
 .screen-content {
   flex-grow: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-top: calc(var(--sp-lg) + var(--safe-top));
-  padding-bottom: calc(80px + var(--safe-bottom));
-  padding-left: calc(var(--sp-lg) + var(--safe-left));
-  padding-right: calc(var(--sp-lg) + var(--safe-right));
+  padding-top: var(--safe-top); /* Padding superior agora respeita apenas a safe area */
+  padding-bottom: calc(80px + var(--safe-bottom)); /* 80px para a barra de navegação */
+  
+  /* 
+    O padding horizontal foi removido daqui para permitir componentes de largura total (full-bleed),
+    como o banner de saudação. O espaçamento lateral agora deve ser aplicado DENTRO de cada
+    tela, em um contêiner específico, para os elementos que não devem tocar as bordas.
+  */
+  padding-left: 0;
+  padding-right: 0;
+
   -webkit-overflow-scrolling: touch;
 }
 

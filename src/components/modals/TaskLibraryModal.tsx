@@ -16,7 +16,6 @@ interface TaskLibraryModalProps {
 }
 
 export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine, onAddTemplates, onClose }) => {
-    // [MUDANÇA] A função handleSaveTask foi importada do contexto
     const { routines, taskTemplates, handleDeleteTemplate, handleSaveRoutine, handleDeleteRoutine, handleSaveTask } = useTasks();
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<number[]>([]);
     const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
@@ -32,6 +31,8 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
     });
 
     const categories = useMemo(() => {
+        // [FIX] Guard against undefined taskTemplates during initial render
+        if (!taskTemplates) return [];
         const allCategories = Array.from(new Set(taskTemplates.map(t => t.category)));
         const categorySet = new Set([...allCategories, ...defaultCategories]);
         return Array.from(categorySet);
@@ -48,7 +49,8 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
     };
 
     const handleAddSelectedTemplates = () => {
-        const templatesToAdd = taskTemplates.filter(t => selectedTemplateIds.includes(t.id));
+        // [FIX] Guard against undefined taskTemplates
+        const templatesToAdd = taskTemplates?.filter(t => selectedTemplateIds.includes(t.id)) || [];
         if (templatesToAdd.length > 0) {
             onAddTemplates(templatesToAdd);
         }
@@ -65,24 +67,17 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
         handleDeleteTemplate(templateId);
     };
 
-    // [NOVO] Nova função para lidar com o salvamento da rotina e suas tarefas
     const handleSaveRoutineWithTasks = async (routineData: Omit<Routine, 'id' | 'taskTemplateIds'>, tasks: Omit<Task, 'id'>[]) => {
-        // 1. Salva a rotina e obtém o objeto da rotina criada (com o novo ID)
         const savedRoutine = await handleSaveRoutine(routineData as Routine);
-
-        // 2. Se houver novas tarefas para adicionar
         if (tasks.length > 0 && savedRoutine) {
-            // 3. Associa cada tarefa à rotina recém-criada e salva
             for (const task of tasks) {
                 const taskWithRoutineId = { 
                     ...task, 
-                    routineId: savedRoutine.id // Associa a tarefa à rotina
+                    routineId: savedRoutine.id
                 };
-                await handleSaveTask(taskWithRoutineId as Task, true); // Salva como um novo template
+                await handleSaveTask(taskWithRoutineId as Task, true);
             }
         }
-        
-        // 4. Fecha o modal
         setIsCreatingRoutine(false);
         setEditingRoutine(null);
     };
@@ -115,7 +110,8 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                 <main className="g-modal-body">
                     {activeTab === 'routines' && (
                          <div className={styles.routinesList}>
-                            {routines.map(routine => (
+                            {/* [FIX] Guard against undefined routines during initial render */}
+                            {routines && routines.map(routine => (
                                 <div key={routine.id} className={`card ${styles.routineCard}`}>
                                     <div className={styles.routineActions}>
                                         <button onClick={() => setEditingRoutine(routine)} title="Editar Rotina">
@@ -133,7 +129,8 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                                     </div>
                                     <p>{routine.description}</p>
                                     <button className="btn btn-secondary" onClick={() => handleAddRoutineAndClose(routine)}>
-                                        <Icon path={icons.plus}/> Adicionar ({routine.taskTemplateIds.length}) Tarefas
+                                        {/* [FIX] Guard against undefined taskTemplateIds array */}
+                                        <Icon path={icons.plus}/> Adicionar ({(routine.taskTemplateIds || []).length}) Tarefas
                                     </button>
                                 </div>
                             ))}
@@ -142,14 +139,16 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
 
                     {activeTab === 'templates' && (
                         <div className={styles.taskLibraryAccordion}>
-                            {categories.map(category => (
+                            {/* [FIX] Guard against undefined categories */}
+                            {categories && categories.map(category => (
                                 <div key={category} className={`${styles.accordionItem} ${activeAccordion === category ? styles.open : ''}`}>
                                     <div className={styles.accordionHeader} onClick={() => handleToggleAccordion(category)}>
                                         <span>{category}</span>
                                         <Icon path={icons.chevronDown} />
                                     </div>
                                     <div className={styles.accordionContent}>
-                                        {taskTemplates.filter(t => t.category === category).map(template => (
+                                        {/* [FIX] Guard against undefined taskTemplates */}
+                                        {taskTemplates && taskTemplates.filter(t => t.category === category).map(template => (
                                             <div key={template.id} className={styles.templateItem} onClick={() => handleToggleTemplate(template.id)}>
                                                 <input type="checkbox" checked={selectedTemplateIds.includes(template.id)} readOnly />
                                                 <span className={styles.checkboxVisual}><Icon path={icons.check} /></span>
@@ -183,7 +182,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                 </footer>
             </div>
 
-            {/* [MUDANÇA] A prop onSave agora passa a nova função que lida com a lógica completa */}
             {(isCreatingRoutine || editingRoutine) && (
                 <RoutineEditorModal 
                     routineToEdit={isCreatingRoutine ? null : editingRoutine}

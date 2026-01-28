@@ -1,15 +1,19 @@
+/* [CORREÇÃO APLICADA] O header foi simplificado para conter apenas a barra de ações. */
 .tasksHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--sp-xl);
+    padding: var(--sp-md) 0; /* Espaçamento vertical sutil */
+    margin-bottom: var(--sp-lg);
 }
 
-.tasksTitle h2 {
-    margin: 0;
-}
-
+/* [CORREÇÃO APLICADA] Barra de ações agora ocupa toda a largura e distribui os botões. */
 .tasksActions {
+    display: flex;
+    justify-content: space-between; /* Distribui os grupos de botões */
+    align-items: center;
+    width: 100%;
+}
+
+/* [NOVO] Contêiner para os botões de ícone à esquerda */
+.tasksActionGroup {
     display: flex;
     gap: var(--sp-sm);
 }
@@ -57,15 +61,13 @@
     overflow-y: auto;
 }
 
-/* [NOVO] Para a vista recolhida (2 tarefas) do Inbox e Someday, força 2 colunas */
 .collapsedHorizontalList {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--sp-lg); /* Aumentando o espaço para um look mais limpo */
+    gap: var(--sp-lg);
     align-items: start;
 }
 
-/* [NOVO] Para a vista expandida do Inbox e Someday, usa uma grade flexível */
 .expandedHorizontalList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -86,17 +88,6 @@
             "schedule"
             "someday";
         grid-template-columns: 1fr;
-    }
-
-    .tasksHeader {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--sp-lg);
-    }
-
-    .tasksActions {
-        width: 100%;
-        justify-content: space-between;
     }
     
     .collapsedHorizontalList,

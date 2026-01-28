@@ -185,6 +185,7 @@ export const HomeScreen: React.FC = () => {
                 </div>
             </div>
 
+            {/* [CORREÇÃO APLICADA] Wrapper agora engloba todo o conteúdo abaixo do header */}
             <div className={styles.contentWrapper}>
                 <form id="tutorial-step1-form" onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
                     <input 
