@@ -35,7 +35,7 @@ interface TaskCardProps {
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragStart, onDragEnd, isDragging, quadrant, onTriage }) => {
     const { handleCompleteTask, handleSetFrog, frogTaskId, handleDeleteTask, handleToggleSubtask } = useTasks();
-    const { startFocusOnTask, activeTaskId, status } = usePomodoro(); 
+    const { startPomodoro, activeTaskId, sessionStatus } = usePomodoro(); 
     const { addNotification, handleNavigate } = useUI();
 
     const [subtasksVisible, setSubtasksVisible] = useState(true);
@@ -44,14 +44,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
 
     const isInInbox = quadrant === 'inbox';
     const hasPendingSubtasks = useMemo(() => task.subtasks?.some(st => !st.completed) ?? false, [task.subtasks]);
-    const isPomodoroActive = status !== 'idle';
+    const isPomodoroActive = sessionStatus !== 'idle';
     const [isDraggable, setIsDraggable] = useState(false);
 
     const isFrog = frogTaskId === task.id;
 
     const mainActionType = useMemo(() => {
         if (isInInbox) return 'check';
-        if (task.pomodoroEstimate > 0) return 'focus';
+        // Uma tarefa é considerada "focável" se tiver uma estimativa de pomodoros
+        if (task.pomodoroEstimate > 0) return 'focus'; 
         return 'check';
     }, [task.pomodoroEstimate, isInInbox]);
 
@@ -142,7 +143,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
     const handleFocusClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (isPomodoroActive) return;
-        startFocusOnTask(task.id, task.title, task.customDuration);
+
+        // Lógica que honra as configurações da tarefa
+        const settings = {
+            taskId: task.id,
+            taskTitle: task.title,
+            // Se a tarefa tiver mais de 1 pomodoro, é um clássico. Senão, é rápido.
+            mode: (task.pomodoroEstimate && task.pomodoroEstimate > 1) ? 'classic' : 'quick',
+            // Usa a duração customizada da tarefa, ou o padrão de 25 min
+            focusMinutes: task.customDuration || 25,
+            // Usa a estimativa de pomodoros como número de ciclos
+            cycles: task.pomodoroEstimate || 1,
+        };
+
+        startPomodoro(settings);
         handleNavigate('focus');
     };
 

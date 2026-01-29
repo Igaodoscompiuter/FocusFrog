@@ -1,0 +1,195 @@
+
+/* =================================================================== */
+/* ANIMAÇÕES (KEYFRAMES)                                             */
+/* =================================================================== */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: var(--shadow-md);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+/* =================================================================== */
+/* GERAL: Layout e Fundo Dinâmico                                    */
+/* =================================================================== */
+.focusScreen {
+    height: 100%;
+    width: 100%;
+    padding: var(--sp-md) var(--sp-lg);
+    transition: background 0.8s ease-in-out;
+}
+
+.focus {
+    background: var(--primary-gradient);
+}
+
+.break {
+    background: var(--success-gradient);
+}
+
+.screenContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribui o espaço */
+    align-items: center; 
+    height: 100%;
+    padding-top: var(--sp-xl); /* Adiciona espaço no topo */
+}
+
+/* =================================================================== */
+/* PARTE 1: Banner da Tarefa e Motivação                             */
+/* =================================================================== */
+.taskBanner {
+    background-color: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-lg);
+    margin-bottom: auto; /* Empurra o banner para cima */
+    width: 100%;
+    max-width: 600px; 
+    text-align: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.taskTitle {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 4vw, 1.5rem); 
+    line-height: 1.3;
+    color: var(--text-color-primary);
+    margin: 0 0 var(--sp-sm) 0;
+}
+
+.motivationalQuote {
+    font-family: var(--font-sans);
+    font-size: clamp(0.875rem, 2.5vw, 1rem); 
+    color: var(--text-color-secondary);
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* =================================================================== */
+/* PARTE 2: O Santuário Zen                                          */
+/* =================================================================== */
+.zenSanctuary {
+    flex-grow: 2; /* Permite que o santuário ocupe mais espaço */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.zenElements {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.characterContainer {
+    margin-bottom: var(--sp-sm);
+}
+
+.timerDisplay {
+    font-family: var(--font-mono);
+    font-size: clamp(3.5rem, 12vw, 4.5rem); 
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.cycleCounter {
+    margin-top: var(--sp-xs);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    opacity: 0.9;
+    letter-spacing: 0.05em;
+}
+
+/* =================================================================== */
+/* PARTE 3: Footer (Controles)                                       */
+/* =================================================================== */
+.sessionFooter {
+    width: 100%;
+    max-width: 600px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-md);
+    margin-top: auto; /* Empurra o footer para baixo */
+}
+
+.controlsContainer {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+    max-width: 380px;
+}
+
+.mainActions { grid-column: 2 / 3; }
+.footerActionLeft { grid-column: 1 / 2; justify-self: start; }
+.footerActionRight { grid-column: 3 / 4; justify-self: end; }
+
+.mainActionButton {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background-color: var(--bg-color-lightest);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
+}
+
+.pulsating {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.mainActionButton:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.mainActionButton svg { width: 40px; height: 40px; }
+
+.secondaryActionButton {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-full);
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color-secondary);
+    transition: all 0.2s ease;
+}
+
+.secondaryActionButton:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--text-color-primary);
+}
+
+.secondaryActionButton svg { width: 24px; height: 24px; }
+.placeholder { width: 50px; height: 50px; }
+
+/* =================================================================== */
+/* Cores de SVG dinâmicas                                            */
+/* =================================================================== */
+.focus .mainActionButton svg { color: var(--primary-color-deep); }
+.break .mainActionButton svg { color: var(--success-color-deep); }

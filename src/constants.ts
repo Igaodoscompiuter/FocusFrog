@@ -15,7 +15,8 @@ export const defaultTags: Tag[] = [
     { id: 3, name: 'Trabalho', color: '#4B5563' },
     { id: 4, name: 'Estudos', color: '#F97316' },
     { id: 5, name: 'Casa', color: '#14B8A6' },
-    { id: 6, name: 'Saúde', color: '#EC4899' }
+    { id: 6, name: 'Saúde', color: '#EC4899' },
+    { id: 8, name: 'Teste', color: '#e53e3e' } // Categoria de Teste
 ];
 
 export const defaultCategories = [
@@ -23,7 +24,8 @@ export const defaultCategories = [
     'Pessoal',
     'Casa',
     'Estudos',
-    'Saúde'
+    'Saúde',
+    'Teste'
 ];
 
 export const routineIcons: (keyof typeof icons)[] = [
@@ -44,7 +46,26 @@ export const routineIcons: (keyof typeof icons)[] = [
 ];
 
 export const initialTaskTemplates: TaskTemplate[] = [
-    // ... (outras tarefas permanecem as mesmas)
+    {
+        id: 80,
+        title: "Teste: Foco 5 Segundos (1 Ciclo)",
+        quadrant: 'do',
+        description: "Tarefa para testar um único ciclo de foco com 5 segundos.",
+        category: "Teste",
+        pomodoroEstimate: 1,
+        customDuration: 5 / 60, // 5 segundos
+        isDefault: true
+    },
+    {
+        id: 81,
+        title: "!!Teste!! 2 Ciclos (Foco 5s, Pausa 3s)",
+        quadrant: 'do',
+        description: "Tarefa para testar 2 ciclos com 5s de foco e 3s de pausa.",
+        category: "Teste",
+        pomodoroEstimate: 2,
+        customDuration: 5 / 60, // 5 segundos de foco
+        isDefault: true
+    },
     {
         id: 50, 
         title: "🐸 Card Especial FocusFrog N.1", 
@@ -61,7 +82,6 @@ export const initialTaskTemplates: TaskTemplate[] = [
         ],
         isDefault: true 
     },
-    // [MELHORIA] Novas tarefas padrão para a categoria 'Trabalho'
     {
         id: 60,
         title: "Planejar o dia de trabalho",

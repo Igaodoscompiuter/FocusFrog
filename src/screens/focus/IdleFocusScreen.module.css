@@ -1,0 +1,83 @@
+/* =================================================================== */
+/* CSS DA TELA OCIOSA - VERSÃO COM CARD BALANCEADO                 */
+/* =================================================================== */
+
+/* --- Contêineres Principais --- */
+.idleContainer { display: flex; flex-direction: column; align-items: center; width: 100%; gap: var(--sp-lg); }
+.greetingBanner { width: 100%; background-color: var(--surface-color); padding: var(--sp-xl) var(--sp-lg); text-align: center; border-bottom: 1px solid var(--border-color); }
+.greetingBanner h1 { font-family: var(--font-poppins); font-size: 2.2rem; font-weight: 700; color: var(--text-color); margin: 0 0 var(--sp-xs) 0; }
+.greetingBanner p { font-size: 1rem; color: var(--text-secondary-color); max-width: 45ch; margin: 0 auto; }
+.idleCharacter { margin-top: var(--sp-md); }
+.optionsContainer { display: flex; flex-direction: column; gap: var(--sp-lg); width: 100%; max-width: 450px; padding: 0 var(--sp-lg); }
+
+/* --- Estilos dos Cards Balanceados --- */
+/* Layout de 3 colunas: [Icon Wrapper] [Text] [Action Wrapper] */
+.selectionCardButton, .configCardHeader { display: flex; align-items: center; justify-content: space-between; /* Distribui o espaço */ }
+.selectionCardButton { background-color: var(--surface-color); border-radius: var(--border-radius-xl); border: 1px solid var(--border-color); width: 100%; padding: var(--sp-lg); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.selectionCardButton:hover { transform: translateY(-4px); }
+
+/* Wrapper da esquerda (ícone) */
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius-lg);
+    flex-shrink: 0; /* Impede que encolha */
+}
+
+.cardIcon { color: var(--accent-yellow); width: 32px; height: 32px; flex-shrink: 0; }
+
+/* [BALANCEAMENTO] Bloco de texto central que cresce */
+.cardText {
+    flex-grow: 1; /* Ocupa todo o espaço do meio */
+    text-align: center; /* Centraliza o texto dentro dele */
+    padding: 0 var(--sp-sm); /* Garante respiro nas laterais */
+    overflow: hidden; /* Garante que o texto não vaze do card */
+}
+
+.cardText h4 { font-family: var(--font-poppins); font-size: 1.1rem; font-weight: 600; color: var(--text-color); margin: 0 0 var(--sp-xs) 0; }
+.cardText p { font-size: 0.9rem; color: var(--text-secondary-color); margin: 0; white-space: nowrap; }
+
+/* [BALANCEAMENTO] Wrapper da direita (real ou fantasma) */
+.cardActionWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 48px; /* Mesma largura do .iconWrapper */
+    flex-shrink: 0; /* Impede que encolha */
+}
+
+.cardChevron { color: var(--text-secondary-color); width: 28px; height: 28px; }
+
+
+/* =================================================================== */
+/* ESTILOS DO CARD POMODORO - "CONTROLE UNIFICADO"                  */
+/* =================================================================== */
+
+:global(#pomodoro-config-card).configCard { background-color: var(--surface-color); border-radius: var(--border-radius-xl); border: 1px solid var(--border-color); width: 100%; padding: var(--sp-lg); display: flex; flex-direction: column; gap: var(--sp-sm); }
+:global(#pomodoro-config-card) .divider { width: 100%; height: 1px; background-color: var(--border-color); margin: var(--sp-sm) 0; }
+
+/* Contêiner principal para o controle, agora centralizado */
+:global(#pomodoro-config-card) .configCardControls { display: flex; flex-direction: column; align-items: center; gap: var(--sp-sm); padding: var(--sp-sm) 0; }
+
+/* Label "Ciclos", agora centralizada */
+:global(#pomodoro-config-card) .controlsLabel { font-size: 1rem; font-weight: 500; color: var(--text-secondary-color); }
+
+/* Contêiner retangular que unifica os elementos */
+:global(#pomodoro-config-card) .cycleSelector { display: flex; align-items: center; gap: var(--sp-md); background-color: var(--background-color); padding: var(--sp-sm); border-radius: var(--border-radius-lg); }
+
+/* Botões de ciclo no estilo "Sólido e Tátil" */
+:global(#pomodoro-config-card) .cycleButton { all: unset; box-sizing: border-box; background-color: var(--border-color); color: var(--accent-yellow); width: 40px; height: 40px; border-radius: var(--border-radius-full); font-size: 2rem; font-weight: 300; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease-out; }
+:global(#pomodoro-config-card) .cycleButton:active { box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.2); transform: scale(0.95); }
+
+/* Contêiner para o número, garantindo espaçamento */
+:global(#pomodoro-config-card) .cycleCount { width: 40px; text-align: center; }
+:global(#pomodoro-config-card) .cycleCount span { font-family: var(--font-poppins); font-weight: 700; font-size: 1.4rem; color: var(--text-color); }
+
+/* Botão de Iniciar (sem alteração) */
+:global(#pomodoro-config-card) .accentYellow { all: unset; box-sizing: border-box; background-color: var(--accent-yellow); color: var(--background-color); width: 100%; display: flex; align-items: center; justify-content: center; padding: var(--sp-md) var(--sp-lg); border-radius: var(--border-radius-lg); font-family: var(--font-poppins); font-size: 1rem; font-weight: 700; text-align: center; cursor: pointer; margin-top: var(--sp-sm); transition: filter 0.2s ease-out, transform 0.2s ease-out; }
+:global(#pomodoro-config-card) .accentYellow:hover { filter: brightness(1.1); }
+:global(#pomodoro-config-card) .accentYellow:active { filter: brightness(0.95); transform: scale(0.98); }

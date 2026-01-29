@@ -9,11 +9,14 @@ import { useTasks } from '../../context/TasksContext';
 import styles from './RoutineEditorModal.module.css';
 import { trackNewRoutineCreated } from '../../analytics';
 
-type NewTaskForRoutine = Pick<Task, 'title' | 'quadrant' | 'description'> & { pomodoroEstimate: number; tempId: string; isDefault?: boolean };
+// A definição de tipo para tarefas dentro do editor.
+// tempId é usado para rastrear tarefas na UI antes de serem salvas.
+export type NewTaskForRoutine = Pick<Task, 'title' | 'quadrant' | 'description'> & { pomodoroEstimate: number; tempId: string; isDefault?: boolean };
 
 interface RoutineEditorModalProps {
     routineToEdit: Routine | null;
-    onSave: (routineData: Omit<Routine, 'id' | 'taskTemplateIds'>, tasks: Omit<NewTaskForRoutine, 'tempId'>[]) => void;
+    // [CORREÇÃO] A assinatura de onSave foi simplificada para passar os dados brutos para o componente pai.
+    onSave: (routine: Partial<Routine>, tasks: NewTaskForRoutine[]) => void;
     onClose: () => void;
 }
 
@@ -25,10 +28,12 @@ const quadrantMap = quadrants.reduce((acc, q) => {
 export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEditorModalProps) => {
     const { taskTemplates } = useTasks();
 
+    // Estado para os detalhes da rotina (nome, ícone, etc.)
     const [routine, setRoutine] = useState<Partial<Routine>>(
-        routineToEdit || { name: '', description: '', icon: 'zap', isDefault: false }
+        routineToEdit || { name: '', description: '', icon: 'zap', isDefault: false, taskTemplateIds: [] }
     );
     
+    // Estado para a lista de tarefas associadas a esta rotina no editor.
     const [newTasksForRoutine, setNewTasksForRoutine] = useState<NewTaskForRoutine[]>([]);
     const [taskName, setTaskName] = useState('');
     const [taskType, setTaskType] = useState<'quick' | 'focus'>('quick');
@@ -41,13 +46,14 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todos');
 
+    // Efeito para popular a lista de tarefas quando se edita uma rotina existente.
     useEffect(() => {
         if (isEditing && routineToEdit.taskTemplateIds && taskTemplates) {
             const tasksFromTemplates = routineToEdit.taskTemplateIds
                 .map(templateId => taskTemplates.find(t => t.id === templateId))
-                .filter((t): t is TaskTemplate => !!t)
+                .filter((t): t is TaskTemplate => !!t) // Garante que apenas templates encontrados sejam mapeados.
                 .map(template => ({
-                    tempId: `template_${template.id}`,
+                    tempId: `template_${template.id}`, // Prefixo `template_` para identificar tarefas de modelos existentes.
                     title: template.title,
                     description: template.description,
                     pomodoroEstimate: template.pomodoroEstimate || 0,
@@ -60,6 +66,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
 
     const modalRef = useClickOutside(onClose);
 
+    // Memoiza o cálculo das categorias e tarefas filtradas para a biblioteca.
     const { categories, filteredTasks } = useMemo(() => {
         if (!taskTemplates) return { categories: ['Todos'], filteredTasks: [] };
 
@@ -85,10 +92,11 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
         setRoutine(prev => ({ ...prev, [field]: value }));
     };
 
+    // Adiciona uma nova tarefa (ainda não salva) à lista da rotina.
     const handleAddTask = () => {
         if (!taskName.trim()) return;
         const newTask: NewTaskForRoutine = {
-            tempId: `temp_${Date.now()}`,
+            tempId: `temp_${Date.now()}`, // Prefixo `temp_` para identificar tarefas novas.
             title: taskName.trim(),
             pomodoroEstimate: taskType === 'focus' ? 1 : 0,
             quadrant: taskQuadrant,
@@ -101,6 +109,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
         setTaskQuadrant('schedule');
     };
 
+    // Adiciona uma tarefa existente da biblioteca à lista da rotina.
     const handleAddTaskFromLibrary = (template: TaskTemplate) => {
         const newTask: NewTaskForRoutine = {
             tempId: `template_${template.id}`,
@@ -117,11 +126,11 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
         setNewTasksForRoutine(prev => prev.filter(task => task.tempId !== tempId));
     };
 
+    // [CORREÇÃO] A função agora passa o objeto `routine` completo e a lista de tarefas para o pai.
     const handleSubmit = () => {
         if (!routine.name?.trim()) return;
         if (!isEditing) trackNewRoutineCreated();
-        const { id, taskTemplateIds, ...routineData } = routine;
-        onSave(routineData as Omit<Routine, 'id' | 'taskTemplateIds'>, newTasksForRoutine.map(({tempId, ...task}) => task));
+        onSave(routine, newTasksForRoutine);
     };
 
     const renderTaskCreationUI = () => (
@@ -212,7 +221,6 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                          <h4 className={styles.sectionHeader}>Tarefas da Rotina</h4>
                         <div className={styles.newTasksList}>
                             {newTasksForRoutine.map((task) => {
-                                // [CORREÇÃO CRÍTICA] A lógica de exclusão foi corrigida aqui
                                 const canDelete = !isDefaultRoutine || !task.isDefault;
                                 const quadrantTitle = quadrantMap[task.quadrant] || task.quadrant;
                                 return (

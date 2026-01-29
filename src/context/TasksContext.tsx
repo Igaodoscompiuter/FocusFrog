@@ -5,7 +5,6 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
-// A importação de 'welcomeTaskTemplate' foi removida, pois agora faz parte de 'initialTaskTemplates'.
 import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
 
 interface TasksContextType {
@@ -29,6 +28,7 @@ interface TasksContextType {
     handlePostponeTask: (taskId: string, days: number) => void;
     needsMorningPlan: boolean;
     handleCreateTemplateFromTask: (task: Task) => void;
+    handleCreateTemplate: (task: Partial<Omit<Task, 'id'>>) => TaskTemplate;
     handleDeleteTemplate: (templateId: number) => void;
     handleAddRoutine: (routine: Routine) => void;
     handleSaveRoutine: (routine: Routine) => void;
@@ -73,7 +73,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
 
     const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
-    // O estado agora é inicializado diretamente com 'initialTaskTemplates', que já contém o card especial.
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);
@@ -82,7 +81,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [triageQueue, setTriageQueue] = useState<Task[]>([]);
     const isTriageActive = useMemo(() => triageQueue.length > 0, [triageQueue]);
 
-    // Lógica de onboarding atualizada para encontrar o modelo de boas-vindas dentro da lista principal.
     useEffect(() => {
         const welcomeTaskTemplate = taskTemplates.find(t => t.id === 50);
         if (!onboardingCompleted && welcomeTaskTemplate) {
@@ -127,6 +125,18 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return !frogForToday;
     }, [tasks, frogTaskId, todayString]);
 
+    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
+        setTasks(prev => {
+            const newTasks: Task[] = tasksData.map((taskData, index) => ({
+                ...taskData,
+                id: `task-${Date.now()}-${index}`,
+                status: 'todo',
+                displayOrder: prev.filter(t => t.quadrant === taskData.quadrant).length + index,
+            }));
+            return [...prev, ...newTasks];
+        });
+    }, [setTasks]);
+
     const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status'>) => {
         handleAddTasks([taskData]);
         if (taskData.quadrant === 'inbox') {
@@ -134,7 +144,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         } else {
             addNotification('Nova tarefa adicionada à sua lista', '✨', 'success');
         }
-    }, [addNotification]);
+    }, [addNotification, handleAddTasks]);
 
     const handleUpdateTask = useCallback((updatedTask: Task) => {
         setTasks(prevTasks => {
@@ -167,7 +177,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     
     const handleCompleteTask = useCallback((taskId: string, subtaskId?: string) => {
         const taskToComplete = tasks.find(t => t.id === taskId);
-        if (!taskToComplete || taskToComplete.status === 'done') return; // Sai se a tarefa não existe ou já está feita
+        if (!taskToComplete || taskToComplete.status === 'done') return;
 
         if (taskId === activeTaskId) {
             stopCycle();
@@ -176,7 +186,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTasks(prev => prev.map(task => {
             if (task.id !== taskId) return task;
     
-            // Cenário 1: Lidando com uma subtarefa
             if (subtaskId) {
                 const updatedSubtasks = task.subtasks?.map(st => 
                     st.id === subtaskId ? { ...st, completed: true } : st
@@ -197,7 +206,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 
                 return { ...task, subtasks: updatedSubtasks };
             
-            // Cenário 2: Lidando com a tarefa principal diretamente
             } else {
                 setPontosFoco(p => p + 10);
                 if (taskId === frogTaskId) {
@@ -211,7 +219,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }));
     }, [tasks, setTasks, addNotification, setPontosFoco, activeTaskId, stopCycle, frogTaskId]);
 
-    // Efeito para lidar com a conclusão automática do Pomodoro
     useEffect(() => {
         if (lastCompletedFocus?.taskId) {
             setTimeout(() => {
@@ -221,18 +228,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             }, 0);
         }
     }, [lastCompletedFocus, handleCompleteTask, clearLastCompletedFocus, stopCycle]);
-
-    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
-        setTasks(prev => {
-            const newTasks: Task[] = tasksData.map((taskData, index) => ({
-                ...taskData,
-                id: `task-${Date.now()}-${index}`,
-                status: 'todo',
-                displayOrder: prev.filter(t => t.quadrant === taskData.quadrant).length + index,
-            }));
-            return [...prev, ...newTasks];
-        });
-    }, [setTasks]);
 
     const handleUpdateTaskQuadrant = useCallback((taskId: string, newQuadrant: Quadrant, newIndex: number) => {
         setTasks(prevTasks => {
@@ -339,7 +334,6 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleSaveTag = useCallback((tag: Partial<Tag>) => {
         setTags(prev => {
             if (tag.id) {
-                // Proteção para não editar etiquetas padrão
                 const originalTag = prev.find(t => t.id === tag.id);
                 if (originalTag?.isDefault) {
                     addNotification("Etiquetas padrão não podem ser editadas.", '🛡️', 'error');
@@ -390,22 +384,29 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addNotification(`Tarefa adiada por ${days} dia(s)`, '🗓️', 'info');
     }, [setTasks, addNotification]);
 
-    const handleCreateTemplateFromTask = useCallback((task: Task) => {
+    // [NOVO] Função para criar um modelo a partir de dados de tarefa e retorná-lo.
+    const handleCreateTemplate = useCallback((taskData: Partial<Omit<Task, 'id'>>) => {
         const newTemplate: TaskTemplate = {
             id: Date.now(),
-            title: task.title,
-            description: task.description,
-            quadrant: task.quadrant,
-            pomodoroEstimate: task.pomodoroEstimate,
-            customDuration: task.customDuration,
-            energyNeeded: task.energyNeeded,
+            title: taskData.title || 'Nova Tarefa',
+            description: taskData.description,
+            quadrant: taskData.quadrant,
+            pomodoroEstimate: taskData.pomodoroEstimate,
+            customDuration: taskData.customDuration,
+            energyNeeded: taskData.energyNeeded,
             category: 'Personalizado',
-            subtasks: task.subtasks?.map(st => ({ text: st.text })),
+            subtasks: taskData.subtasks?.map(st => ({ text: st.text })),
             isDefault: false,
         };
         setTaskTemplates(prev => [...prev, newTemplate]);
-        addNotification("Novo modelo salvo na sua biblioteca", '📚', 'success');
-    }, [setTaskTemplates, addNotification]);
+        // addNotification("Novo modelo salvo na sua biblioteca", '📚', 'success'); // Notificação desabilitada para fluxo de rotina
+        return newTemplate;
+    }, [setTaskTemplates]);
+
+    const handleCreateTemplateFromTask = useCallback((task: Task) => {
+        const newTemplate = handleCreateTemplate(task);
+        addNotification(`Modelo "${newTemplate.title}" salvo na sua biblioteca.`, '📚', 'success');
+    }, [handleCreateTemplate, addNotification]);
     
     const handleDeleteTemplate = useCallback((templateId: number) => {
         const templateToDelete = taskTemplates.find(t => t.id === templateId);
@@ -440,7 +441,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 completed: false
             })),
             dueDate: todayString,
-            templateId: template.id, // <-- ADICIONADO
+            templateId: template.id,
         }));
         
         if (newTasks.length > 0) {
@@ -450,13 +451,14 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, [handleAddTasks, addNotification]);
     
     const handleAddRoutine = useCallback((routine: Routine) => {
-        const templatesToAdd = taskTemplates.filter(t => routine.taskTemplateIds.includes(t.id));
+        const templatesToAdd = (routine.taskTemplateIds && taskTemplates.filter(t => routine.taskTemplateIds.includes(t.id))) || [];
         if (templatesToAdd.length > 0) {
             handleAddTemplates(templatesToAdd);
             addNotification(`Rotina '${routine.name}' adicionada`, '🚀', 'success');
         }
     }, [taskTemplates, handleAddTemplates, addNotification]);
 
+    // [CORREÇÃO] Lógica ajustada para verificar se a rotina existe antes de salvar
     const handleSaveRoutine = useCallback((routineToSave: Routine) => {
         setRoutines(prev => {
             const existingIndex = prev.findIndex(r => r.id === routineToSave.id);
@@ -466,7 +468,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 addNotification(`Rotina '${routineToSave.name}' atualizada!`, '✏️', 'success');
                 return newRoutines;
             } else {
-                const newRoutine = { ...routineToSave, id: `routine-${Date.now()}`, isDefault: false };
+                const newRoutine = {
+                    ...routineToSave,
+                    id: `routine-${Date.now()}`,
+                    isDefault: false,
+                    taskTemplateIds: routineToSave.taskTemplateIds || []
+                };
                 addNotification(`Nova rotina '${newRoutine.name}' criada!`, '✨', 'success');
                 return [...prev, newRoutine];
             }
@@ -549,6 +556,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handlePostponeTask,
         needsMorningPlan,
         handleCreateTemplateFromTask,
+        handleCreateTemplate, // Exposta no contexto
         handleDeleteTemplate,
         handleAddRoutine,
         handleSaveRoutine,    

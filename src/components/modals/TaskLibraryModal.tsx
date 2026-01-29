@@ -7,7 +7,7 @@ import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import styles from './TaskLibraryModal.module.css';
 import { useClickOutside } from '../../hooks/useClickOutside';
-import { RoutineEditorModal } from './RoutineEditorModal';
+import { RoutineEditorModal, NewTaskForRoutine } from './RoutineEditorModal';
 
 interface TaskLibraryModalProps {
     onAddRoutine: (routine: Routine) => void;
@@ -16,7 +16,7 @@ interface TaskLibraryModalProps {
 }
 
 export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine, onAddTemplates, onClose }) => {
-    const { routines, taskTemplates, handleDeleteTemplate, handleSaveRoutine, handleDeleteRoutine, handleSaveTask } = useTasks();
+    const { routines, taskTemplates, handleDeleteTemplate, handleSaveRoutine, handleDeleteRoutine, handleCreateTemplate } = useTasks();
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<number[]>([]);
     const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'routines' | 'templates'>('routines');
@@ -31,7 +31,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
     });
 
     const categories = useMemo(() => {
-        // [FIX] Guard against undefined taskTemplates during initial render
         if (!taskTemplates) return [];
         const allCategories = Array.from(new Set(taskTemplates.map(t => t.category)));
         const categorySet = new Set([...allCategories, ...defaultCategories]);
@@ -49,7 +48,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
     };
 
     const handleAddSelectedTemplates = () => {
-        // [FIX] Guard against undefined taskTemplates
         const templatesToAdd = taskTemplates?.filter(t => selectedTemplateIds.includes(t.id)) || [];
         if (templatesToAdd.length > 0) {
             onAddTemplates(templatesToAdd);
@@ -67,17 +65,38 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
         handleDeleteTemplate(templateId);
     };
 
-    const handleSaveRoutineWithTasks = async (routineData: Omit<Routine, 'id' | 'taskTemplateIds'>, tasks: Omit<Task, 'id'>[]) => {
-        const savedRoutine = await handleSaveRoutine(routineData as Routine);
-        if (tasks.length > 0 && savedRoutine) {
-            for (const task of tasks) {
-                const taskWithRoutineId = { 
-                    ...task, 
-                    routineId: savedRoutine.id
-                };
-                await handleSaveTask(taskWithRoutineId as Task, true);
+    // [CORREÇÃO FINAL] A lógica agora constrói a lista de tarefas do zero, respeitando as remoções.
+    const handleSaveRoutineWithTasks = (routineData: Partial<Routine>, tasks: NewTaskForRoutine[]) => {
+        // 1. Inicia uma lista de IDs de modelos totalmente nova.
+        const finalTemplateIds: number[] = [];
+
+        // 2. Processa a lista de tarefas vinda do editor, que é a fonte da verdade.
+        tasks.forEach(task => {
+            const { tempId, isDefault, ...taskDetails } = task;
+
+            if (tempId.startsWith('template_')) {
+                // A tarefa veio de um modelo existente. Extrai o ID e o adiciona à lista final.
+                const existingTemplateId = parseInt(tempId.replace('template_', ''), 10);
+                finalTemplateIds.push(existingTemplateId);
+            } else {
+                // A tarefa é nova. Cria um novo modelo, obtém o ID e o adiciona à lista final.
+                const newTemplate = handleCreateTemplate(taskDetails);
+                if (newTemplate) {
+                    finalTemplateIds.push(newTemplate.id);
+                }
             }
-        }
+        });
+
+        // 3. Monta o objeto final da rotina.
+        const finalRoutine: Routine = {
+            ...(routineData as Routine),
+            taskTemplateIds: finalTemplateIds,
+        };
+
+        // 4. Salva a rotina, que agora será uma atualização correta ou uma nova criação.
+        handleSaveRoutine(finalRoutine);
+
+        // 5. Fecha os modais de edição.
         setIsCreatingRoutine(false);
         setEditingRoutine(null);
     };
@@ -110,7 +129,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                 <main className="g-modal-body">
                     {activeTab === 'routines' && (
                          <div className={styles.routinesList}>
-                            {/* [FIX] Guard against undefined routines during initial render */}
                             {routines && routines.map(routine => (
                                 <div key={routine.id} className={`card ${styles.routineCard}`}>
                                     <div className={styles.routineActions}>
@@ -129,7 +147,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                                     </div>
                                     <p>{routine.description}</p>
                                     <button className="btn btn-secondary" onClick={() => handleAddRoutineAndClose(routine)}>
-                                        {/* [FIX] Guard against undefined taskTemplateIds array */}
                                         <Icon path={icons.plus}/> Adicionar ({(routine.taskTemplateIds || []).length}) Tarefas
                                     </button>
                                 </div>
@@ -139,7 +156,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
 
                     {activeTab === 'templates' && (
                         <div className={styles.taskLibraryAccordion}>
-                            {/* [FIX] Guard against undefined categories */}
                             {categories && categories.map(category => (
                                 <div key={category} className={`${styles.accordionItem} ${activeAccordion === category ? styles.open : ''}`}>
                                     <div className={styles.accordionHeader} onClick={() => handleToggleAccordion(category)}>
@@ -147,7 +163,6 @@ export const TaskLibraryModal: React.FC<TaskLibraryModalProps> = ({ onAddRoutine
                                         <Icon path={icons.chevronDown} />
                                     </div>
                                     <div className={styles.accordionContent}>
-                                        {/* [FIX] Guard against undefined taskTemplates */}
                                         {taskTemplates && taskTemplates.filter(t => t.category === category).map(template => (
                                             <div key={template.id} className={styles.templateItem} onClick={() => handleToggleTemplate(template.id)}>
                                                 <input type="checkbox" checked={selectedTemplateIds.includes(template.id)} readOnly />

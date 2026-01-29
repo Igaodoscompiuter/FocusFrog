@@ -1,0 +1,24 @@
+
+.zenFrogContainer {
+    position: absolute;
+    bottom: -15%; /* Ligeiramente para fora da aura para sentar na "margem" */
+    left: 50%;
+    transform: translateX(-50%); /* Centraliza horizontalmente */
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* Alinha pela base */
+}
+
+/* =============================================== */
+/* Estilos para os elementos dinâmicos do Lago     */
+/* =============================================== */
+
+.zenAssetContainer {
+    position: absolute;
+    will-change: transform, opacity;
+}
+
+.lotusSvg, .koiSvg, .heronSvg {
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
