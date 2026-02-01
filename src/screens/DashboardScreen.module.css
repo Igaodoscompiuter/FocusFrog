@@ -1,26 +1,27 @@
+/* DashboardScreen.module.css */
 
 .dashboardLayout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  justify-content: space-between; /* Empurra o conteúdo para cima e o rodapé para baixo */
+  height: 100vh; 
+  height: -webkit-fill-available;
+  height: 100dvh;
   width: 100%;
-  max-width: 100%; /* Adicionado para responsividade */
-  overflow: hidden; /* Impede o scroll no nível do layout */
+  max-width: 100%;
 }
 
 .mainContent {
-  flex-grow: 1;
-  overflow-y: auto; /* Permite scroll apenas no conteúdo principal */
-  padding-bottom: 80px; /* Garante que o conteúdo não fique atrás da nav */
-  overscroll-behavior-y: contain; /* Impede o pull-to-refresh */
+  /* flex-grow: 1 foi REMOVIDO. O conteúdo agora só ocupa a altura que precisa. */
+  overflow-y: auto; 
+  overscroll-behavior-y: contain; 
 }
 
 .footerNav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000; /* Garante que a nav fique sobre o conteúdo */
-  background-color: var(--color-background);
-  border-top: 1px solid var(--color-border);
+  /* position: fixed foi REMOVIDO. O rodapé agora faz parte do layout flex. */
+  width: 100%;
+  z-index: 1000;
+  background-color: var(--background-color);
+  border-top: 1px solid var(--border-color);
+  padding-bottom: var(--safe-bottom);
 }

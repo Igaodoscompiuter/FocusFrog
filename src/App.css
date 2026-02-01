@@ -91,7 +91,12 @@ input, textarea, [contenteditable] {
 
 #root {
   width: 100%;
-  height: 100vh;
+  /* Fallback para navegadores mais antigos */
+  height: 100vh; 
+  /* Garante que o layout ocupe o espaço disponível em navegadores WebKit (Safari) */
+  height: -webkit-fill-available;
+  /* Unidade moderna que se ajusta dinamicamente a barras de ferramentas do navegador */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }

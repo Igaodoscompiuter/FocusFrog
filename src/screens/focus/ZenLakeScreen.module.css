@@ -4,14 +4,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: center; /* Centraliza o conteúdo na tela cheia */
     width: 100%;
-    height: 100%;
+    height: 100vh; /* Ocupa 100% da altura da tela */
+    height: 100dvh; /* Garante a altura correta em celulares modernos */
     padding: var(--sp-lg);
     gap: var(--sp-xl);
     background-color: var(--background-color);
     transition: background-color 0.5s ease;
 }
+
 .lakeScreen.focus { background: radial-gradient(ellipse at bottom, var(--surface-secondary-color) 0%, var(--background-color) 70%); }
 .lakeScreen.break { background: radial-gradient(ellipse at bottom, var(--surface-color) 0%, var(--background-color) 70%); }
 .focusPanel { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xl); width: 100%; }
@@ -33,20 +35,18 @@
     justify-content: center;
     border: 3px solid #3B5FBA;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 3px 5px rgba(0,0,0,0.2);
-    /* Overflow removido para não cortar o sapo se ele for grande */
 }
 
-/* CORREÇÃO FINAL: Flexbox simples e correto */
 .timerContentContainer {
     display: flex;
-    flex-direction: column; /* Empilha verticalmente */
-    align-items: center;      /* Centraliza horizontalmente */
-    justify-content: space-around; /* Distribui o espaço vertical */
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
     width: 100%;
     height: 100%;
     position: relative;
     z-index: 2;
-    padding: 25px 0; /* Garante que os itens não colem nas bordas */
+    padding: 25px 0;
     box-sizing: border-box;
 }
 
@@ -57,12 +57,9 @@
     color: #FFFFFF;
     line-height: 1;
     text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    /* Padding para dar espaço para o sapo abaixo */
     padding-bottom: 15px; 
 }
 
-
-/* ... (estilos de controles restantes) ... */
 .controlsZone { display: flex; justify-content: center; align-items: center; gap: var(--sp-lg); width: 100%; }
 .mainActionButton, .secondaryActionButton { all: unset; box-sizing: border-box; border-radius: var(--border-radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
 .mainActionButton { width: 72px; height: 72px; background-color: var(--surface-color); color: var(--text-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
