@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './FocusFrogLifeCycle.module.css';
 import { frogSpecies, FrogSpeciesData } from '../utils/frogSpecies';
 
-// --- Interfaces e Constantes ---
 interface FocusFrogLifeCycleProps {
-  progress: number; // 0 a 1
-  speciesId: keyof typeof frogSpecies;
+  progress: number;
+  speciesId: keyof typeof frogSpecies | null | undefined;
 }
 
 const STAGES = {
@@ -22,8 +22,6 @@ const getStage = (progress: number) => {
     if (progress < STAGES.FROG.min) return 'FROGLET';
     return 'FROG';
 }
-
-// --- SVGs ---
 
 const RipplesSVG = () => (
     <svg className={styles.rippleSvgContainer}><g><circle className={`${styles.ripple} ${styles.ripple1}`} /><circle className={`${styles.ripple} ${styles.ripple2}`} /><circle className={`${styles.ripple} ${styles.ripple3}`} /></g></svg>
@@ -63,24 +61,16 @@ const FrogletSVG = () => (
     </motion.div>
 );
 
-// --- SVG DO ANURO (FOFO E MINIMALISTA) ---
 const FrogSVG = () => (
     <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} className={styles.creatureWrapper}>
         <svg viewBox="0 0 100 100" className={styles.frogContainer}>
             <g className={styles.frogBody}>
-                {/* Patas traseiras minimalistas */}
                 <ellipse cx="28" cy="75" rx="12" ry="10" className={styles.frogLegBack} />
                 <ellipse cx="72" cy="75" rx="12" ry="10" className={styles.frogLegBack} />
-
-                {/* Corpo e Barriga */}
                 <ellipse cx="50" cy="60" rx="30" ry="25" className={styles.frogMainBody} />
                 <ellipse cx="50" cy="65" rx="20" ry="18" className={styles.frogBelly} />
-                
-                {/* Patas dianteiras minimalistas */}
                 <ellipse cx="38" cy="80" rx="8" ry="6" className={styles.frogLegFront} />
                 <ellipse cx="62" cy="80" rx="8" ry="6" className={styles.frogLegFront} />
-
-                {/* Olhos e Sorriso */}
                 <g className={styles.frogEyeGroup}><circle cx="40" cy="45" r="10" className={styles.frogEyeSocket} /><circle cx="40" cy="45" r="5" className={styles.frogPupil} /></g>
                 <g className={styles.frogEyeGroup}><circle cx="60" cy="45" r="10" className={styles.frogEyeSocket} /><circle cx="60" cy="45" r="5" className={styles.frogPupil} /></g>
                 <path d="M45,68 Q50,72 55,68" className={styles.frogMouth} />
@@ -89,11 +79,20 @@ const FrogSVG = () => (
     </motion.div>
 );
 
-
-// --- Componente Principal ---
-
 export const FocusFrogLifeCycle: React.FC<FocusFrogLifeCycleProps> = ({ progress, speciesId }) => {
-    const speciesData: FrogSpeciesData = frogSpecies[speciesId];
+    // Se não houver ID da espécie, não renderiza nada
+    if (!speciesId) {
+        return null;
+    }
+
+    const speciesData: FrogSpeciesData | undefined = frogSpecies[speciesId];
+
+    // Se o ID da espécie não corresponder a nenhuma espécie conhecida, não renderiza nada
+    if (!speciesData) {
+        console.warn(`[FocusFrogLifeCycle] No species data found for ID: ${speciesId}`);
+        return null;
+    }
+
     const stage = getStage(progress);
 
     const [movement, setMovement] = useState({ top: 80, left: 50, rotation: 0 });
@@ -126,11 +125,12 @@ export const FocusFrogLifeCycle: React.FC<FocusFrogLifeCycleProps> = ({ progress
         };
     }, [stage]);
 
+    // CORREÇÃO: As cores agora são extraídas dos locais corretos dentro do objeto speciesData
     const creatureStyle = {
-        '--frog-color-primary': speciesData.colors.primary,
-        '--frog-color-secondary': speciesData.colors.secondary,
-        '--tadpole-color-primary': speciesData.colors.primary,
-        '--tadpole-color-highlight': speciesData.colors.secondary,
+        '--frog-color-primary': speciesData.stages.adult.colors.primary,
+        '--frog-color-secondary': speciesData.stages.adult.colors.secondary,
+        '--tadpole-color-primary': speciesData.stages.tadpole.colors.primary,
+        '--tadpole-color-highlight': speciesData.stages.tadpole.colors.secondary,
     } as React.CSSProperties;
     
     const movableWrapperStyle = {

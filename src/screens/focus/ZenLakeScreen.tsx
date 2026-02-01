@@ -14,24 +14,22 @@ const formatTime = (seconds: number) => {
 };
 
 export const ZenLakeScreen: React.FC = () => {
+    // HOOK CENTRALIZADO PARA DADOS DA SESSÃO
     const {
         sessionStatus,
         activeTaskTitle,
         timeRemaining,
         isPaused,
-        focusDuration,
-        breakDuration,
+        stopCycle,
         resumeCycle,
         pauseCycle,
-        stopCycle,
         completeTask,
+        cycleProgress,      // Progresso do ciclo ATUAL (para o anel)
+        sessionProgress,    // Progresso da sessão TOTAL (para o sapo)
+        sessionFrog,        // Objeto do sapo da sessão (ID da espécie)
     } = usePomodoro();
 
-    const totalDuration = sessionStatus === 'focus' ? focusDuration : breakDuration;
-    const progress = totalDuration > 0 ? (totalDuration - timeRemaining) / totalDuration : 0;
-
-    const currentFrogSpecies = 'JUNGLE';
-
+    // Renderização principal do componente
     return (
         <motion.main
             className={`${styles.lakeScreen} ${styles[sessionStatus]}`}
@@ -62,15 +60,13 @@ export const ZenLakeScreen: React.FC = () => {
                     )}
                 </div>
 
-                {/* ESTRUTURA FINAL E CORRETA */}
                 <div className={styles.timerContainer}>
-                    {/* O Anel de Progresso (camada mais baixa, z-index: 0) */}
-                    <ProgressRing progress={progress} />
-
-                    {/* O Sapo Nadador (camada do meio, z-index: 1) */}
-                    <FocusFrogLifeCycle progress={progress} speciesId={currentFrogSpecies} />
-
-                    {/* O Texto do Timer (camada superior, z-index: 2) */}
+                    {/* O anel usa o progresso do CICLO ATUAL */}
+                    <ProgressRing progress={cycleProgress} />
+                    
+                    {/* O sapo usa o progresso da SESSÃO INTEIRA e o ID da espécie do contexto */}
+                    <FocusFrogLifeCycle progress={sessionProgress} speciesId={sessionFrog?.speciesId} />
+                    
                     <div className={styles.timerContentContainer}>
                         <div className={styles.timerDisplay}>
                             {formatTime(timeRemaining)}

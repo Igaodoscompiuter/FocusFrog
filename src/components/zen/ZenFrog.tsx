@@ -1,46 +1,57 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import styles from './ZenAssets.module.css'; // Reutilizaremos o container do frog se necessário
+import styles from './ZenFrog.module.css';
+import { frogSpecies } from '../../utils/frogSpecies';
 
-export const ZenFrog: React.FC = () => {
-    return (
-        <div className={styles.frogContainer}>
-            <motion.svg 
-                width="120" 
-                height="120" 
-                viewBox="0 0 100 100"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-            >
-                {/* Sombra sutil */}
-                <filter id="frog-shadow">
-                    <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="rgba(0,0,0,0.2)"/>
-                </filter>
+interface ZenFrogProps {
+  speciesId: string;
+  stage: 'tadpole' | 'adult';
+}
 
-                {/* Corpo do Sapo com animação de respiração */}
-                <motion.g 
-                    filter="url(#frog-shadow)"
-                    animate={{
-                        scaleY: [1, 0.98, 1],
-                        translateY: [0, 2, 0]
-                    }}
-                    transition={{
-                        duration: 4,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                >
-                    <path 
-                        d="M50 85 C 30 85, 25 60, 50 55 C 75 60, 70 85, 50 85 Z"
-                        fill="#4CAF50" // Verde Sapo
-                    />
-                    {/* Olhos fechados (meditando) */}
-                    <path d="M42 68 C 44 71, 47 71, 49 68" stroke="#1B5E20" strokeWidth="1.5" fill="none" />
-                    <path d="M58 68 C 60 71, 63 71, 65 68" stroke="#1B5E20" strokeWidth="1.5" fill="none" />
-                </motion.g>
-            </motion.svg>
-        </div>
-    );
+export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage }) => {
+  const species = frogSpecies[speciesId];
+
+  // Guarda de segurança: Se a espécie não for encontrada, não renderiza nada.
+  if (!species) {
+    console.warn(`[ZenFrog] Species with ID "${speciesId}" not found.`);
+    return null;
+  }
+
+  // Ignora o girino por enquanto, focando apenas no sapo adulto.
+  if (stage !== 'adult') return null;
+
+  const { colors } = species.stages.adult;
+
+  // As variáveis de cor agora correspondem exatamente às usadas no CSS original.
+  const style = {
+    '--frog-color-primary': colors.primary,
+    '--frog-color-secondary': colors.secondary,
+    '--frog-color-accent': colors.accent,
+  } as React.CSSProperties;
+
+  return (
+    <div style={style}> {/* O contêiner aplica as variáveis CSS */}
+        <motion.div 
+            initial={{ scale: 0.5, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }} 
+            exit={{ scale: 0.5, opacity: 0 }} 
+            className={styles.creatureWrapper}
+        >
+            <svg viewBox="0 0 100 100" className={styles.frogContainer}>
+                <g className={styles.frogBody}>
+                    <ellipse cx="28" cy="75" rx="12" ry="10" className={styles.frogLegBack} />
+                    <ellipse cx="72" cy="75" rx="12" ry="10" className={styles.frogLegBack} />
+                    <ellipse cx="50" cy="60" rx="30" ry="25" className={styles.frogMainBody} />
+                    <ellipse cx="50" cy="65" rx="20" ry="18" className={styles.frogBelly} />
+                    <ellipse cx="38" cy="80" rx="8" ry="6" className={styles.frogLegFront} />
+                    <ellipse cx="62" cy="80" rx="8" ry="6" className={styles.frogLegFront} />
+                    <g className={styles.frogEyeGroup}><circle cx="40" cy="45" r="10" className={styles.frogEyeSocket} /><circle cx="40" cy="45" r="5" className={styles.frogPupil} /></g>
+                    <g className={styles.frogEyeGroup}><circle cx="60" cy="45" r="10" className={styles.frogEyeSocket} /><circle cx="60" cy="45" r="5" className={styles.frogPupil} /></g>
+                    <path d="M45,68 Q50,72 55,68" className={styles.frogMouth} />
+                </g>
+            </svg>
+        </motion.div>
+    </div>
+  );
 };

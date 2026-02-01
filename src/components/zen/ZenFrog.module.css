@@ -1,0 +1,70 @@
+/* 
+ * ZenFrog.module.css
+ * Estilos para o sapo no laguinho, clonados de FocusFrogLifeCycle.module.css para consistência.
+*/
+
+/* Animações de "vida" do sapo */
+@keyframes breathe-body { 
+    0%, 100% { transform: scale(1.0); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes blink-eye {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+}
+
+.creatureWrapper {
+    width: 60px; /* Tamanho fixo para o sapo no laguinho */
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estrutura SVG do Sapo */
+.frogContainer { 
+    width: 100%; 
+    height: 100%; 
+}
+
+.frogBody { 
+    animation: breathe-body 5s infinite ease-in-out;
+    transform-origin: 50% 60%;
+}
+
+.frogMainBody { 
+    fill: var(--frog-color-primary); 
+}
+
+.frogBelly { 
+    fill: var(--frog-color-secondary); 
+    opacity: 0.8;
+}
+
+.frogLegBack,
+.frogLegFront {
+    fill: var(--frog-color-primary);
+    stroke: rgba(0, 0, 0, 0.25);
+    stroke-width: 1.5;
+}
+
+.frogEyeGroup {
+    transform-origin: center 45px; 
+    animation: blink-eye 4s infinite ease-in-out;
+}
+
+.frogEyeSocket { 
+    fill: white; 
+}
+
+.frogPupil { 
+    fill: black; 
+}
+
+.frogMouth {
+    fill: none;
+    stroke: var(--frog-color-secondary);
+    stroke-width: 2;
+    stroke-linecap: round;
+}

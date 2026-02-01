@@ -1,64 +1,18 @@
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+
+import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
-import { FrogColorPalette } from '../components/CollectedFrog'; // Importa a interface da paleta
-
-// A "planta" de uma espécie de sapo, agora com a paleta de cores
-export interface FrogSpecies {
-  id: string;
-  name: string;
-  rarity: 'common' | 'uncommon' | 'rare';
-  palette: FrogColorPalette;
-}
-
-// Uma instância única de um sapo que o usuário colecionou
-export interface CollectedFrog {
-  collectionId: string; 
-  speciesId: string;
-  collectedAt: string;
-}
-
-// A NOVA "Base de Dados" de espécies de sapos com paletas de cores
-export const FROG_SPECIES_DB: FrogSpecies[] = [
-    {
-        id: '1',
-        name: 'Sapo de Jardim',
-        rarity: 'common',
-        palette: { primary: '#2E7D32', secondary: '#1B5E20', tertiary: '#000000' },
-    },
-    {
-        id: '2',
-        name: 'Sapo do Riacho Azul',
-        rarity: 'common',
-        palette: { primary: '#1976D2', secondary: '#0D47A1', tertiary: '#FFFFFF' },
-    },
-    {
-        id: '3',
-        name: 'Sapo do Pântano',
-        rarity: 'uncommon',
-        palette: { primary: '#8D6E63', secondary: '#5D4037', tertiary: '#FFB74D' },
-    },
-    {
-        id: '4',
-        name: 'Sapo-morango',
-        rarity: 'uncommon',
-        palette: { primary: '#D32F2F', secondary: '#B71C1C', tertiary: '#212121' },
-    },
-    {
-        id: '5',
-        name: 'Sapo Dourado Raro',
-        rarity: 'rare',
-        palette: { primary: '#FFC107', secondary: '#FFA000', tertiary: '#424242' },
-    },
-];
+import { useUserData } from '../hooks/useUserData';
 
 interface UserContextType {
   userName: string | null;
   onboardingCompleted: boolean;
-  collectedFregs: CollectedFrog[];
+  collectedFrogs: string[];
   setUserName: (name: string) => void;
   completeOnboarding: () => void;
-  addRandomFrogToCollection: () => void;
+  addFrogToCollection: (speciesId: string) => void; // <-- Adicionado aqui
+  setCurrentFrogForSession: (speciesId: string) => void;
+  collectCurrentFrog: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -74,20 +28,29 @@ export const useUser = () => {
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [userName, setUserNameInternal] = useLocalStorage<string | null>('focusfrog_userName', null);
   const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboardingCompleted', false);
-  const [collectedFregs, setCollectedFregs] = useLocalStorage<CollectedFrog[]>('focusfrog_collectedFregs', []);
+  const { getCollectedFrogs, addFrogToCollection: addFrogToCollectionInternal } = useUserData(); // Renomeado para evitar conflito
 
-  const { user: authUser } = useAuth(); 
+  const [collectedFrogs, setCollectedFrogs] = useState<string[]>([]);
+  const [currentFrogForSession, setCurrentFrogForSession] = useState<string | null>(null);
 
-  const addRandomFrogToCollection = () => {
-    const randomSpecies = FROG_SPECIES_DB[Math.floor(Math.random() * FROG_SPECIES_DB.length)];
-    const newFrog: CollectedFrog = {
-        collectionId: `frog_${Date.now()}`,
-        speciesId: randomSpecies.id,
-        collectedAt: new Date().toISOString(),
-    };
-    setCollectedFregs(prevFregs => [...prevFregs, newFrog]);
-    console.log(`Sapo Coletado: ${randomSpecies.name}`)
-  };
+  const { user: authUser } = useAuth();
+
+  useEffect(() => {
+    setCollectedFrogs(getCollectedFrogs());
+  }, [getCollectedFrogs]);
+
+  // Wrapper para expor a função
+  const addFrogToCollection = useCallback((speciesId: string) => {
+    addFrogToCollectionInternal(speciesId);
+    setCollectedFrogs(getCollectedFrogs()); // Atualiza o estado local
+  }, [addFrogToCollectionInternal, getCollectedFrogs]);
+
+  const collectCurrentFrog = useCallback(() => {
+    if (currentFrogForSession) {
+      addFrogToCollection(currentFrogForSession);
+      setCurrentFrogForSession(null);
+    }
+  }, [currentFrogForSession, addFrogToCollection]);
 
   const setUserName = (name: string) => {
     setUserNameInternal(name);
@@ -107,10 +70,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const value = {
     userName,
     onboardingCompleted,
-    collectedFregs,
+    collectedFrogs,
     setUserName,
     completeOnboarding,
-    addRandomFrogToCollection,
+    addFrogToCollection, // <-- Exposto no valor do contexto
+    setCurrentFrogForSession,
+    collectCurrentFrog,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

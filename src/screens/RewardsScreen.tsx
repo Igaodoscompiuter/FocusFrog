@@ -48,8 +48,7 @@ const SegmentedControl: React.FC<{options: {label: string, value: FontSize}[], v
 
 // --- SUB-TELAS DE CONFIGURAÇÕES ---
 
-const ProfileScreen: React.FC<{user: User | null, signIn: () => void, signOut: () => void, onBack: () => void}> = ({ user, signIn, signOut, onBack }) => {
-    // Removido conteúdo de login, pois a funcionalidade não está ativa
+const ProfileScreen: React.FC<{onBack: () => void}> = ({ onBack }) => {
     return (
         <div className={`${styles.tabContent} ${styles.profileScreen}`}>
             <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
@@ -65,7 +64,7 @@ const ProfileScreen: React.FC<{user: User | null, signIn: () => void, signOut: (
 const DataScreen: React.FC<{ 
     onBack: () => void;
     exportData: () => void;
-    importDataFromFile: (file: File) => void; // Removido 'user' pois não é usado
+    importDataFromFile: (file: File) => void;
     showResetModal: () => void;
 }> = ({ onBack, exportData, importDataFromFile, showResetModal }) => {
     
@@ -86,7 +85,6 @@ const DataScreen: React.FC<{
         <div className={styles.tabContent}>
             <SubScreenHeader title="Dados do Aplicativo" onBack={onBack} />
             
-            {/* CARD DE INFORMAÇÃO MELHORADO */}
             <div className={styles.dataInfoCard}>
                 <FiHardDrive className={styles.dataInfoIcon} />
                 <div>
@@ -126,7 +124,7 @@ export const RewardsScreen: React.FC = () => {
         setFontSize
     } = useUI();
     const { exportData, importDataFromFile, resetData } = useUserData();
-    const { user, isLoading, signInWithGoogle, signOut } = useAuth();
+    const { isLoading } = useAuth(); // Removido user, signIn, signOut pois não são mais usados diretamente aqui
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
     const [isResetModalVisible, setIsResetModalVisible] = useState(false);
@@ -159,13 +157,14 @@ export const RewardsScreen: React.FC = () => {
     };
 
     const handleCoffeeClick = () => {
-        window.open('https://shop.beacons.ai/focus.frog/667fee49-a713-4a08-b541-e40ae2321696?pageViewSource=lib_view&referrer=https%3A%2F%2Fbeacons.ai%2Ffocus.frog&show_back_button=true', '_blank');
+        window.open('https://shop.beacons.ai/focus.frog/667fee49-a713-4a08-b541-e40ae2321696', '_blank');
     };
 
     const renderSettingsContent = () => {
         switch (activeSettingsScreen) {
             case 'profile':
-                return <ProfileScreen user={user} signIn={signInWithGoogle} signOut={signOut} onBack={() => setActiveSettingsScreen('main')} />;
+                return <ProfileScreen onBack={() => setActiveSettingsScreen('main')} />;
+            // CONTEÚDO DA TELA DE APARÊNCIA RESTAURADO
             case 'appearance':
                 return (
                     <div className={styles.tabContent}>
@@ -198,15 +197,16 @@ export const RewardsScreen: React.FC = () => {
                  return <DataScreen 
                     onBack={() => setActiveSettingsScreen('main')}
                     exportData={exportData}
-                    importDataFromFile={importDataFromFile}
+                    importDataFromFile={importDataFromFile} // Passando a função sem o parâmetro 'user'
                     showResetModal={showResetModal}
                 />;
+            // CONTEÚDO DA TELA SOBRE RESTAURADO
             case 'about':
                  return (
                     <div className={`${styles.tabContent} ${styles.aboutScreen}`}>
                         <SubScreenHeader title="De Usuário para Usuário 🐸" onBack={() => setActiveSettingsScreen('main')} />
                         <div className={styles.aboutContentWrapper}>
-                            <img src={focusfrogCoffee} alt="Mascote FocusFrog com café" style={{borderRadius: '50%', objectFit: 'cover'}} className={styles.aboutAppIcon} />
+                            <img src={focusfrogCoffee} alt="Mascote FocusFrog com café" className={styles.aboutAppIcon} />
                             <div className={styles.founderCard}>
                                 <div className={styles.founderHeader}>
                                     <FiUser className={styles.founderIcon} />
@@ -236,7 +236,7 @@ export const RewardsScreen: React.FC = () => {
                                 </a>
                             </div>
 
-                            <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v2.0.0 • Feito com 💚🐸</div>
+                            <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v2.2.0 • Feito com 💚🐸</div>
                         </div>
                     </div>
                 );
@@ -258,7 +258,6 @@ export const RewardsScreen: React.FC = () => {
         <main className="screen-content">
              {isResetModalVisible && <ConfirmationModal title="Resetar Todos os Dados" message="Tem a certeza? Esta ação é irreversível e irá apagar todas as suas tarefas, pontos e personalizações." confirmText="Sim, Resetar Tudo" cancelText="Cancelar" onConfirm={confirmReset} onCancel={hideResetModal} variant="danger" icon="trash" />}
             {isLoading ? <p>Carregando...</p> : renderSettingsContent()}
-            
         </main>
     );
 };

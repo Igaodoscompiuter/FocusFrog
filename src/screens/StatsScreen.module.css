@@ -1,151 +1,127 @@
 /*
- * StatsScreen.module.css
- * Estilos para a nova tela de estatísticas com o Laguinho.
+  StatsScreen.module.css - VERSÃO APRIMORADA
+  Inspirado na RewardsScreen e nas suas sugestões.
 */
 
 .statsContainer {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--sp-lg);
+    padding: var(--sp-lg);
 }
 
-/* --- CARD DE SEQUÊNCIA DE FOCO --- */
-.streakHeroCard {
-    padding: 20px;
-    border-radius: var(--border-radius-large);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    transition: background 0.5s ease;
-}
-
-.streakContent {
+/* === Card de Sequência (HERO) Aprimorado === */
+.centeredStreakCard {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.streakInfo {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-}
-
-.streakCount {
-    font-size: 4em;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.streakSubContent {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-}
-
-.streakIcon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
     justify-content: center;
+    padding: var(--sp-xl) var(--sp-lg);
+    border-radius: var(--border-radius-xl);
+    color: var(--text-on-primary, #fff);
+    /* Gradiente sutil para mais profundidade */
+    background: linear-gradient(145deg, var(--primary-color-hover), var(--primary-color));
+    box-shadow: 0 10px 25px -5px rgba(0,0,0, 0.2), 0 5px 10px -5px rgba(0,0,0, 0.1);
+    text-align: center;
 }
 
-.streakIcon svg {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.7));
+.streakNumber {
+    font-family: var(--font-poppins);
+    font-size: 4rem; /* Maior e mais impactante */
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.burning svg {
-    animation: flicker 1.5s infinite linear;
-}
-
-.streakLabel {
-    font-size: 1em;
+.streakText {
+    font-family: var(--font-poppins);
+    font-size: 1.25rem;
     font-weight: 600;
     opacity: 0.9;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-@keyframes flicker {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+.streakQuote {
+    font-family: var(--font-inter);
+    font-size: 0.85rem;
+    font-style: italic;
+    opacity: 0.8;
+    margin: var(--sp-md) 0 0 0;
+    max-width: 90%;
 }
 
-/* --- Métricas Chave --- */
+/* === Grade de Métricas Aprimorada === */
 .keyMetricsGrid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-md);
 }
 
 .metricCard {
-    padding: 15px;
-    border-radius: var(--border-radius-large);
-    text-align: center;
-    background-color: var(--surface-secondary-color);
-}
-
-.metricHeader {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg); /* Bordas um pouco mais arredondadas */
+    padding: var(--sp-lg);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 0.9em;
-    color: var(--text-secondary-color);
-    margin-bottom: 8px;
+    flex-direction: column;
+    gap: var(--sp-sm);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.metricHeader svg {
-    width: 18px;
-    height: 18px;
+.metricCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.value {
-    font-size: 2em;
-    font-weight: 700;
+.metricValueContainer {
+    display: flex;
+    align-items: center; /* Alinha ícone e valor */
+    gap: var(--sp-sm);
     color: var(--accent-color);
 }
 
-/* --- O NOVO LAGUINHO DE SAPOS --- */
+.metricIcon {
+    font-size: 1.5rem; /* Tamanho do ícone */
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.metricValue {
+    font-family: var(--font-poppins);
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-color); 
+    line-height: 1;
+}
+
+.metricLabel {
+    font-family: var(--font-inter);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary-color);
+    padding-left: calc(1.5rem + var(--sp-sm)); /* Alinha com o texto */
+}
+
+/* === Card do Laguinho === */
 .frogPondCard {
-    padding: 20px;
-    border-radius: var(--border-radius-large);
-    background-color: #E0F2F1; /* Cor de água clara */
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(200, 220, 255, 0.2) 100%);
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--sp-lg);
     border: 1px solid var(--border-color);
 }
 
 .sectionTitle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.2em;
+    font-family: var(--font-poppins);
+    font-size: 1.25rem;
     font-weight: 600;
-    margin: 0 0 20px 0;
+    margin-bottom: var(--sp-md);
     color: var(--text-color);
 }
 
-.sectionTitle svg {
-    width: 24px;
-    height: 24px;
-    color: var(--accent-color);
-}
-
-.frogPondGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 20px;
-    align-items: start;
-}
-
 .emptyPondMessage {
-    text-align: center;
-    padding: 30px 20px;
     color: var(--text-secondary-color);
-    grid-column: 1 / -1; /* Ocupa a largura total da grid */
+    font-size: 0.9rem;
     font-style: italic;
+    text-align: center;
+    padding: var(--sp-xl);
 }
