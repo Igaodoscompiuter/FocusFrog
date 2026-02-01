@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="120" height="40">
+  <defs>
+    <linearGradient id="algaeGradient" x1="0" y1="0.5" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#4CAF50" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#66BB6A" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+  <path d="M5 20 Q 15 10, 25 20 T 45 20 Q 55 30, 65 20 T 85 20" stroke="url(#algaeGradient)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M15 30 Q 25 20, 35 30 T 55 30 Q 65 40, 75 30 T 95 30" stroke="url(#algaeGradient)" stroke-width="3" fill="none" stroke-linecap="round" transform="translate(5, -5)"/>
+  <path d="M30 15 Q 40 5, 50 15 T 70 15 Q 80 25, 90 15 T 110 15" stroke="url(#algaeGradient)" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

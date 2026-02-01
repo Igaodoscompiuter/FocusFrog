@@ -1,8 +1,8 @@
 /* 
-  StatsScreen.module.css - Versão Corrigida
+  StatsScreen.module.css - Versão Corrigida e Espaçada
 
-  [CORREÇÃO DE COMPATIBILIDADE APLICADA]
-  - As variáveis de fundo (--bg-card-*) foram substituídas por `--surface-color`, conforme o App.css original.
+  [AJUSTE DE LAYOUT]: Adicionada margem superior para criar um respiro no topo da tela.
+  - As variáveis de fundo (--bg-card-*) foram substituídas por `--surface-color`.
   - As sombras (--shadow-*) foram removidas e substituídas por `border: 1px solid var(--border-color)`.
   - As variáveis de texto (--text-color-*) foram consolidadas para usar `--text-color`, com opacidade para diferenciação.
   - Os raios de borda (--br-*) foram corrigidos para a nomenclatura correta (`--border-radius-*`).
@@ -11,6 +11,7 @@
 .statsContainer {
   padding-left: var(--sp-md);
   padding-right: var(--sp-md);
+  margin-top: var(--sp-lg); /* Adicionado espaçamento no topo da tela */
 }
 
 .centeredStreakCard {

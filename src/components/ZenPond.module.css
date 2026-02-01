@@ -1,71 +1,54 @@
-/*
-  ZenPond.module.css - Estilos para o lago e a nova animação de ondulação
+/* 
+  ZenPond.module.css - Estilos simplificados para o contêiner do lago.
+  [LIMPEZA]: As decorações agora são gerenciadas pelo componente PondDecorations.
 */
 
-/* Animação para a ondulação que aparece quando um sapo se move */
 @keyframes ripple-effect {
-  from {
-    transform: scale(0);
-    opacity: 0.8;
-  }
-  to {
-    transform: scale(1.5); /* A ondulação se expande para 1.5x o tamanho do sapo */
-    opacity: 0;
-  }
+  from { transform: scale(0); opacity: 0.8; }
+  to { transform: scale(1.5); opacity: 0; }
 }
 
 .zenPondContainer {
-    width: 100%;
-    height: 100%; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative; 
-    padding: var(--sp-sm); 
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: var(--sp-sm);
 }
 
 .water {
-    position: relative;
-    width: 100%;
-    max-width: 500px; 
-    aspect-ratio: 16 / 9; 
-    border-radius: 50%; 
-    background: radial-gradient(circle, var(--water-color-light, #5C85E8) 0%, var(--water-color-dark, #3B5FBA) 100%);
-    border: 4px solid var(--water-color-dark, #3B5FBA);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2), inset 0 4px 10px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden; 
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 16 / 9;
+  border-radius: 50%;
+  background-color: #3A6B6F;
+  background-image:
+    radial-gradient(circle at center, rgba(137, 196, 203, 0.4) 0%, rgba(58, 107, 111, 0.7) 70%),
+    linear-gradient(315deg, rgba(78, 137, 143, 0.5) 0%, rgba(45, 87, 91, 0.8) 100%);
+  border: 5px solid #8B7D6B;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), inset 0 8px 15px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-/* Classe para o elemento da ondulação com tamanho ajustado */
 .ripple {
   position: absolute;
-  /* Tamanho reduzido em 30% para corresponder ao novo tamanho do sapo */
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.7);
-  /* Aponta para a animação @keyframes definida acima */
+  border: 3px solid rgba(255, 255, 255, 0.6);
   animation: ripple-effect 1s ease-out forwards;
-  /* Centraliza a ondulação na posição do sapo */
-  transform: translate(-50%, -50%); 
+  transform: translate(-50%, -50%);
+  z-index: 5;
 }
 
-
-/* Efeito de ondinha de fundo */
-.water::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 75%, transparent 75%, transparent);
-    background-size: 60px 60px;
-    opacity: 0.5;
-    animation: wave 15s linear infinite;
-}
-
-@keyframes wave {
-    0% { background-position: 0 0; }
-    100% { background-position: 120px 60px; }
+/* Garante que os sapos fiquem sobre as decorações e ondulações */
+.frogWrapper {
+  position: absolute;
+  z-index: 3; 
 }

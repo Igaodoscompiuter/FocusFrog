@@ -1,0 +1,9 @@
+.decorationContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Garante que nenhuma decoração vaze para fora do lago */
+  z-index: 1; /* Define a camada base para as decorações */
+}
