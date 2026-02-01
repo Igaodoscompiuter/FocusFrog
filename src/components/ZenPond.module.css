@@ -1,11 +1,17 @@
 /* 
-  ZenPond.module.css - Estilos simplificados para o contêiner do lago.
-  [LIMPEZA]: As decorações agora são gerenciadas pelo componente PondDecorations.
+  ZenPond.module.css - Estilos para o lago, com barreira de colisão invisível.
 */
 
 @keyframes ripple-effect {
   from { transform: scale(0); opacity: 0.8; }
   to { transform: scale(1.5); opacity: 0; }
+}
+
+/* Animação sutil para a barreira de colisão (mantida caso queira reativar) */
+@keyframes pulse-barrier {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
 }
 
 .zenPondContainer {
@@ -47,8 +53,21 @@
   z-index: 5;
 }
 
-/* Garante que os sapos fiquem sobre as decorações e ondulações */
 .frogWrapper {
   position: absolute;
   z-index: 3; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collisionBarrier {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  /* [FIX] Torna a barreira completamente invisível */
+  background-color: transparent;
+  border: none;
+  z-index: -1;
 }

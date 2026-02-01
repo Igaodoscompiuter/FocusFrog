@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import styles from './StatsScreen.module.css';
 import { useTasks } from '../context/TasksContext';
 import { usePomodoro } from '../context/PomodoroContext';
@@ -8,7 +7,8 @@ import { ZenPond } from '../components/ZenPond';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
 import { ZenFrog } from '../components/zen/ZenFrog';
-import { frogSpecies } from '../utils/frogSpecies';
+import { frogSpecies, FrogSpeciesData } from '../utils/frogSpecies';
+import { LoreModal } from '../components/modals/LoreModal';
 
 const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
@@ -16,25 +16,34 @@ export const StatsScreen: React.FC = () => {
   const { tasks } = useTasks();
   const { pomodorosCompleted } = usePomodoro();
   const { collectedFrogs, newlyAcquiredFrog, clearNewlyAcquiredFrog } = useUser();
+  
+  const [selectedFrog, setSelectedFrog] = useState<FrogSpeciesData | null>(null);
+
+  // [CORREÇÃO] Filtra a lista de sapos para remover quaisquer valores inválidos ou `undefined`.
+  // Isso garante que apenas IDs de espécies existentes sejam usados nos cálculos seguintes.
+  const validCollectedFrogs = useMemo(() => {
+    return collectedFrogs.filter(id => id && frogSpecies[id]);
+  }, [collectedFrogs]);
 
   const frogsForPond = useMemo(() => {
-    return collectedFrogs.map((speciesId, index) => ({
+    // Usa a lista já filtrada e segura.
+    return validCollectedFrogs.map((speciesId, index) => ({
       id: `${speciesId}-${index}`,
       speciesId: speciesId,
     }));
-  }, [collectedFrogs]);
+  }, [validCollectedFrogs]);
 
-  // Lógica para agrupar e contar os sapos para a lista da coleção
   const frogCollection = useMemo(() => {
     const counts: { [key: string]: number } = {};
-    collectedFrogs.forEach(id => {
+    // Usa a lista já filtrada e segura.
+    validCollectedFrogs.forEach(id => {
       counts[id] = (counts[id] || 0) + 1;
     });
     return Object.entries(counts).map(([speciesId, count]) => ({
       species: frogSpecies[speciesId],
       count,
     }));
-  }, [collectedFrogs]);
+  }, [validCollectedFrogs]);
 
   const stats = useMemo(() => {
     const tasksCompleted = tasks.filter(t => t.status === 'done');
@@ -93,7 +102,7 @@ export const StatsScreen: React.FC = () => {
         <div className={styles.centeredStreakCard}>
             <span className={styles.streakNumber}>{stats.streakDays}</span>
             <span className={styles.streakText}>Dias de Foco</span>
-            <p className={styles.streakQuote}>`{randomQuote}`</p>
+            <p className={styles.streakQuote}>{`"${randomQuote}"`}</p>
         </div>
 
         <div className={styles.keyMetricsGrid}>
@@ -124,26 +133,27 @@ export const StatsScreen: React.FC = () => {
             </ZenPond>
         </div>
 
-        {/* Nova Seção: Minha Coleção */}
         {frogCollection.length > 0 && (
             <div className={styles.collectionCard}>
                 <h2 className={styles.sectionTitle}>Minha Coleção</h2>
                 <div className={styles.collectionList}>
                     {frogCollection.map(({ species, count }) => (
-                        <div key={species.id} className={styles.collectionItem}>
+                        <button key={species.id} className={styles.collectionItem} onClick={() => setSelectedFrog(species)}>
                             <div 
                                 className={styles.collectionIcon}
                                 style={{ backgroundColor: species.stages.adult.colors.primary }}
                             />
                             <span className={styles.collectionName}>{species.name}</span>
                             <span className={styles.collectionCount}>x{count}</span>
-                        </div>
+                        </button>
                     ))}
                 </div>
             </div>
         )}
 
       </div>
+      
+      <LoreModal species={selectedFrog} onClose={() => setSelectedFrog(null)} />
     </main>
   );
 };

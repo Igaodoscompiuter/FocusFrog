@@ -1,0 +1,60 @@
+/* src/components/modals/LoreModal.module.css */
+
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* Garante que fique sobre outros elementos */
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  /* O FrogLoreCard já tem seu próprio background e padding, 
+     então este container é mais para posicionamento. */
+  position: relative;
+  width: 90%;
+  max-width: 420px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.closeButton {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background-color: var(--color-background-light);
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-size: var(--fs-xl);
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  transform: scale(1.1) rotate(90deg);
+  background-color: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

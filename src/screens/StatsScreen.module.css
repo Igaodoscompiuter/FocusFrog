@@ -164,14 +164,29 @@
   gap: var(--sp-sm);
 }
 
+/* [NOVO] Estilização para o item da coleção, agora como botão */
 .collectionItem {
+  /* Layout original */
   display: flex;
   align-items: center;
   gap: var(--sp-md);
-  /* Usando uma cor de fundo slightly darker para diferenciar, sem nova variável */
-  background: rgba(0,0,0,0.1);
   padding: var(--sp-sm);
   border-radius: var(--border-radius-md);
+  background-color: rgba(0,0,0,0.1);
+  
+  /* Reset de estilos de botão */
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  
+  /* Interação */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.collectionItem:hover {
+  background-color: rgba(0,0,0,0.2); /* Efeito de hover para feedback */
 }
 
 .collectionIcon {

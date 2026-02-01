@@ -1,10 +1,8 @@
-
 import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 
-// A forma da informação do sapo que será exibida na recompensa
 export interface NewlyAcquiredFrogInfo {
   speciesId: string;
 }
@@ -13,12 +11,10 @@ interface UserContextType {
   userName: string | null;
   onboardingCompleted: boolean;
   collectedFrogs: string[];
-  // NOVO: Estado para o sapo recém-ganho que será exibido na tela de recompensa
   newlyAcquiredFrog: NewlyAcquiredFrogInfo | null;
   setUserName: (name: string) => void;
   completeOnboarding: () => void;
   addFrogToCollection: (speciesId: string) => void;
-  // NOVO: Função para o usuário "aceitar" a recompensa e limpar o estado
   clearNewlyAcquiredFrog: () => void;
   setCurrentFrogForSession: (speciesId: string) => void;
   collectCurrentFrog: () => void;
@@ -40,7 +36,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { getCollectedFrogs, addFrogToCollection: addFrogToCollectionInternal } = useUserData();
 
   const [collectedFrogs, setCollectedFrogs] = useState<string[]>([]);
-  // NOVO: Estado para guardar a informação do sapo recém-adquirido.
   const [newlyAcquiredFrog, setNewlyAcquiredFrog] = useState<NewlyAcquiredFrogInfo | null>(null);
   const [currentFrogForSession, setCurrentFrogForSession] = useState<string | null>(null);
 
@@ -50,14 +45,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCollectedFrogs(getCollectedFrogs());
   }, [getCollectedFrogs]);
 
-  // MODIFICADO: Esta função agora define o estado `newlyAcquiredFrog` além de salvar o sapo.
   const addFrogToCollection = useCallback((speciesId: string) => {
+    // [CORREÇÃO DEFINITIVA] Adiciona uma guarda para garantir que um ID de espécie válido foi fornecido.
+    // Isso impede que `undefined` ou strings vazias sejam adicionadas à coleção.
+    if (!speciesId) {
+      console.error('Tentativa de adicionar um sapo com ID inválido:', speciesId);
+      return; // Interrompe a execução se o ID for inválido.
+    }
+
     addFrogToCollectionInternal(speciesId);
-    setCollectedFrogs(getCollectedFrogs()); // Atualiza a lista de todos os sapos
-    setNewlyAcquiredFrog({ speciesId: speciesId }); // Coloca o novo sapo em destaque para a recompensa!
+    setCollectedFrogs(getCollectedFrogs());
+    setNewlyAcquiredFrog({ speciesId: speciesId });
   }, [addFrogToCollectionInternal, getCollectedFrogs]);
 
-  // NOVO: Função para limpar o estado de destaque após o usuário ver a recompensa.
   const clearNewlyAcquiredFrog = useCallback(() => {
     setNewlyAcquiredFrog(null);
   }, []);
@@ -88,11 +88,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     userName,
     onboardingCompleted,
     collectedFrogs,
-    newlyAcquiredFrog, // Exposto para ser usado na UI
+    newlyAcquiredFrog,
     setUserName,
     completeOnboarding,
     addFrogToCollection,
-    clearNewlyAcquiredFrog, // Exposto para ser usado na UI
+    clearNewlyAcquiredFrog,
     setCurrentFrogForSession,
     collectCurrentFrog,
   };

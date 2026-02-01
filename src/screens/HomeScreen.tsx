@@ -64,7 +64,7 @@ const getGreeting = () => {
 export const HomeScreen: React.FC = () => {
     const { tasks, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
-    const { activeTaskId, status, startFocusOnTask } = usePomodoro(); 
+    const { activeTaskId, sessionStatus, startPomodoro } = usePomodoro(); 
     const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
@@ -97,8 +97,8 @@ export const HomeScreen: React.FC = () => {
 
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
-        return frogTask.id === activeTaskId && status !== 'idle';
-    }, [frogTask, activeTaskId, status]);
+        return frogTask.id === activeTaskId && sessionStatus !== 'idle';
+    }, [frogTask, activeTaskId, sessionStatus]);
 
     const handleBrainDumpSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -131,7 +131,14 @@ export const HomeScreen: React.FC = () => {
         if (!frogTask || hasSubtasks) return;
 
         if (frogTask.pomodoroEstimate > 0) {
-            startFocusOnTask(frogTask.id, frogTask.title, frogTask.customDuration);
+            // [CORREÇÃO] A chamada agora inclui `focusMinutes` para honrar a duração personalizada da tarefa.
+            startPomodoro({ 
+                mode: 'classic', 
+                taskId: frogTask.id, 
+                taskTitle: frogTask.title, 
+                cycles: frogTask.pomodoroEstimate, 
+                focusMinutes: frogTask.customDuration
+            });
             handleNavigate('focus');
         } else {
             setQuickTaskForCompletion(frogTask);
@@ -185,7 +192,6 @@ export const HomeScreen: React.FC = () => {
                 </div>
             </div>
 
-            {/* [CORREÇÃO APLICADA] Wrapper agora engloba todo o conteúdo abaixo do header */}
             <div className={styles.contentWrapper}>
                 <form id="tutorial-step1-form" onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
                     <input 
