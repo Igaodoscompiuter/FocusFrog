@@ -7,13 +7,34 @@ import { useUser } from '../context/UserContext';
 import { ZenPond } from '../components/ZenPond';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
+import { ZenFrog } from '../components/zen/ZenFrog';
+import { frogSpecies } from '../utils/frogSpecies';
 
 const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
 export const StatsScreen: React.FC = () => {
   const { tasks } = useTasks();
   const { pomodorosCompleted } = usePomodoro();
-  const { collectedFrogs } = useUser(); // Já temos os sapos aqui!
+  const { collectedFrogs, newlyAcquiredFrog, clearNewlyAcquiredFrog } = useUser();
+
+  const frogsForPond = useMemo(() => {
+    return collectedFrogs.map((speciesId, index) => ({
+      id: `${speciesId}-${index}`,
+      speciesId: speciesId,
+    }));
+  }, [collectedFrogs]);
+
+  // Lógica para agrupar e contar os sapos para a lista da coleção
+  const frogCollection = useMemo(() => {
+    const counts: { [key: string]: number } = {};
+    collectedFrogs.forEach(id => {
+      counts[id] = (counts[id] || 0) + 1;
+    });
+    return Object.entries(counts).map(([speciesId, count]) => ({
+      species: frogSpecies[speciesId],
+      count,
+    }));
+  }, [collectedFrogs]);
 
   const stats = useMemo(() => {
     const tasksCompleted = tasks.filter(t => t.status === 'done');
@@ -50,14 +71,29 @@ export const StatsScreen: React.FC = () => {
     };
   }, [tasks, pomodorosCompleted]);
 
+  const newSpecies = newlyAcquiredFrog ? frogSpecies[newlyAcquiredFrog.speciesId as keyof typeof frogSpecies] : null;
+
   return (
     <main className="screen-content">
       <div className={styles.statsContainer}>
 
+        {newlyAcquiredFrog && newSpecies && (
+          <div className={styles.rewardContainer}>
+            <h3 className={styles.rewardTitle}>Novo Sapo Coletado!</h3>
+            <p className={styles.rewardDescription}>
+              Parabéns! Pelo seu foco você coletou um <strong>{newSpecies.name}</strong>.
+            </p>
+            <ZenFrog speciesId={newlyAcquiredFrog.speciesId} stage="adult" />
+            <button className={styles.rewardButton} onClick={clearNewlyAcquiredFrog}>
+              Oba!
+            </button>
+          </div>
+        )}
+
         <div className={styles.centeredStreakCard}>
             <span className={styles.streakNumber}>{stats.streakDays}</span>
             <span className={styles.streakText}>Dias de Foco</span>
-            <p className={styles.streakQuote}>"{randomQuote}"</p>
+            <p className={styles.streakQuote}>`{randomQuote}`</p>
         </div>
 
         <div className={styles.keyMetricsGrid}>
@@ -79,15 +115,33 @@ export const StatsScreen: React.FC = () => {
         
         <div className={styles.frogPondCard}>
             <h2 className={styles.sectionTitle}>Meu Laguinho</h2>
-            {/* Passando os sapos colecionados para o ZenPond */}
-            <ZenPond collectedFrogs={collectedFrogs}> 
-                {collectedFrogs.length === 0 && (
+            <ZenPond collectedFrogs={frogsForPond}> 
+                {frogsForPond.length === 0 && (
                     <p className={styles.emptyPondMessage}>
                         Complete sessões de foco para colecionar sapos!
                     </p>
                 )}
             </ZenPond>
         </div>
+
+        {/* Nova Seção: Minha Coleção */}
+        {frogCollection.length > 0 && (
+            <div className={styles.collectionCard}>
+                <h2 className={styles.sectionTitle}>Minha Coleção</h2>
+                <div className={styles.collectionList}>
+                    {frogCollection.map(({ species, count }) => (
+                        <div key={species.id} className={styles.collectionItem}>
+                            <div 
+                                className={styles.collectionIcon}
+                                style={{ backgroundColor: species.stages.adult.colors.primary }}
+                            />
+                            <span className={styles.collectionName}>{species.name}</span>
+                            <span className={styles.collectionCount}>x{count}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
 
       </div>
     </main>

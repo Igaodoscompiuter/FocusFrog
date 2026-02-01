@@ -1,9 +1,8 @@
 /* 
  * ZenFrog.module.css
- * Estilos para o sapo no laguinho, clonados de FocusFrogLifeCycle.module.css para consistência.
+ * Estilos para o sapo no laguinho, com tamanho ajustado.
 */
 
-/* Animações de "vida" do sapo */
 @keyframes breathe-body { 
     0%, 100% { transform: scale(1.0); }
     50% { transform: scale(1.02); }
@@ -15,8 +14,9 @@
 }
 
 .creatureWrapper {
-    width: 60px; /* Tamanho fixo para o sapo no laguinho */
-    height: 60px;
+    /* O tamanho foi reduzido em 30% (de 80px para 56px) */
+    width: 56px; 
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
