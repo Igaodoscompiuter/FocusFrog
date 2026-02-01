@@ -1,42 +1,48 @@
-
 import React from 'react';
 import { Icon } from '../Icon';
-import { icons } from '../Icons';
+import { icons, IconName } from '../Icons';
 import styles from './ConfirmationModal.module.css';
 
 interface ConfirmationModalProps {
-  isOpen: boolean; // [CORREÇÃO] Adicionada a propriedade para controlar a visibilidade
   title: string;
   message: string;
   onConfirm: () => void;
-  onClose: () => void; // [CORREÇÃO] Padronizado para onClose
+  onCancel: () => void; 
   confirmText?: string;
   cancelText?: string;
+  variant?: 'default' | 'danger';
+  icon?: IconName;
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, title, message, onConfirm, onClose, confirmText = 'Confirmar', cancelText = 'Cancelar' }) => {
-  // [CORREÇÃO] Se não estiver aberto, não renderiza nada.
-  if (!isOpen) {
-    return null;
-  }
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ 
+    title, 
+    message, 
+    onConfirm, 
+    onCancel, 
+    confirmText = 'Confirmar', 
+    cancelText = 'Cancelar',
+    variant = 'default',
+    icon
+}) => {
+
+  const confirmButtonClass = variant === 'danger' ? styles.btnDanger : 'btn-primary';
+  const iconToShow = icon && icons[icon] ? icons[icon] : icons.info_2;
 
   return (
-    <div className="g-modal-overlay" onClick={onClose}>
+    <div className="g-modal-overlay" onClick={onCancel}>
       <div className={`g-modal ${styles.confirmationModal}`} onClick={(e) => e.stopPropagation()}>
         <header className="g-modal-header">
-          <h3>{title}</h3>
-          {/* [CORREÇÃO] Botão de fechar agora usa onClose */}
-          <button className={styles.closeButton} onClick={onClose}>
-            <Icon path={icons.close} />
-          </button>
+            <div className={styles.headerIcon}>
+                <Icon path={iconToShow} />
+            </div>
+            <h3>{title}</h3>
         </header>
         <main className="g-modal-body">
           <p>{message}</p>
         </main>
         <footer className="g-modal-footer">
-          {/* [CORREÇÃO] Botão de cancelar agora usa onClose */}
-          <button className="btn btn-secondary" onClick={onClose}>{cancelText}</button>
-          <button className="btn btn-primary" onClick={onConfirm}>{confirmText}</button>
+          <button className="btn btn-secondary" onClick={onCancel}>{cancelText}</button>
+          <button className={`btn ${confirmButtonClass}`} onClick={onConfirm}>{confirmText}</button>
         </footer>
       </div>
     </div>

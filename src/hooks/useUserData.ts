@@ -1,27 +1,26 @@
-
 import { useUI } from '../context/UIContext';
-// 1. A importação problemática de 'defaultLeavingHomeItems' foi removida.
 import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
 import { supabase } from '../supabaseClient';
 import { User } from '@supabase/supabase-js';
 
+// A LISTA DE CHAVES ATUALIZADA
 const USER_DATA_KEYS = [
     'focusfrog_tasks',
     'focusfrog_tags',
     'focusfrog_frogTaskId',
-    'focusfrog_onboarding_completed',
+    'focusfrog_onboardingCompleted', // Corrigido de 'onboarding_completed'
     'focusfrog_routines',
     'focusfrog_taskTemplates',
     'focusfrog_leavingHomeItems',
     'focusfrog_userName',
     'focusfrog_theme',
     'focusfrog_sound',
-    'focusfrog_pontos_foco',
-    'focusfrog_unlocked_rewards',
-    'focusfrog_ui_settings'
+    'focusfrog_ui_settings',
+    'focusfrog_collectedFregs', // <-- ADICIONADO
+    'focusfrog_pomodorosCompleted' // <-- ADICIONADO
 ];
 
-const BACKUP_VERSION = '2.1.0';
+const BACKUP_VERSION = '2.2.0'; // Versão incrementada
 
 const createBackupObjectFromLocalStorage = () => {
     const backupData: { [key: string]: any } = {
@@ -35,7 +34,8 @@ const createBackupObjectFromLocalStorage = () => {
             try {
                  backupData[key] = JSON.parse(value);
             } catch (e) {
-                console.warn(`Could not parse localStorage item ${key}:`, value, e);
+                // Se não for JSON, apenas armazena como string
+                backupData[key] = value;
             }
         }
     });
@@ -43,24 +43,21 @@ const createBackupObjectFromLocalStorage = () => {
 };
 
 const restoreLocalStorageFromBackupObject = (data: { [key: string]: any }) => {
-    localStorage.clear();
-
-    const userRoutines = data['focusfrog_routines'] || [];
-    data['focusfrog_routines'] = [...initialRoutines, ...userRoutines.filter((r: any) => !r.isDefault)];
-
-    const userTemplates = data['focusfrog_taskTemplates'] || [];
-    data['focusfrog_taskTemplates'] = [...initialTaskTemplates, ...userTemplates.filter((t: any) => !t.isDefault)];
-    
-    if (!data['focusfrog_tags']) data['focusfrog_tags'] = defaultTags;
-    
-    // 2. A linha que usava a variável inexistente foi removida.
-    // if (!data['focusfrog_leavingHomeItems']) data['focusfrog_leavingHomeItems'] = defaultLeavingHomeItems;
+    // Limpa apenas as chaves gerenciadas antes de restaurar
+    USER_DATA_KEYS.forEach(key => localStorage.removeItem(key));
 
     Object.keys(data).forEach(key => {
+        // Restaura apenas chaves que fazem parte do nosso sistema
         if (USER_DATA_KEYS.includes(key)) {
-            localStorage.setItem(key, JSON.stringify(data[key]));
+            const value = typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]);
+            localStorage.setItem(key, value);
         }
     });
+
+    // Garante que os dados de onboarding sejam tratados corretamente
+    if (data['focusfrog_onboardingCompleted']) {
+        localStorage.setItem('focusfrog_onboardingCompleted', JSON.stringify(true));
+    }
 };
 
 export const useUserData = () => {
@@ -115,15 +112,12 @@ export const useUserData = () => {
             console.error("Falha ao restaurar da nuvem:", error);
             addNotification(`Erro na nuvem: ${error.message}`, '❌', 'error');
         }
-    };
+    }; 
     
     const exportData = () => {
         try {
             const backupData = createBackupObjectFromLocalStorage();
             
-            backupData['focusfrog_routines'] = (backupData['focusfrog_routines'] || []).filter((item: any) => !item.isDefault);
-            backupData['focusfrog_taskTemplates'] = (backupData['focusfrog_taskTemplates'] || []).filter((item: any) => !item.isDefault);
-
             const dataStr = JSON.stringify(backupData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -154,7 +148,7 @@ export const useUserData = () => {
                 }
 
                 restoreLocalStorageFromBackupObject(data);
-                addNotification('Dados importados com sucesso!', '📥', 'success');
+                addNotification('Dados importados com sucesso! Reiniciando...', '📥', 'success');
                 
                 if (user) {
                     await syncLocalToSupabase(user);
@@ -170,11 +164,17 @@ export const useUserData = () => {
         reader.readAsText(file);
     };
     
+    // A FUNÇÃO RESETDATA CORRIGIDA
     const resetData = () => {
         try {
-            localStorage.clear();
-            addNotification('Dados apagados. Reiniciando o aplicativo...', '🗑️', 'info');
-            setTimeout(() => window.location.reload(), 1000);
+            // Remove apenas as chaves que o aplicativo gerencia
+            USER_DATA_KEYS.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            addNotification('Dados locais apagados. Reiniciando...', '🗑️', 'info');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } catch (error) {
             console.error("Falha ao apagar os dados:", error);
             addNotification('Ocorreu um erro ao apagar os dados', '❌', 'error');

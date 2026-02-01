@@ -1,13 +1,64 @@
-
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useAuth } from '../hooks/useAuth'; // Importa nosso novo hook de autenticação Supabase
+import { useAuth } from '../hooks/useAuth';
+import { FrogColorPalette } from '../components/CollectedFrog'; // Importa a interface da paleta
+
+// A "planta" de uma espécie de sapo, agora com a paleta de cores
+export interface FrogSpecies {
+  id: string;
+  name: string;
+  rarity: 'common' | 'uncommon' | 'rare';
+  palette: FrogColorPalette;
+}
+
+// Uma instância única de um sapo que o usuário colecionou
+export interface CollectedFrog {
+  collectionId: string; 
+  speciesId: string;
+  collectedAt: string;
+}
+
+// A NOVA "Base de Dados" de espécies de sapos com paletas de cores
+export const FROG_SPECIES_DB: FrogSpecies[] = [
+    {
+        id: '1',
+        name: 'Sapo de Jardim',
+        rarity: 'common',
+        palette: { primary: '#2E7D32', secondary: '#1B5E20', tertiary: '#000000' },
+    },
+    {
+        id: '2',
+        name: 'Sapo do Riacho Azul',
+        rarity: 'common',
+        palette: { primary: '#1976D2', secondary: '#0D47A1', tertiary: '#FFFFFF' },
+    },
+    {
+        id: '3',
+        name: 'Sapo do Pântano',
+        rarity: 'uncommon',
+        palette: { primary: '#8D6E63', secondary: '#5D4037', tertiary: '#FFB74D' },
+    },
+    {
+        id: '4',
+        name: 'Sapo-morango',
+        rarity: 'uncommon',
+        palette: { primary: '#D32F2F', secondary: '#B71C1C', tertiary: '#212121' },
+    },
+    {
+        id: '5',
+        name: 'Sapo Dourado Raro',
+        rarity: 'rare',
+        palette: { primary: '#FFC107', secondary: '#FFA000', tertiary: '#424242' },
+    },
+];
 
 interface UserContextType {
   userName: string | null;
   onboardingCompleted: boolean;
+  collectedFregs: CollectedFrog[];
   setUserName: (name: string) => void;
   completeOnboarding: () => void;
+  addRandomFrogToCollection: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,44 +74,43 @@ export const useUser = () => {
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [userName, setUserNameInternal] = useLocalStorage<string | null>('focusfrog_userName', null);
   const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboardingCompleted', false);
-  
-  // Pega o usuário do novo hook useAuth (Supabase)
+  const [collectedFregs, setCollectedFregs] = useLocalStorage<CollectedFrog[]>('focusfrog_collectedFregs', []);
+
   const { user: authUser } = useAuth(); 
 
-  // Função para definir o nome do usuário - agora salva APENAS localmente.
-  // A sincronização com a nuvem será tratada em outro lugar.
+  const addRandomFrogToCollection = () => {
+    const randomSpecies = FROG_SPECIES_DB[Math.floor(Math.random() * FROG_SPECIES_DB.length)];
+    const newFrog: CollectedFrog = {
+        collectionId: `frog_${Date.now()}`,
+        speciesId: randomSpecies.id,
+        collectedAt: new Date().toISOString(),
+    };
+    setCollectedFregs(prevFregs => [...prevFregs, newFrog]);
+    console.log(`Sapo Coletado: ${randomSpecies.name}`)
+  };
+
   const setUserName = (name: string) => {
     setUserNameInternal(name);
   };
 
-  // Função para marcar o onboarding como concluído
   const completeOnboarding = () => {
     setOnboardingCompleted(true);
   };
 
-  // EFEITO: Pega o nome do usuário do perfil do Google (via Supabase) durante o onboarding
   useEffect(() => {
-    // Condições:
-    // 1. O usuário está logado (authUser existe).
-    // 2. O onboarding ainda não foi concluído.
-    // 3. O nome de usuário local ainda não foi definido.
-    // 4. O objeto de usuário do Supabase tem o nome completo em user_metadata.
     if (authUser && !onboardingCompleted && !userName && authUser.user_metadata?.full_name) {
-      
-      // Pega o primeiro nome do full_name do Supabase
       const firstName = authUser.user_metadata.full_name.split(' ')[0];
-      
-      // Define o nome de usuário localmente
       setUserName(firstName);
     }
-    // Dependências: o efeito roda quando o status do usuário muda ou o onboarding é completado
   }, [authUser, onboardingCompleted, userName, setUserName]);
 
   const value = {
     userName,
     onboardingCompleted,
+    collectedFregs,
     setUserName,
     completeOnboarding,
+    addRandomFrogToCollection,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

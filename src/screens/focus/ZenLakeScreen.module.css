@@ -1,7 +1,6 @@
 /* ZEN LAKE SCREEN ... */
 
 .lakeScreen {
-    /* ... (estilos existentes) ... */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -22,42 +21,46 @@
 .taskTitleText { font-family: var(--font-poppins); font-size: 1.1rem; font-weight: 600; color: var(--text-color); text-align: center; }
 .breakMessage { font-size: 1.1rem; font-weight: 500; color: var(--text-secondary-color); }
 
-/* Contêiner do Timer (Agora o Lago) */
+/* Contêiner do Timer (O Lago) */
 .timerContainer {
     position: relative;
     width: 280px;
     height: 280px;
     border-radius: 50%;
-    /* Gradiente azul para simular a água vista de cima */
     background: radial-gradient(circle, #5C85E8 0%, #3B5FBA 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Borda interna sutil para profundidade */
     border: 3px solid #3B5FBA;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 3px 5px rgba(0,0,0,0.2);
-    overflow: hidden; /* Esconde qualquer coisa que saia do círculo */
+    /* Overflow removido para não cortar o sapo se ele for grande */
 }
 
+/* CORREÇÃO FINAL: Flexbox simples e correto */
 .timerContentContainer {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--sp-sm);
+    flex-direction: column; /* Empilha verticalmente */
+    align-items: center;      /* Centraliza horizontalmente */
+    justify-content: space-around; /* Distribui o espaço vertical */
+    width: 100%;
+    height: 100%;
     position: relative;
     z-index: 2;
+    padding: 25px 0; /* Garante que os itens não colem nas bordas */
+    box-sizing: border-box;
 }
 
 .timerDisplay {
     font-family: var(--font-poppins);
     font-size: 3.8rem;
     font-weight: 700;
-    /* Cor do texto alterada para branco para melhor leitura na água */
     color: #FFFFFF;
     line-height: 1;
     text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    /* Padding para dar espaço para o sapo abaixo */
+    padding-bottom: 15px; 
 }
+
 
 /* ... (estilos de controles restantes) ... */
 .controlsZone { display: flex; justify-content: center; align-items: center; gap: var(--sp-lg); width: 100%; }

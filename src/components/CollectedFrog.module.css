@@ -1,0 +1,47 @@
+/* 
+ * CollectedFrog.module.css
+ * Estilos para cada sapo individual na coleção.
+*/
+
+.frogContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.svgWrapper {
+    width: 70px; 
+    height: 70px;
+    padding: 5px; /* Espaçamento interno */
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--frog-color-secondary); /* Usa a cor secundária da paleta */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.frogSvg {
+    width: 80%;
+    height: 80%;
+}
+
+/* As partes do SVG que serão coloridas pelas variáveis CSS */
+.frogBody {
+    fill: var(--frog-color-primary);
+    stroke: var(--frog-color-secondary);
+    stroke-width: 2;
+}
+
+.frogEye {
+    fill: var(--frog-color-tertiary);
+}
+
+.frogName {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--text-secondary-color);
+    text-align: center;
+}

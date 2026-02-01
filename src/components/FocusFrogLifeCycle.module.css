@@ -1,23 +1,115 @@
-.container {
+/* 
+ * FocusFrogLifeCycle.module.css
+*/
+
+.container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+.movableWrapper {
+    position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: top 5s ease-in-out, left 5s ease-in-out, transform 1s ease-in-out;
+    z-index: 1;
+    transform-origin: center;
 }
 
-.frogSvg {
-    width: 40px; /* Reduzido ainda mais para parecer um ovo */
-    height: 40px;
-    overflow: visible;
-    /* Adicionando uma sombra para dar profundidade debaixo d'água */
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+/* --- ESTÁGIOS --- */
+
+.EGG { width: 50px; height: 50px; opacity: 0.7; transition: opacity 0.5s ease-in-out; }
+.TADPOLE { width: 70px; height: 70px; }
+.FROGLET { width: 80px; height: 80px; }
+.FROG { width: 60px; height: 60px; } /* Ainda menor! */
+
+/* --- ANIMAÇÕES --- */
+
+@keyframes ripple-wave { from { r: 25%; opacity: 1; } to { r: 100%; opacity: 0; } }
+
+@keyframes swim-tail {
+    0% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    100% { transform: rotate(15deg); }
 }
 
-.frogBody {
-    fill: var(--frog-color-primary, #84b87c);
-    transition: fill 0.3s ease;
+@keyframes twitch-legs {
+    0%, 95%, 100% { transform: rotate(0deg); }
+    97% { transform: rotate(5deg); }
+    99% { transform: rotate(-5deg); }
 }
 
-.frogBelly {
-    fill: var(--frog-color-secondary, #b9dd65);
-    transition: fill 0.3s ease;
+@keyframes float-body { 0%, 100% { transform: translateY(-1.5px); } 50% { transform: translateY(1.5px); } }
+
+@keyframes breathe-body { 
+    0%, 100% { transform: scale(1.0); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes blink-eye {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+}
+
+/* --- ELEMENTOS --- */
+
+.rippleSvgContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: visible; }
+.ripple { fill: none; stroke: rgba(182, 226, 238, 0.7); stroke-width: 1.5; cx: 50%; cy: 50%; r: 25%; opacity: 1; transform-origin: 50% 50%; animation: ripple-wave 3s infinite ease-out; }
+.ripple2 { animation-delay: 1s; }
+.ripple3 { animation-delay: 2s; }
+
+.creatureWrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: absolute; z-index: 2; }
+
+/* --- ESTILOS DE CRIATURAS --- */
+
+.eggGel { filter: blur(0.5px); }
+.eggCore { fill: var(--frog-color-primary); filter: blur(1px); opacity: 0.8; }
+.eggHighlight { fill: rgba(255, 255, 255, 0.3); filter: blur(2px); transform: rotate(-15deg); }
+
+/* Girino */
+.tadpoleContainer, .frogletContainer { width: 100%; height: 100%; }
+.tadpoleBodyGroup, .frogletBodyGroup { animation: float-body 4s infinite ease-in-out; }
+.tadpoleEye { fill: #000; opacity: 0.8; }
+.tadpoleTailGroup {
+    transform-origin: 40px 54px;
+    animation: swim-tail 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+.tadpoleTail { fill: var(--tadpole-color-primary); }
+
+/* Metamorfo (Froglet) */
+.frogletLeg { fill: var(--tadpole-color-primary); }
+.frogletBackLegs { transform-origin: 40px 48px; animation: twitch-legs 3s infinite ease-in-out; }
+.frogletFrontLegs { transform-origin: 40px 55px; animation: twitch-legs 3.2s infinite ease-in-out; }
+.FROGLET .tadpoleTailGroup { animation-duration: 1.5s; transform: scale(0.95); }
+
+/* Anuro (Sapo Fofo e Minimalista) */
+.frogContainer { width: 100%; height: 100%; }
+.frogBody { animation: breathe-body 5s infinite ease-in-out; transform-origin: 50% 60%; }
+.frogMainBody { fill: var(--frog-color-primary); }
+.frogBelly { fill: var(--frog-color-secondary); opacity: 0.8;}
+
+/* Estilo para patas minimalistas de elipse */
+.frogLegBack,
+.frogLegFront {
+    fill: var(--frog-color-primary);
+    stroke: rgba(0, 0, 0, 0.25);
+    stroke-width: 1.5;
+}
+
+.frogSpot { 
+    fill: var(--frog-color-secondary); 
+    opacity: 0.7;
+}
+
+.frogEyeGroup {
+    transform-origin: center 45px; 
+    animation: blink-eye 4s infinite ease-in-out;
+}
+
+.frogEyeSocket { fill: white; }
+.frogPupil { fill: black; }
+
+.frogMouth {
+    fill: none;
+    stroke: var(--frog-color-secondary);
+    stroke-width: 2;
+    stroke-linecap: round;
 }

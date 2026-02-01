@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useUI } from '../context/UIContext';
 import { useUserData } from '../hooks/useUserData';
@@ -6,9 +5,8 @@ import { useAuth } from '../hooks/useAuth';
 import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
-// Importando o componente de atualização CORRETAMENTE
 import UpdatePrompt from '../components/UpdatePrompt';
-import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee } from 'react-icons/fi';
+import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 
@@ -51,81 +49,60 @@ const SegmentedControl: React.FC<{options: {label: string, value: FontSize}[], v
 // --- SUB-TELAS DE CONFIGURAÇÕES ---
 
 const ProfileScreen: React.FC<{user: User | null, signIn: () => void, signOut: () => void, onBack: () => void}> = ({ user, signIn, signOut, onBack }) => {
-    if (user) {
-        return (
-             <div className={`${styles.tabContent} ${styles.profileScreen}`}>
-                <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
-                <div className={styles.authCard}>
-                    <span className={styles.authIconSuccess}><FiCheckCircle size={40} /></span>
-                    <h3>Tudo Sincronizado!</h3>
-                    <p>Você está logado como:</p>
-                    <strong>{user.user_metadata?.full_name || 'Usuário'}</strong>
-                    <small>{user.email}</small>
-                    <button onClick={signOut} className={`btn ${styles.buttonDanger} ${styles.signOutButton}`}>
-                        <FiLogOut/> Sair
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    // Removido conteúdo de login, pois a funcionalidade não está ativa
     return (
         <div className={`${styles.tabContent} ${styles.profileScreen}`}>
             <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
             <div className={styles.authCard}>
-                <span className={styles.authIcon}><FiLogIn size={40} /></span>
-                <h3>Salve seu Progresso</h3>
-                <p>Crie uma conta gratuita para fazer backup na nuvem e sincronizar suas tarefas entre dispositivos.</p>
-                <button onClick={signIn} className="g-button">
-                    <img src="/google-logo.svg" alt="Google" style={{width: 20, height: 20, marginRight: 10}}/>
-                    Continuar com Google
-                </button>
+                <span className={styles.authIcon}><FiCloudLightning size={40} /></span>
+                <h3>Backup na Nuvem (Em Breve)</h3>
+                <p>Estamos trabalhando para permitir que você salve seu progresso na nuvem e o acesse de qualquer lugar. Fique de olho nas próximas atualizações!</p>
             </div>
         </div>
     );
 };
 
 const DataScreen: React.FC<{ 
-    user: User | null; 
     onBack: () => void;
     exportData: () => void;
-    importDataFromFile: (file: File, user: User | null) => void;
-    downloadAndRestoreFromSupabase: (user: User) => void;
+    importDataFromFile: (file: File) => void; // Removido 'user' pois não é usado
     showResetModal: () => void;
-}> = ({ user, onBack, exportData, importDataFromFile, downloadAndRestoreFromSupabase, showResetModal }) => {
+}> = ({ onBack, exportData, importDataFromFile, showResetModal }) => {
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const handleImportClick = () => {
-        if (user) {
-            downloadAndRestoreFromSupabase(user);
-        } else {
-            fileInputRef.current?.click();
-        }
+        fileInputRef.current?.click();
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            importDataFromFile(file, user);
+            importDataFromFile(file);
         }
     };
 
     return (
         <div className={styles.tabContent}>
             <SubScreenHeader title="Dados do Aplicativo" onBack={onBack} />
+            
+            {/* CARD DE INFORMAÇÃO MELHORADO */}
+            <div className={styles.dataInfoCard}>
+                <FiHardDrive className={styles.dataInfoIcon} />
+                <div>
+                    <h4>Seu cofre de dados local</h4>
+                    <p>
+                        O FocusFrog salva tudo diretamente no seu dispositivo. Para evitar perdas, use os botões abaixo para <strong>Exportar (salvar)</strong> um arquivo de segurança e <strong>Importar (restaurar)</strong> seus dados.
+                    </p>
+                </div>
+            </div>
+
             <div className={styles.dataActions}>
-                 <p className={styles.dataDescription}>
-                    {user 
-                        ? 'Seu backup na nuvem é atualizado ao fazer login. Restaure a partir dele ou exporte um arquivo local a qualquer momento.'
-                        : 'Crie uma conta para habilitar o backup na nuvem. Por enquanto, você só pode gerenciar backups locais.'
-                    }
-                </p>
                 <button className="btn btn-secondary" onClick={exportData}>
                     <FiDownload /> Exportar para Arquivo
                 </button>
                 <button className="btn btn-secondary" onClick={handleImportClick}>
-                    {user ? <FiCloudLightning /> : <FiUpload />}
-                    {user ? 'Restaurar da Nuvem' : 'Importar de Arquivo'}
+                    <FiUpload /> Importar de Arquivo
                 </button>
                 <button className={`btn ${styles.buttonDanger}`} onClick={showResetModal}>
                     <FiTrash2 /> Resetar Dados Locais
@@ -141,14 +118,14 @@ export const RewardsScreen: React.FC = () => {
     const { 
         addNotification, 
         soundEnabled, 
-        toggleSoundEnabled, // <-- Usando a nova função!
+        toggleSoundEnabled, 
         hapticsEnabled, 
         setHapticsEnabled, 
         setDevModeEnabled, 
         fontSize, 
         setFontSize
     } = useUI();
-    const { exportData, importDataFromFile, resetData, downloadAndRestoreFromSupabase } = useUserData();
+    const { exportData, importDataFromFile, resetData } = useUserData();
     const { user, isLoading, signInWithGoogle, signOut } = useAuth();
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
@@ -196,7 +173,6 @@ export const RewardsScreen: React.FC = () => {
                         <div className={styles.settingRow}>
                             <label><FiVolume2 /> Efeitos sonoros</label>
                             <label className={styles.switch}>
-                                {/* AQUI ESTÁ A CORREÇÃO! */}
                                 <input type="checkbox" checked={soundEnabled} onChange={toggleSoundEnabled} />
                                 <span className={styles.switchSlider}></span>
                             </label>
@@ -220,11 +196,9 @@ export const RewardsScreen: React.FC = () => {
                 );
             case 'data':
                  return <DataScreen 
-                    user={user} 
                     onBack={() => setActiveSettingsScreen('main')}
                     exportData={exportData}
                     importDataFromFile={importDataFromFile}
-                    downloadAndRestoreFromSupabase={downloadAndRestoreFromSupabase}
                     showResetModal={showResetModal}
                 />;
             case 'about':
@@ -271,7 +245,7 @@ export const RewardsScreen: React.FC = () => {
                 return (
                     <div className={styles.tabContent}>
                         <div className={styles.header}><h2>Configurações</h2></div>
-                        <SettingsNavRow icon={FiUser} title="Perfil e Sincronização" description={user ? `Logado como ${user.user_metadata?.full_name}` : "Backup na nuvem e multi-dispositivo"} onClick={() => setActiveSettingsScreen('profile')} />
+                        <SettingsNavRow icon={FiUser} title="Perfil e Sincronização" description={"Backup na nuvem (em breve)"} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />
                         <SettingsNavRow icon={FiInfo} title="Sobre" description="Nossa história e missão." onClick={() => setActiveSettingsScreen('about')} />

@@ -6,7 +6,6 @@ import { Icon } from '../../components/Icon';
 import { icons } from '../../components/Icons';
 import { FocusFrogLifeCycle } from '../../components/FocusFrogLifeCycle';
 import { ProgressRing } from '../../components/ProgressRing';
-import { Lake } from '../../components/Lake'; // Importando o novo componente Lake
 
 const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -63,14 +62,19 @@ export const ZenLakeScreen: React.FC = () => {
                     )}
                 </div>
 
+                {/* ESTRUTURA FINAL E CORRETA */}
                 <div className={styles.timerContainer}>
+                    {/* O Anel de Progresso (camada mais baixa, z-index: 0) */}
                     <ProgressRing progress={progress} />
-                    <Lake /> {/* O laguinho animado como fundo */}
+
+                    {/* O Sapo Nadador (camada do meio, z-index: 1) */}
+                    <FocusFrogLifeCycle progress={progress} speciesId={currentFrogSpecies} />
+
+                    {/* O Texto do Timer (camada superior, z-index: 2) */}
                     <div className={styles.timerContentContainer}>
                         <div className={styles.timerDisplay}>
                             {formatTime(timeRemaining)}
                         </div>
-                        <FocusFrogLifeCycle progress={progress} speciesId={currentFrogSpecies} />
                     </div>
                 </div>
             </div>

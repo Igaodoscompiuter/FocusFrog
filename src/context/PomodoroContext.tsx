@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
+import { useUser } from './UserContext'; // IMPORTAÇÃO DO USERCONTEXT
 import { uiEffects } from '../sounds';
 import { postMessageToSW } from '../sw-helpers';
 
@@ -36,7 +36,7 @@ interface PomodoroContextType {
     pauseCycle: () => void;
     resumeCycle: () => void;
     stopCycle: () => void;
-    completeTask: () => void; // Adicionando a função ao tipo
+    completeTask: () => void;
     lastCompletedFocus: { taskId: string | null } | null;
     clearLastCompletedFocus: () => void;
     distractionNotes: string;
@@ -55,6 +55,7 @@ export const usePomodoro = () => {
 
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { playEffect } = useUI();
+    const { addRandomFrogToCollection } = useUser(); // OBTÉM A FUNÇÃO DE COLETA
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
     const [activeTaskId, setActiveTaskId] = useLocalStorage<string | null>('focusfrog_activeTaskId', null);
@@ -90,7 +91,6 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         postMessageToSW({ type: 'CANCEL_NOTIFICATION' });
     }, [focusDuration, setActiveTaskId, setActiveTaskTitle]);
 
-    // Nova função para completar a tarefa
     const completeTask = useCallback(() => {
         if (activeTaskId) {
             setLastCompletedFocus({ taskId: activeTaskId });
@@ -98,7 +98,6 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
         stopAndReset();
     }, [activeTaskId, stopAndReset, playEffect, uiEffects]);
-
 
     useEffect(() => {
         if (sessionStatus === 'idle' || isPaused) {
@@ -114,6 +113,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 clearInterval(timerRef.current!);
 
                 if (sessionStatus === 'focus') {
+                    // --- A MÁGICA ACONTECE AQUI ---
+                    addRandomFrogToCollection(); // Adiciona um sapo à coleção!
                     setPomodorosCompleted(p => p + 1);
 
                     if (mode === 'quick') {
@@ -127,15 +128,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                             if (uiEffects.breakStart) playEffect(uiEffects.breakStart);
                             setSessionStatus('break');
                             setTimeRemaining(breakDuration);
-
-                            postMessageToSW({ 
-                                type: 'SCHEDULE_NOTIFICATION', 
-                                payload: { 
-                                    title: 'Pausa Merecida!', 
-                                    body: `Sua pausa de ${breakDuration > 59 ? `${breakDuration/60} minutos` : `${breakDuration} segundos`} começou.`,
-                                    timestamp: Date.now() + breakDuration * 1000 
-                                } 
-                            });
+                            postMessageToSW({ type: 'SCHEDULE_NOTIFICATION', payload: { title: 'Pausa Merecida!', body: `Sua pausa de ${breakDuration > 59 ? `${breakDuration/60} minutos` : `${breakDuration} segundos`} começou.`, timestamp: Date.now() + breakDuration * 1000 } });
                         } else {
                             if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
                             if (activeTaskId) {
@@ -159,7 +152,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [mode, sessionStatus, isPaused, activeTaskId, breakDuration, currentCycle, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, totalCycles]);
+    }, [mode, sessionStatus, isPaused, activeTaskId, breakDuration, currentCycle, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, totalCycles, addRandomFrogToCollection]);
 
     const startPomodoro = useCallback((settings: PomodoroSettings) => {
         stopAndReset();
@@ -236,7 +229,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         pauseCycle,
         resumeCycle,
         stopCycle: stopAndReset,
-        completeTask, // Expondo a nova função no contexto
+        completeTask,
         lastCompletedFocus,
         clearLastCompletedFocus,
         distractionNotes,
