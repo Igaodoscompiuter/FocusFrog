@@ -1,0 +1,114 @@
+/* ConfiguraçõesScreen.module.css */
+
+/* === Estrutura Principal e Navegação === */
+.header { padding: 1rem 1.2rem; text-align: center; border-bottom: 1px solid var(--border-color); }
+.header h2 { font-size: 1.5rem; color: var(--text-color); margin: 0; }
+.tabContent { animation: fadeIn 0.3s ease-in-out; }
+.settingsGroup { cursor: pointer; transition: background-color 0.2s ease; }
+.settingsGroup:hover { background-color: var(--surface-secondary-color); }
+.navRow { display: flex; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--border-color); }
+.navRowIconWrapper { background-color: var(--accent-color-light); color: var(--accent-color); border-radius: 8px; padding: 8px; margin-right: 16px; display: flex; align-items: center; justify-content: center; }
+.navRowText h4 { margin: 0; font-size: 1rem; color: var(--text-color); }
+.navRowText p { margin: 0; font-size: 0.85rem; color: var(--text-secondary-color); }
+.navRowChevron { margin-left: auto; color: var(--text-secondary-color); transition: transform 0.2s ease; }
+.settingsGroup:hover .navRowChevron { transform: translateX(3px); }
+
+/* === Sub-telas === */
+.subScreenHeader { display: grid; grid-template-columns: auto 1fr auto; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--border-color); }
+.subScreenHeader h3 { grid-column: 2; font-size: 1.2rem; text-align: center; color: var(--text-color); margin: 0; }
+.backButton { grid-column: 1; justify-self: start; background: none; border: none; color: var(--accent-color); font-size: 1.5rem; cursor: pointer; padding: 0.5rem; }
+
+/* === Tela de Perfil e Autenticação === */
+.profileScreen { padding: 1.5rem; text-align: center; }
+.authCard { background: var(--surface-secondary-color); border-radius: 12px; padding: 2rem; margin: 1rem auto; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 1rem; border: 1px solid var(--border-color); text-align: center; }
+.authIcon { color: var(--accent-color); }
+
+/* === Tela de Dados (COM O NOVO CARTÃO) === */
+.dataInfoCard {
+    background: var(--surface-secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+}
+.dataInfoIcon {
+    flex-shrink: 0;
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-top: 0.2rem;
+}
+.dataInfoCard h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+.dataInfoCard p {
+    margin: 0;
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: var(--text-secondary-color);
+}
+.dataInfoCard strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.dataActions { padding: 0 1.5rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.dataActions .btn { width: 100%; padding: 12px; font-weight: bold; }
+
+.buttonDanger {
+    background-color: #E53935;
+    color: white;
+    border-color: #E53935;
+}
+.buttonDanger:hover {
+    background-color: #C62828;
+    border-color: #C62828;
+}
+
+/* === TELA DE APARÊNCIA (ESTILOS RESTAURADOS) === */
+.settingRow { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--border-color); }
+.settingRow label { display: flex; align-items: center; gap: 10px; color: var(--text-color); }
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { display: none; }
+.switchSlider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+.switchSlider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .switchSlider { background-color: var(--accent-color); }
+input:checked + .switchSlider:before { transform: translateX(22px); }
+.segmentedControl { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+.segmentedControl button { flex: 1; padding: 8px 12px; background: none; border: none; color: var(--text-secondary-color); cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease; }
+.segmentedControl button.active { background-color: var(--accent-color); color: white; font-weight: bold; }
+
+/* === TELA SOBRE (ESTILOS RESTAURADOS) === */
+.aboutScreen { padding: 1rem 1.2rem 2rem 1.2rem; }
+.aboutContentWrapper { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: 100%; max-width: 550px; margin: 0 auto; }
+.aboutAppIcon { 
+    width: 120px; 
+    height: 120px; 
+    border-radius: 28px; 
+    margin-bottom: 1rem; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border: 3px solid white;
+}
+.founderCard { background: var(--surface-secondary-color); border-radius: var(--border-radius-large); padding: 1.5rem; width: 100%; border: 1px solid var(--border-color); }
+.founderHeader { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.founderIcon { font-size: 2.5rem; color: var(--text-secondary-color); flex-shrink: 0; }
+.founderGreeting { margin: 0; font-size: 1rem; color: var(--text-color); line-height: 1.6; }
+.founderBody p { margin: 0 0 1rem 0; line-height: 1.7; color: var(--text-secondary-color); }
+.founderBody strong { color: var(--text-color); font-weight: 600; }
+.supportCard { text-align: center; background: var(--surface-secondary-color); border-radius: var(--border-radius-large); padding: 2rem; width: 100%; border: 1px solid var(--border-color); }
+.missionIcon { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 0.5rem; }
+.missionStatement h3 { font-size: 1.3rem; color: var(--text-color); margin-bottom: 0.5rem; }
+.missionStatement p { font-size: 1rem; color: var(--text-color); }
+.supportCard > p { color: var(--text-secondary-color); margin-bottom: 0; line-height: 1.5; }
+.socialActions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; margin-top: 1rem; }
+.coffeeButton, .instagramButton { text-decoration: none; padding: 12px; border-radius: var(--border-radius-medium); display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; transition: all 0.2s ease; }
+.coffeeButton { background-color: var(--accent-color); color: white; }
+.instagramButton { background-color: var(--surface-secondary-color); color: var(--text-color); border: 1px solid var(--border-color); }
+.instagramButton:hover { background-color: var(--background-hover-color); }
+.appVersion { cursor: pointer; user-select: none; text-align: center; color: var(--text-secondary-color); font-size: 0.9rem; margin-top: 1.5rem; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
