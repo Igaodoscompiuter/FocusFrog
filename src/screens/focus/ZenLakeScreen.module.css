@@ -1,131 +1,73 @@
-
-/* =============================================== */
-/* ESTRUTURA E HIERARQUIA (LAYOUT AJUSTADO)      */
-/* =============================================== */
+/* ZEN LAKE SCREEN ... */
 
 .lakeScreen {
+    /* ... (estilos existentes) ... */
     display: flex;
     flex-direction: column;
-    justify-content: space-around; /* Distribui o espaço mais uniformemente */
-    height: 100%;
-    padding: 0.5rem 1rem; /* Padding vertical reduzido */
-    text-align: center;
-    background: linear-gradient(180deg, #1D2B4C 0%, #16223F 100%);
-    box-sizing: border-box;
-    overflow: hidden; /* Garante que esta tela nunca role */
-}
-
-.lakeScreen.break {
-    background: linear-gradient(180deg, #2A3A68 0%, #212F54 100%);
-}
-
-/* 1. Zona Visual (Topo) */
-.visualZone {
-    position: relative;
-    width: 100%;
-    max-width: 320px; /* << REDUZIDO de 350px */
-    margin: 0 auto;
-    aspect-ratio: 1 / 1;
-    display: flex;
-    justify-content: center;
     align-items: center;
-    flex-shrink: 0;
-}
-
-.auraContainer {
-    position: absolute;
+    justify-content: center;
     width: 100%;
     height: 100%;
+    padding: var(--sp-lg);
+    gap: var(--sp-xl);
+    background-color: var(--background-color);
+    transition: background-color 0.5s ease;
+}
+.lakeScreen.focus { background: radial-gradient(ellipse at bottom, var(--surface-secondary-color) 0%, var(--background-color) 70%); }
+.lakeScreen.break { background: radial-gradient(ellipse at bottom, var(--surface-color) 0%, var(--background-color) 70%); }
+.focusPanel { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xl); width: 100%; }
+.taskCard { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: var(--sp-md) var(--sp-lg); box-shadow: 0 4px 10px rgba(0,0,0,0.08); min-height: 60px; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 380px; }
+.taskContent { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xxs); }
+.taskLabel { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary-color); letter-spacing: 0.8px; text-transform: uppercase; }
+.taskTitleText { font-family: var(--font-poppins); font-size: 1.1rem; font-weight: 600; color: var(--text-color); text-align: center; }
+.breakMessage { font-size: 1.1rem; font-weight: 500; color: var(--text-secondary-color); }
+
+/* Contêiner do Timer (Agora o Lago) */
+.timerContainer {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    /* Gradiente azul para simular a água vista de cima */
+    background: radial-gradient(circle, #5C85E8 0%, #3B5FBA 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Borda interna sutil para profundidade */
+    border: 3px solid #3B5FBA;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 3px 5px rgba(0,0,0,0.2);
+    overflow: hidden; /* Esconde qualquer coisa que saia do círculo */
 }
 
-.frogContainer {
-    z-index: 10;
-    transform: translateY(10%); 
-}
-
-/* 2. Zona de Informação (Meio) */
-.infoZone {
-    padding: 0; /* Padding removido, o espaçamento agora é por margens */
-    flex-shrink: 0;
+.timerContentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-sm);
+    position: relative;
+    z-index: 2;
 }
 
 .timerDisplay {
-    font-size: 4.2rem; /* << REDUZIDO de 4.5rem */
-    font-weight: 300;
+    font-family: var(--font-poppins);
+    font-size: 3.8rem;
+    font-weight: 700;
+    /* Cor do texto alterada para branco para melhor leitura na água */
     color: #FFFFFF;
-    letter-spacing: 2px;
-    margin-bottom: 0.5rem; /* << REDUZIDO de 0.75rem */
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
-.taskTitleCard {
-    max-width: 350px;
-    margin: 0 auto;
-    padding: 0.75rem 1rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    min-height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
-.taskTitleText {
-    font-size: 1rem;
-    font-weight: 400;
-    color: #A0AEC0; 
-}
-
-/* 3. Zona de Controles (Base) */
-.controlsZone {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 300px; 
-    margin: 0 auto;
-    padding-bottom: env(safe-area-inset-bottom); /* Garante espaço para home bar em iOS */
-}
-
-.mainActionButton {
-    background-color: #FFC700;
-    color: #1D2B4C;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(255, 199, 0, 0.3);
-    transition: all 0.2s ease-in-out;
-}
-
+/* ... (estilos de controles restantes) ... */
+.controlsZone { display: flex; justify-content: center; align-items: center; gap: var(--sp-lg); width: 100%; }
+.mainActionButton, .secondaryActionButton { all: unset; box-sizing: border-box; border-radius: var(--border-radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
+.mainActionButton { width: 72px; height: 72px; background-color: var(--surface-color); color: var(--text-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
 .mainActionButton:hover { transform: scale(1.05); }
-
-.secondaryActionButton {
-    background-color: transparent;
-    color: #B0B0B0;
-    width: 48px;
-    height: 48px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.secondaryActionButton:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #FFFFFF;
-}
-
-.placeholder { width: 48px; height: 48px; }
-
-/* Assets do Lago */
-.zenAssetContainer { position: absolute; will-change: transform, opacity; }
-.lotusSvg { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+.mainActionButton:active { transform: scale(0.98); }
+.mainActionButton.play { background-color: var(--accent-color); color: var(--text-on-accent, #fff); border-color: var(--accent-color-hover); }
+.mainActionButton > svg { width: 40px; height: 40px; }
+.secondaryActionButton { width: 56px; height: 56px; background-color: var(--surface-secondary-color); color: var(--text-secondary-color); border: 1px solid var(--border-color); }
+.secondaryActionButton:hover { background-color: var(--surface-color); color: var(--text-color); }
+.secondaryActionButton > svg { width: 28px; height: 28px; }
+.placeholder { width: 56px; }
