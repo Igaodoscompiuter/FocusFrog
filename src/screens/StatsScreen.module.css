@@ -1,28 +1,26 @@
 /* 
-  StatsScreen.module.css - Estilos para a tela de estatísticas, com o layout corrigido.
+  StatsScreen.module.css - Versão Corrigida
+
+  [CORREÇÃO DE COMPATIBILIDADE APLICADA]
+  - As variáveis de fundo (--bg-card-*) foram substituídas por `--surface-color`, conforme o App.css original.
+  - As sombras (--shadow-*) foram removidas e substituídas por `border: 1px solid var(--border-color)`.
+  - As variáveis de texto (--text-color-*) foram consolidadas para usar `--text-color`, com opacidade para diferenciação.
+  - Os raios de borda (--br-*) foram corrigidos para a nomenclatura correta (`--border-radius-*`).
 */
 
-/*
-  [CORREÇÃO APLICADA]
-  As propriedades 'height' e 'overflow' foram removidas. O contêiner pai, '.screen-content' (de App.css),
-  já gerencia a rolagem da tela. Este contêiner agora serve apenas para adicionar o padding lateral 
-  e conter os elementos, como a arquitetura do projeto exige.
-*/
 .statsContainer {
   padding-left: var(--sp-md);
   padding-right: var(--sp-md);
-  /* O padding superior e inferior é gerenciado pelo .screen-content */
 }
 
 .centeredStreakCard {
-  background: linear-gradient(135deg, var(--bg-card-light), var(--bg-card-dark));
-  color: var(--text-color-light);
+  background: var(--surface-color);
+  color: var(--text-color);
   padding: var(--sp-lg);
-  border-radius: var(--br-lg);
+  border-radius: var(--border-radius-lg);
   text-align: center;
   margin-bottom: var(--sp-md);
-  box-shadow: var(--shadow-deep);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .streakNumber {
@@ -37,13 +35,14 @@
   font-size: 1.2rem;
   font-weight: 500;
   margin-top: var(--sp-xs);
-  color: var(--text-color-primary);
+  color: var(--text-color);
 }
 
 .streakQuote {
   font-style: italic;
   margin-top: var(--sp-md);
-  color: var(--text-color-secondary);
+  color: var(--text-color);
+  opacity: 0.8;
   font-size: 0.9rem;
 }
 
@@ -55,14 +54,14 @@
 }
 
 .metricCard {
-  background: var(--bg-card-light);
+  background: var(--surface-color);
   padding: var(--sp-md);
-  border-radius: var(--br-lg);
+  border-radius: var(--border-radius-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: var(--shadow-medium);
+  border: 1px solid var(--border-color);
 }
 
 .metricValueContainer {
@@ -79,20 +78,21 @@
 .metricValue {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--text-color-primary);
+  color: var(--text-color);
 }
 
 .metricLabel {
   font-size: 0.9rem;
-  color: var(--text-color-secondary);
+  color: var(--text-color);
+  opacity: 0.8;
   margin-top: var(--sp-xs);
 }
 
 .frogPondCard {
-  background: var(--bg-card-light);
+  background: var(--surface-color);
   padding: var(--sp-md);
-  border-radius: var(--br-lg);
-  box-shadow: var(--shadow-medium);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
   height: 350px;
   display: flex;
   flex-direction: column;
@@ -102,13 +102,14 @@
   text-align: center;
   font-size: 1.2rem;
   font-weight: 600;
-  color: var(--text-color-primary);
+  color: var(--text-color);
   margin-bottom: var(--sp-md);
 }
 
 .emptyPondMessage {
   text-align: center;
-  color: var(--text-color-secondary);
+  color: var(--text-color);
+  opacity: 0.8;
   align-self: center;
   margin: auto;
 }
@@ -139,21 +140,20 @@
 
 .rewardButton {
   background: var(--accent-color);
-  color: white;
+  color: white; /* Usando cor fixa, pois é provável que seja --text-on-accent */
   border: none;
   padding: var(--sp-md) var(--sp-xl);
   font-size: 1.2rem;
-  border-radius: var(--br-md);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   margin-top: var(--sp-lg);
 }
 
-/* Estilos para a nova lista de coleção */
 .collectionCard {
-  background: var(--bg-card-light);
+  background: var(--surface-color);
   padding: var(--sp-md);
-  border-radius: var(--br-lg);
-  box-shadow: var(--shadow-medium);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
   margin-top: var(--sp-md);
 }
 
@@ -167,9 +167,10 @@
   display: flex;
   align-items: center;
   gap: var(--sp-md);
-  background: var(--bg-card-dark);
+  /* Usando uma cor de fundo slightly darker para diferenciar, sem nova variável */
+  background: rgba(0,0,0,0.1);
   padding: var(--sp-sm);
-  border-radius: var(--br-md);
+  border-radius: var(--border-radius-md);
 }
 
 .collectionIcon {
@@ -180,13 +181,14 @@
 }
 
 .collectionName {
-  flex-grow: 1; /* O nome ocupa o espaço restante */
-  color: var(--text-color-primary);
+  flex-grow: 1;
+  color: var(--text-color);
   font-weight: 500;
 }
 
 .collectionCount {
-  color: var(--text-color-secondary);
+  color: var(--text-color);
+  opacity: 0.8;
   font-weight: bold;
   font-size: 1.1rem;
 }

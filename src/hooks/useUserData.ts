@@ -70,11 +70,19 @@ export const useUserData = () => {
     const addFrogToCollection = useCallback((speciesId: string) => {
         try {
             const collectedFrogs = getCollectedFrogs();
-            if (!collectedFrogs.includes(speciesId)) {
-                const newCollection = [...collectedFrogs, speciesId];
-                localStorage.setItem('focusfrog_collectedFrogs', JSON.stringify(newCollection));
-                const speciesName = frogSpecies[speciesId]?.name || 'um novo sapo';
+            const isNewDiscovery = !collectedFrogs.includes(speciesId);
+
+            // Adiciona o novo sapo à coleção, permitindo duplicatas.
+            const newCollection = [...collectedFrogs, speciesId];
+            localStorage.setItem('focusfrog_collectedFrogs', JSON.stringify(newCollection));
+            
+            const speciesName = frogSpecies[speciesId]?.name || 'sapo desconhecido';
+
+            // Notifica o usuário com base em ser uma nova descoberta ou uma duplicata.
+            if (isNewDiscovery) {
                 addNotification(`Novo Sapo Coletado!`, `Você descobriu o ${speciesName}!`, 'success');
+            } else {
+                addNotification(`Mais um Sapo!`, `Você coletou outro ${speciesName}!`, 'success');
             }
         } catch (error) {
             console.error("Falha ao adicionar sapo à coleção:", error);

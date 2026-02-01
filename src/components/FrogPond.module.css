@@ -1,0 +1,80 @@
+/* 
+  FrogPond.module.css - Estilos para o componente da lagoa de sapos.
+  [MODIFICAÇÃO]: Adicionada decoração (plantas, pedras) e borda aprimorada.
+*/
+
+.pond {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--water-color-light) 0%, var(--water-color-dark) 100%);
+  border-radius: var(--br-md);
+  overflow: hidden; /* Esconde partes dos SVGs que ficam fora */
+  border: 3px solid #A1887F; /* Uma cor base de terra/madeira para a borda */
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.4); /* Sombra interna para profundidade */
+}
+
+/* Adiciona as decorações no fundo do laguinho */
+.pond::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    url('../assets/water-plants.svg'), 
+    url('../assets/rocks.svg');
+  background-repeat: no-repeat;
+  background-position: 
+    bottom -10px right -15px, 
+    bottom -8px left -20px;
+  background-size: 80px, 90px;
+  opacity: 0.7;
+  z-index: 1; /* Garante que fique acima do fundo da água, mas abaixo dos sapos */
+}
+
+.frogWrapper {
+  position: absolute;
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  will-change: transform;
+  z-index: 10; /* Garante que os sapos fiquem na frente da decoração */
+}
+
+.frog {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+}
+
+.ripple {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  animation: ripple-effect 1.5s infinite;
+  transform: scale(0);
+  opacity: 0;
+  z-index: 5; /* Fica entre a decoração e os sapos */
+}
+
+@keyframes ripple-effect {
+  from {
+    transform: scale(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}

@@ -1,49 +1,36 @@
-
+// src/utils/speciesLogic.ts
 import { frogSpecies } from './frogSpecies';
+import { frogProbabilities } from '../config/probabilities';
 
-// Define os pesos para cada nível de raridade. Um número maior significa que é mais comum.
-const RARITY_WEIGHTS = {
-  common: 15, // Alta chance
-  rare: 5,    // Chance média
-  epic: 1,    // Chance baixa
+/**
+ * [LÓGICA ATUALIZADA]
+ * Seleciona uma espécie de sapo aleatoriamente com base nos pesos definidos 
+ * no arquivo de configuração central: src/config/probabilities.ts.
+ * 
+ * A regra antiga e codificada (50% de chance para 'JUNGLE') foi removida em favor
+ * deste sistema centralizado e mais flexível.
+ */
+export const selectRandomSpecies = (): string => {
+  const totalWeight = Object.values(frogProbabilities).reduce((sum, weight) => sum + weight, 0);
+  let randomRoll = Math.random() * totalWeight;
+
+  for (const speciesId in frogProbabilities) {
+    const weight = frogProbabilities[speciesId];
+    if (randomRoll < weight) {
+      return speciesId;
+    }
+    randomRoll -= weight;
+  }
+
+  // Fallback: caso algo dê errado, retorna o primeiro da lista de probabilidades
+  return Object.keys(frogProbabilities)[0];
 };
 
 /**
- * Seleciona aleatoriamente um ID de espécie de sapo com base na raridade.
- * Existe uma chance de 50% de retornar a espécie padrão 'JUNGLE'.
- * Para os outros 50%, seleciona uma das outras espécies com base em um sorteio ponderado pela raridade.
+ * Simula a coleta de um novo sapo.
  */
-export const selectRandomFrog = (): string => {
-  // Passo 1: 50% de chance de selecionar o sapo padrão.
-  if (Math.random() < 0.5) {
-    return 'JUNGLE';
-  }
-
-  // Passo 2: Preparar para o sorteio ponderado das outras espécies.
-  const otherSpecies = Object.entries(frogSpecies).filter(([id]) => id !== 'JUNGLE');
-
-  // Se, por algum motivo, não houver outras espécies, retorne o padrão como fallback.
-  if (otherSpecies.length === 0) {
-    return 'JUNGLE';
-  }
-
-  // Calcular o peso total de todas as espécies elegíveis.
-  let totalWeight = 0;
-  for (const [, speciesData] of otherSpecies) {
-    totalWeight += RARITY_WEIGHTS[speciesData.rarity];
-  }
-
-  // Gerar um número aleatório dentro do intervalo do peso total.
-  let randomWeight = Math.random() * totalWeight;
-
-  // Encontrar a qual espécie o número aleatório corresponde.
-  for (const [id, speciesData] of otherSpecies) {
-    randomWeight -= RARITY_WEIGHTS[speciesData.rarity];
-    if (randomWeight <= 0) {
-      return id; // Este é o nosso sapo sorteado!
-    }
-  }
-
-  // Fallback de segurança: se algo der errado, retorna o último da lista.
-  return otherSpecies[otherSpecies.length - 1][0];
+export const collectNewFrog = () => {
+  const speciesId = selectRandomSpecies();
+  const collectedAt = new Date().toISOString();
+  return { speciesId, collectedAt };
 };
