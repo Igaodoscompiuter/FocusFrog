@@ -15,6 +15,7 @@ import { AgendaDeHoje } from '../components/dashboard/AgendaDeHoje';
 import styles from './HomeScreen.module.css';
 import { FaPencilAlt, FaTimes } from 'react-icons/fa';
 
+// ... (greeting phrases and function remain the same)
 const morningPhrases = [
     "Vamos fazer acontecer hoje?",
     "Que a força do sapo esteja com você.",
@@ -38,7 +39,6 @@ const nightPhrases = [
     "Ainda dá tempo de planejar um amanhã incrível.",
     "Bom descanso, guerreiro do foco!"
 ];
-
 const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return {
@@ -79,9 +79,7 @@ export const HomeScreen: React.FC = () => {
                 setGreeting(getGreeting());
             }
         };
-
         document.addEventListener('visibilitychange', handleVisibilityChange);
-
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
@@ -89,12 +87,9 @@ export const HomeScreen: React.FC = () => {
 
     const frogTask = useMemo(() => tasks.find(t => t.id === frogTaskId && t.status !== 'done'), [tasks, frogTaskId]);
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
-    
     const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
     const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
-
     const isSpecialFrog = useMemo(() => frogTask?.title === "🐸 Card Especial FocusFrog N.1", [frogTask]);
-
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
         return frogTask.id === activeTaskId && sessionStatus !== 'idle';
@@ -127,11 +122,8 @@ export const HomeScreen: React.FC = () => {
             window.open('https://www.instagram.com/focus.frog/', '_blank');
             return;
         }
-
         if (!frogTask || hasSubtasks) return;
-
         if (frogTask.pomodoroEstimate > 0) {
-            // [CORREÇÃO] A chamada agora inclui `focusMinutes` para honrar a duração personalizada da tarefa.
             startPomodoro({ 
                 mode: 'classic', 
                 taskId: frogTask.id, 
@@ -146,11 +138,7 @@ export const HomeScreen: React.FC = () => {
     };
 
     const renderSubtask = (subtask: Subtask) => (
-        <div 
-            key={subtask.id} 
-            className={`${styles.frogSubtaskItem} ${subtask.completed ? styles.completed : ''}`}
-            onClick={() => frogTask && handleToggleSubtask(frogTask.id, subtask.id)}
-        >
+        <div key={subtask.id} className={`${styles.frogSubtaskItem} ${subtask.completed ? styles.completed : ''}`} onClick={() => frogTask && handleToggleSubtask(frogTask.id, subtask.id)}>
             <div className={styles.frogSubtaskCheckbox}></div>
             <span>{subtask.text}</span>
         </div>
@@ -182,17 +170,18 @@ export const HomeScreen: React.FC = () => {
                 onNavigateToTasks={handleNavigateToTasks}
             />
             
-            <div className={styles.dashboardHeader} style={{ background: greeting.gradient }}>
-                <div className={styles.greetingContent}>
-                    <img src="/icon-192.png" alt="FocusFrog App Icon" className={styles.headerIcon} />
-                    <div>
-                        <h2>{greeting.text}, {userName || 'Usuário'}!</h2>
-                        <p>{greeting.phrase}</p>
+            {/* A ESTRUTURA FOI SIMPLIFICADA. TUDO DENTRO DE UM ÚNICO WRAPPER. */}
+            <div className={styles.contentWrapper}>
+                <div className={styles.dashboardHeader} style={{ background: greeting.gradient }}>
+                    <div className={styles.greetingContent}>
+                        <img src="/icon-192.png" alt="FocusFrog App Icon" className={styles.headerIcon} />
+                        <div>
+                            <h2>{greeting.text}, {userName || 'Usuário'}!</h2>
+                            <p>{greeting.phrase}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className={styles.contentWrapper}>
                 <form id="tutorial-step1-form" onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
                     <input 
                         type="text" 

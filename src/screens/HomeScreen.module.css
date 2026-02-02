@@ -1,5 +1,9 @@
 /* HomeScreen.module.css */
 
+/* O .container e o .contentWrapper foram simplificados.
+   O layout de rolagem agora é gerenciado pelo componente pai (DashboardScreen) via .mainContent,
+   e o conteúdo da HomeScreen rola como um bloco único, prevenindo cortes. */
+
 .container {
     width: 100%;
 }
@@ -14,6 +18,8 @@
     padding: var(--sp-xl) var(--sp-lg);
     color: var(--text-on-primary);
     border-radius: 0 0 24px 24px;
+    /* Adicionando uma margem inferior para separar o cabeçalho do conteúdo abaixo */
+    margin-bottom: var(--sp-lg);
 }
 
 .greetingContent {
@@ -46,7 +52,7 @@
 .brainDumpForm {
     display: flex;
     gap: var(--sp-sm);
-    margin-top: var(--sp-lg);
+    /* A margem superior foi removida para usar a margem do dashboardHeader */
     margin-bottom: var(--sp-lg);
 }
 

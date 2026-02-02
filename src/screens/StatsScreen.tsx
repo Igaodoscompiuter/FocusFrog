@@ -123,7 +123,7 @@ export const StatsScreen: React.FC = () => {
         </div>
         
         <div className={styles.frogPondCard}>
-            <h2 className={styles.sectionTitle}>Meu Laguinho</h2>
+            <h2 className={styles.sectionTitle}>Jardim Zen</h2>
             <ZenPond collectedFrogs={frogsForPond}> 
                 {frogsForPond.length === 0 && (
                     <p className={styles.emptyPondMessage}>

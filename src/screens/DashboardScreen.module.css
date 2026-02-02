@@ -3,22 +3,22 @@
 .dashboardLayout {
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Empurra o conteúdo para cima e o rodapé para baixo */
   height: 100vh; 
   height: -webkit-fill-available;
   height: 100dvh;
   width: 100%;
   max-width: 100%;
+  /* justify-content: space-between; foi REMOVIDO para permitir que o .mainContent cresça */
 }
 
 .mainContent {
-  /* flex-grow: 1 foi REMOVIDO. O conteúdo agora só ocupa a altura que precisa. */
+  flex-grow: 1; /* Adicionado para fazer o conteúdo principal preencher o espaço disponível */
   overflow-y: auto; 
   overscroll-behavior-y: contain; 
 }
 
 .footerNav {
-  /* position: fixed foi REMOVIDO. O rodapé agora faz parte do layout flex. */
+  /* O rodapé agora fica naturalmente na parte inferior porque o .mainContent empurra-o para lá */
   width: 100%;
   z-index: 1000;
   background-color: var(--background-color);

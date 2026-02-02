@@ -13,7 +13,55 @@ export default defineConfig({
         enabled: true
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // INÍCIO DA NOVA CONFIGURAÇÃO PARA SUPORTE OFFLINE E BACKGROUND SYNC
+        runtimeCaching: [
+          {
+            // Regra para salvar em cache as chamadas à API (ex: buscar tarefas)
+            // Estratégia: StaleWhileRevalidate - mostra dados antigos enquanto busca novos.
+            urlPattern: ({ url }) => url.protocol === 'https:' && url.hostname.endsWith('supabase.co'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-cache',
+              cacheableResponse: {
+                statuses: [0, 200], // Salva respostas de sucesso e opacas (necessário para cross-origin)
+              },
+              expiration: {
+                maxEntries: 100, // Limita o número de respostas salvas
+                maxAgeSeconds: 60 * 60 * 24, // Salva por até 24 horas
+              },
+            },
+          },
+          {
+            // Regra para requisições de modificação (criar, atualizar, deletar)
+            // Estratégia: NetworkOnly com fallback para Background Sync.
+            urlPattern: ({ url }) => url.protocol === 'https:' && url.hostname.endsWith('supabase.co'),
+            method: 'POST', // Aplicar para POST
+            handler: 'NetworkOnly',
+            options: {
+              backgroundSync: {
+                name: 'mutation-queue', // Nome da fila
+                options: {
+                  maxRetentionTime: 24 * 60, // Tentar reenviar por até 24 horas
+                },
+              },
+            },
+          },
+          // Repetir a regra de Background Sync para outros métodos de modificação
+          {
+            urlPattern: ({ url }) => url.protocol === 'https:' && url.hostname.endsWith('supabase.co'),
+            method: 'PUT',
+            handler: 'NetworkOnly',
+            options: { backgroundSync: { name: 'mutation-queue', options: { maxRetentionTime: 24 * 60 } } },
+          },
+          {
+            urlPattern: ({ url }) => url.protocol === 'https:' && url.hostname.endsWith('supabase.co'),
+            method: 'DELETE',
+            handler: 'NetworkOnly',
+            options: { backgroundSync: { name: 'mutation-queue', options: { maxRetentionTime: 24 * 60 } } },
+          },
+        ],
+        // FIM DA NOVA CONFIGURAÇÃO
       },
       manifest: {
         name: 'Focus Frog',
@@ -53,54 +101,7 @@ export default defineConfig({
           }
         ],
         screenshots: [],
-        widgets: [
-          {
-            name: 'Sapo do Dia',
-            short_name: 'Sapo do Dia',
-            description: 'Acompanhe sua tarefa mais importante do dia.',
-            tag: 'sapo-do-dia',
-            template: 'sapo-widget-template',
-            ms_ac_template: '/sapo-widget.html',
-            icons: [
-              {
-                src: 'icon-192.png',
-                sizes: '192x192',
-                type: 'image/png',
-                purpose: 'any'
-              }
-            ],
-            screenshots: [
-              {
-                src: 'sapo-widget-screenshot.png', // Placeholder
-                sizes: '320x640',
-                type: 'image/png'
-              }
-            ]
-          },
-          {
-            name: 'Checklist de Saída',
-            short_name: 'Checklist',
-            description: 'Verifique seus itens essenciais antes de sair.',
-            tag: 'checklist-saida',
-            template: 'checklist-widget-template',
-            ms_ac_template: '/checklist-widget.html',
-            icons: [
-              {
-                src: 'icon-192.png',
-                sizes: '192x192',
-                type: 'image/png',
-                purpose: 'any'
-              }
-            ],
-            screenshots: [
-              {
-                src: 'checklist-widget-screenshot.png', // Placeholder
-                sizes: '320x640',
-                type: 'image/png'
-              }
-            ]
-          }
-        ]
+        widgets: [] // Widgets removidos para simplificar
       }
     })
   ],

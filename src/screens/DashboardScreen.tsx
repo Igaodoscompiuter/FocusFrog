@@ -1,15 +1,13 @@
 
 import React, { useState } from 'react';
 import { useUI } from '../context/UIContext';
-import { useTasks } from '../context/TasksContext'; 
-import { usePomodoro } from '../context/PomodoroContext';
+import { useTasks } from '../context/TasksContext';
 import { HomeScreen } from './HomeScreen';
 import { FocusScreen } from './FocusScreen';
 import { TasksScreen } from './TasksScreen';
 import { StatsScreen } from './StatsScreen';
 import { RewardsScreen } from './RewardsScreen';
 import { MoodboardScreen } from './MoodboardScreen';
-import { ZenLakeScreen } from './focus/ZenLakeScreen';
 import { BottomNav } from '../components/BottomNav';
 import { MorningReviewModal } from '../components/modals/MorningReviewModal';
 import styles from './DashboardScreen.module.css';
@@ -26,7 +24,6 @@ const screenComponents: { [key: string]: React.FC<any> } = {
 export const DashboardScreen: React.FC = () => {
   const { activeScreen, addNotification } = useUI();
   const { tasks, frogTaskId, setFrogTaskId } = useTasks();
-  const { sessionStatus } = usePomodoro();
 
   const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
   const [selectedFrogCandidate, setSelectedFrogCandidate] = useState<string | null>(frogTaskId);
@@ -46,12 +43,6 @@ export const DashboardScreen: React.FC = () => {
     setIsMorningReviewOpen(true);
   }
 
-  // SOLUÇÃO ESTRUTURAL: Se uma sessão de foco está ativa, renderiza APENAS a tela de foco.
-  if (sessionStatus !== 'idle') {
-    return <ZenLakeScreen />;
-  }
-
-  // Se não houver sessão ativa, renderiza o layout normal do dashboard.
   const ActiveScreenComponent = screenComponents[activeScreen] || HomeScreen;
 
   const screenProps: { [key: string]: any } = {};

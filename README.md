@@ -10,7 +10,7 @@
 
   <br />
 
-  <a href="https://focusfroggit-81838821-bbab8.web.app/" target="_blank">
+  <a href="https://focusfrog-2.web.app/" target="_blank">
     <img alt="Acessar o Aplicativo" src="https://img.shields.io/badge/✨ Acessar Agora e Acalmar a Mente-4CAF50?style=for-the-badge&logo=google-chrome&logoColor=white"/>
   </a>
 
@@ -66,7 +66,7 @@ O FocusFrog é um Aplicativo Web Progressivo (PWA). Use no navegador ou instale 
 
 **Acesse pelo link e transforme seu dia:**
 
-### [https://focusfroggit-81838821-bbab8.web.app/](https://focusfroggit-81838821-bbab8.web.app/)
+### [https://focusfrog-2.web.app/](https://focusfrog-2.web.app/)
 
 <br />
 
