@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-7a5e81cd'], (function (workbox) { 'use strict';
+define(['./workbox-6a144cd3'], (function (workbox) { 'use strict';
 
   self.addEventListener('message', event => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -85,11 +85,43 @@ define(['./workbox-7a5e81cd'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.guc1oa1ma58"
+    "revision": "0.npsqdt3s61o"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
+  workbox.registerRoute(({
+    url
+  }) => url.protocol === "https:" && url.hostname.endsWith("supabase.co"), new workbox.StaleWhileRevalidate({
+    "cacheName": "api-cache",
+    plugins: [new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    }), new workbox.ExpirationPlugin({
+      maxEntries: 100,
+      maxAgeSeconds: 86400
+    })]
+  }), 'GET');
+  workbox.registerRoute(({
+    url
+  }) => url.protocol === "https:" && url.hostname.endsWith("supabase.co"), new workbox.NetworkOnly({
+    plugins: [new workbox.BackgroundSyncPlugin("mutation-queue", {
+      maxRetentionTime: 1440
+    })]
+  }), 'POST');
+  workbox.registerRoute(({
+    url
+  }) => url.protocol === "https:" && url.hostname.endsWith("supabase.co"), new workbox.NetworkOnly({
+    plugins: [new workbox.BackgroundSyncPlugin("mutation-queue", {
+      maxRetentionTime: 1440
+    })]
+  }), 'PUT');
+  workbox.registerRoute(({
+    url
+  }) => url.protocol === "https:" && url.hostname.endsWith("supabase.co"), new workbox.NetworkOnly({
+    plugins: [new workbox.BackgroundSyncPlugin("mutation-queue", {
+      maxRetentionTime: 1440
+    })]
+  }), 'DELETE');
 
 }));
