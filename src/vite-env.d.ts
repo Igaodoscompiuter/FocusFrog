@@ -5,3 +5,8 @@ declare module '*.png' {
   const value: any;
   export default value;
 }
+
+interface Window {
+  gtag?: (...args: unknown[]) => void;
+  dataLayer?: unknown[];
+}

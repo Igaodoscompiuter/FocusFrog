@@ -74,3 +74,8 @@ web_modules/
 .env
 .env.local
 .env.*.local
+
+# Build outputs (não devem ser versionados)
+dist/
+dev-dist/
+.vite/
