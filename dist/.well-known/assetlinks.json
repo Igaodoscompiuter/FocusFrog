@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "app.web.focusfrog_2.twa",
-        "sha256_cert_fingerprints": ["30:D3:ED:0D:A1:D1:52:A6:75:B7:85:4F:D5:12:C3:94:6B:9D:98:F8:C9:A4:7E:48:7F:0A:B9:37:9B:C3:AF:DD"]
-      }
-    }]
