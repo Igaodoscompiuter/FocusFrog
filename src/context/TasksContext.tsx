@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
@@ -68,6 +68,15 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const { addNotification } = useUI();
     const { setPontosFoco } = useTheme();
     const { activeTaskId, stopCycle, lastCompletedFocus, clearLastCompletedFocus } = usePomodoro();
+
+    // Gerador de ID numérico único. Date.now() sozinho colide quando a mesma função
+    // é chamada várias vezes no mesmo milissegundo (ex.: salvar uma rotina com várias
+    // tarefas novas, criadas em loop) — o contador garante unicidade mesmo nesse caso.
+    const idCounterRef = useRef(0);
+    const generateNumericId = useCallback(() => {
+        idCounterRef.current += 1;
+        return Date.now() * 1000 + (idCounterRef.current % 1000);
+    }, []);
 
     const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', defaultTags);
@@ -248,9 +257,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 return prev.map(t => t.id === tag.id ? { ...t, ...tag } as Tag : t);
             }
             addNotification('Nova etiqueta criada', '✨', 'success');
-            return [...prev, { id: Date.now(), name: tag.name!, color: tag.color!, isDefault: false }];
+            return [...prev, { id: generateNumericId(), name: tag.name!, color: tag.color!, isDefault: false }];
         });
-    }, [setTags, addNotification]);
+    }, [setTags, addNotification, generateNumericId]);
 
     const handleDeleteTag = useCallback((tagId: number) => {
         if (tags.find(t => t.id === tagId)?.isDefault) {
@@ -283,7 +292,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const handleCreateTemplate = useCallback((taskData: Partial<Omit<Task, 'id'>>) => {
         const newTemplate: TaskTemplate = {
-            id: Date.now(),
+            id: generateNumericId(),
             title: taskData.title || 'Nova Tarefa',
             description: taskData.description,
             quadrant: taskData.quadrant,
@@ -296,7 +305,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         };
         setTaskTemplates(prev => [...prev, newTemplate]);
         return newTemplate;
-    }, [setTaskTemplates]);
+    }, [setTaskTemplates, generateNumericId]);
 
     const handleCreateTemplateFromTask = useCallback((task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>) => {
         const newTemplate = handleCreateTemplate(task);

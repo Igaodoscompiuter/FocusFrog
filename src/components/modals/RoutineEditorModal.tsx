@@ -146,19 +146,24 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
     const renderTaskCreationUI = () => (
         <div className={styles.taskCreatorForm}>
             <input type="text" className={`g-input ${styles.taskInput}`} placeholder="Nome da Nova Tarefa" value={taskName} onChange={(e) => setTaskName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddTask()} />
-            <div className={styles.taskControls}>
+
+            <div className={styles.controlGroup}>
+                <span className={styles.controlLabel}>Tipo</span>
                 <div className={styles.segmentedControl}>
                     <button className={`${styles.segment} ${taskType === 'quick' ? styles.active : ''}`} onClick={() => setTaskType('quick')}>Rápida</button>
                     <button className={`${styles.segment} ${taskType === 'focus' ? styles.active : ''}`} onClick={() => setTaskType('focus')}>Foco</button>
                 </div>
-                <div className={styles.quadrantSelector}>
-                    <div>
-                        <button className={taskQuadrant === 'do' ? styles.active : ''} onClick={() => setTaskQuadrant('do')}>Foco Imediato</button>
-                        <button className={taskQuadrant === 'schedule' ? styles.active : ''} onClick={() => setTaskQuadrant('schedule')}>Tarefas do Dia</button>
-                    </div>
-                </div>
-                <button className={`btn btn-secondary ${styles.addButton}`} onClick={handleAddTask}><Icon path={icons.plus} /> Adicionar</button>
             </div>
+
+            <div className={styles.controlGroup}>
+                <span className={styles.controlLabel}>Quadrante</span>
+                <div className={styles.segmentedControl}>
+                    <button className={`${styles.segment} ${taskQuadrant === 'do' ? styles.active : ''}`} onClick={() => setTaskQuadrant('do')}>Foco Imediato</button>
+                    <button className={`${styles.segment} ${taskQuadrant === 'schedule' ? styles.active : ''}`} onClick={() => setTaskQuadrant('schedule')}>Tarefas do Dia</button>
+                </div>
+            </div>
+
+            <button className={`btn btn-secondary ${styles.addButton}`} onClick={handleAddTask}><Icon path={icons.plus} /> Adicionar</button>
         </div>
     );
     
