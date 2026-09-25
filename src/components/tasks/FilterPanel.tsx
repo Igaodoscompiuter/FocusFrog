@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useTasks } from '../../context/TasksContext';
-import type { TaskFilters, EnergyLevel } from '../../types';
+import type { TaskFilters } from '../../types';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import styles from './FilterPanel.module.css';
@@ -15,14 +15,8 @@ interface FilterPanelProps {
 }
 
 // Opções de filtro, agora sem ícones para um design mais limpo
-const statusOptions: { id: 'overdue' | 'frog', label: string }[] = [
-    { id: 'overdue', label: 'Atrasada' },
+const statusOptions: { id: 'frog', label: string }[] = [
     { id: 'frog', label: 'Sapo do Dia' },
-];
-const energyOptions: { id: EnergyLevel, label: string }[] = [
-    { id: 'low', label: 'Baixa' },
-    { id: 'medium', label: 'Média' },
-    { id: 'high', label: 'Alta' },
 ];
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose, filters, onFilterChange }) => {
@@ -41,15 +35,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose, filte
     };
 
     const handleClearFilters = () => {
-        onFilterChange({ tags: [], status: [], energy: [] });
+        onFilterChange({ tags: [], status: [] });
     };
 
     if (!isOpen) return null;
 
-    // Adiciona uma classe específica para o status "Atrasada" quando ativo
-    const getStatusChipClass = (id: 'overdue' | 'frog') => {
+    const getStatusChipClass = (id: 'frog') => {
         const isActive = filters.status.includes(id);
-        return `${styles.filterChip} ${isActive ? styles.active : ''} ${isActive && id === 'overdue' ? styles.overdueActive : ''}`;
+        return `${styles.filterChip} ${isActive ? styles.active : ''}`;
     }
 
     return (
@@ -89,21 +82,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose, filte
                                 >
                                     <span className={styles.tagColorDot} style={{backgroundColor: tag.color}}></span>
                                     {tag.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                     <div className={styles.filterSection}>
-                        <h4>NÍVEL DE ENERGIA</h4>
-                        <div className={styles.filterOptions}>
-                            {energyOptions.map(option => (
-                                <button 
-                                    key={option.id} 
-                                    className={`${styles.filterChip} ${filters.energy.includes(option.id) ? styles.active : ''}`}
-                                    onClick={() => handleToggleFilter('energy', option.id)}
-                                >
-                                   {option.label}
                                 </button>
                             ))}
                         </div>

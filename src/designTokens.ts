@@ -23,6 +23,7 @@ export const baseTokens = {
   '--sp-xxl': '32px',
 
   /* Outros */
+  '--border-radius-xs': '3px',
   '--border-radius-md': '8px',
   '--border-radius-lg': '12px',
   '--transition-fast': '200ms ease',

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import type { Routine, Task, Quadrant, TaskTemplate } from '../../types';
@@ -27,6 +27,13 @@ const quadrantMap = quadrants.reduce((acc, q) => {
 
 export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEditorModalProps) => {
     const { taskTemplates } = useTasks();
+    // Contador para garantir IDs temporários únicos mesmo quando duas tarefas
+    // são criadas no mesmo milissegundo (Date.now() sozinho pode colidir).
+    const tempIdCounter = useRef(0);
+    const generateTempId = () => {
+        tempIdCounter.current += 1;
+        return `temp_${Date.now()}_${tempIdCounter.current}`;
+    };
 
     // Estado para os detalhes da rotina (nome, ícone, etc.)
     const [routine, setRoutine] = useState<Partial<Routine>>(
@@ -47,6 +54,8 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
     const [selectedCategory, setSelectedCategory] = useState('Todos');
 
     // Efeito para popular a lista de tarefas quando se edita uma rotina existente.
+    // Depende do ID da rotina (não do objeto inteiro) para não reexecutar à toa
+    // caso o componente pai um dia passe uma nova referência do mesmo objeto.
     useEffect(() => {
         if (isEditing && routineToEdit.taskTemplateIds && taskTemplates) {
             const tasksFromTemplates = routineToEdit.taskTemplateIds
@@ -62,7 +71,8 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                 }));
             setNewTasksForRoutine(tasksFromTemplates);
         }
-    }, [isEditing, routineToEdit, taskTemplates]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEditing, routineToEdit?.id, taskTemplates]);
 
     const modalRef = useClickOutside(onClose);
 
@@ -96,7 +106,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
     const handleAddTask = () => {
         if (!taskName.trim()) return;
         const newTask: NewTaskForRoutine = {
-            tempId: `temp_${Date.now()}`, // Prefixo `temp_` para identificar tarefas novas.
+            tempId: generateTempId(), // Prefixo `temp_` + contador para identificar tarefas novas sem colisão.
             title: taskName.trim(),
             pomodoroEstimate: taskType === 'focus' ? 1 : 0,
             quadrant: taskQuadrant,

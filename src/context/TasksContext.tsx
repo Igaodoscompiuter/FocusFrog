@@ -15,8 +15,8 @@ interface TasksContextType {
     frogTaskId: string | null;
     routines: Routine[];
     taskTemplates: TaskTemplate[];
-    handleAddTask: (task: Omit<Task, 'id' | 'status'>) => void;
-    handleAddTasks: (tasks: Omit<Task, 'id' | 'status'>[]) => void;
+    handleAddTask: (task: Omit<Task, 'id' | 'status' | 'displayOrder'>) => void;
+    handleAddTasks: (tasks: Omit<Task, 'id' | 'status' | 'displayOrder'>[]) => void;
     handleUpdateTask: (updatedTask: Task) => void;
     handleUpdateTaskQuadrant: (taskId: string, newQuadrant: Quadrant, newIndex: number) => void;
     handleDeleteTask: (taskId: string) => void;
@@ -108,8 +108,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, [onboardingCompleted, setOnboardingCompleted, setTasks, setFrogTaskId, taskTemplates]);
 
-    const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status'>) => {
-        const newTasks: Task[] = [{ ...taskData, id: `task-${Date.now()}`, status: 'todo' }];
+    const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status' | 'displayOrder'>) => {
+        const newTasks: Task[] = [{ ...taskData, id: `task-${Date.now()}`, status: 'todo', displayOrder: 0 }];
         setTasks(prev => [...prev, ...newTasks].map((t, i) => ({ ...t, displayOrder: i })));
         if (taskData.quadrant === 'inbox') {
             addNotification('Nova tarefa capturada na Caixa de Entrada', '📥', 'info');
@@ -118,11 +118,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, [setTasks, addNotification]);
 
-    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status'>[]) => {
+    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status' | 'displayOrder'>[]) => {
         const newTasks: Task[] = tasksData.map((taskData, index) => ({
             ...taskData,
             id: `task-${Date.now()}-${index}`,
             status: 'todo',
+            displayOrder: 0,
         }));
         setTasks(prev => [...prev, ...newTasks].map((t, i) => ({ ...t, displayOrder: i })));
     }, [setTasks]);
@@ -313,7 +314,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const handleAddTemplates = useCallback((templates: TaskTemplate[]) => {
         const today = new Date().toISOString().split('T')[0];
-        const newTasks: Omit<Task, 'id' | 'status'>[] = templates.map(template => ({
+        const newTasks: Omit<Task, 'id' | 'status' | 'displayOrder'>[] = templates.map(template => ({
             ...template,
             quadrant: template.quadrant || 'inbox',
             pomodoroEstimate: template.pomodoroEstimate ?? 1,

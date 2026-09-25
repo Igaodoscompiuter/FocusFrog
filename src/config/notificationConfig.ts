@@ -20,6 +20,9 @@ interface NotificationConfig {
 
     // The number of notifications in the queue that triggers the fast duration.
     fastThreshold: number;
+
+    // Whether a notification with an action button should still auto-dismiss.
+    dismissActionable: boolean;
 }
 
 export const notificationConfig: NotificationConfig = {
@@ -28,4 +31,5 @@ export const notificationConfig: NotificationConfig = {
     defaultDuration: 2200, // Um pouco mais rápido que o original
     fastDuration: 1000,    // Rápido quando a fila está grande
     fastThreshold: 5,      // Acima de 5 notificações, a velocidade aumenta
+    dismissActionable: false, // Notificações com ação (ex: "Desfazer") ficam até o usuário interagir
 };

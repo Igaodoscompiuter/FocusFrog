@@ -26,7 +26,7 @@ export const QuickCompleteModal: React.FC = () => {
     const handleConfirm = () => {
         if (!quickTaskForCompletion) return;
         
-        handleCompleteTask(quickTaskForCompletion.id);
+        handleCompleteTask(quickTaskForCompletion.id, 'button');
 
         if (frogTaskId === quickTaskForCompletion.id) {
             handleUnsetFrog();

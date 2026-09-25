@@ -70,7 +70,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
         if (isFrog) {
             addNotification("Sapo do Dia Concluído! VITÓRIA!", "🐸", "success");
         }
-        handleCompleteTask(task.id);
+        handleCompleteTask(task.id, 'button');
     };
 
     const bind = useDrag(({
@@ -149,7 +149,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragSt
             taskId: task.id,
             taskTitle: task.title,
             // Se a tarefa tiver mais de 1 pomodoro, é um clássico. Senão, é rápido.
-            mode: (task.pomodoroEstimate && task.pomodoroEstimate > 1) ? 'classic' : 'quick',
+            mode: ((task.pomodoroEstimate && task.pomodoroEstimate > 1) ? 'classic' : 'quick') as 'classic' | 'quick',
             // Usa a duração customizada da tarefa, ou o padrão de 25 min
             focusMinutes: task.customDuration || 25,
             // Usa a estimativa de pomodoros como número de ciclos

@@ -5,6 +5,23 @@ export type Quadrant = 'inbox' | 'do' | 'schedule' | 'delegate' | 'someday';
 export type EnergyLevel = 'low' | 'medium' | 'high';
 export type TimeOfDay = 'morning' | 'afternoon' | 'night';
 
+/** As telas navegáveis pela BottomNav (mapeadas em AppLayout/BottomNav). */
+export type Screen = 'dashboard' | 'tasks' | 'focus' | 'stats' | 'rewards' | 'moodboard';
+
+/** Notificação toast exibida pelo UIContext (NotificationContainer). */
+export interface Notification {
+  id: number;
+  message: string;
+  icon: string;
+  action?: { label: string; onAction: () => void };
+}
+
+/** Filtros aplicáveis na TasksScreen (FilterPanel). */
+export interface TaskFilters {
+  tags: number[];
+  status: ('frog')[];
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -34,6 +51,7 @@ export interface Tag {
   id: number;
   name: string;
   color: string;
+  isDefault?: boolean;
 }
 
 export interface TaskTemplate {

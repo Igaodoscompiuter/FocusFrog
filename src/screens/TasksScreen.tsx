@@ -62,7 +62,7 @@ export const TasksScreen: React.FC = () => {
     const {
         tasks,
         tags,
-        routines,
+        frogTaskId,
         handleAddRoutine,
         handleAddTemplates,
         isTriageActive,
@@ -75,14 +75,14 @@ export const TasksScreen: React.FC = () => {
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-    const [filters, setFilters] = useState<TaskFilters>({ tags: [], status: [], energy: [] });
+    const [filters, setFilters] = useState<TaskFilters>({ tags: [], status: [] });
 
     const filteredTasks = useMemo(() => tasks.filter(task => {
         if (task.status === 'done') return false;
         const tagMatch = filters.tags.length === 0 || (task.tagId && filters.tags.includes(task.tagId));
-        const energyMatch = filters.energy.length === 0 || (task.energyNeeded && filters.energy.includes(task.energyNeeded));
-        return tagMatch && energyMatch;
-    }), [tasks, filters]);
+        const statusMatch = !filters.status.includes('frog') || task.id === frogTaskId;
+        return tagMatch && statusMatch;
+    }), [tasks, filters, frogTaskId]);
 
     const tasksByQuadrant = useMemo(() => {
         const result: Record<string, Task[]> = { inbox: [], do: [], schedule: [], someday: [] };
@@ -117,7 +117,7 @@ export const TasksScreen: React.FC = () => {
                     onTriage={processTriage} 
                 />
             )}
-            {isLibraryOpen && <TaskLibraryModal routines={routines} onAddRoutine={handleAddRoutine} onAddTemplates={handleAddTemplates} onClose={() => setIsLibraryOpen(false)} />}
+            {isLibraryOpen && <TaskLibraryModal onAddRoutine={handleAddRoutine} onAddTemplates={handleAddTemplates} onClose={() => setIsLibraryOpen(false)} />}
             <FilterPanel isOpen={isFilterPanelOpen} onClose={() => setIsFilterPanelOpen(false)} filters={filters} onFilterChange={setFilters} />
 
             <div className="screen-content">
