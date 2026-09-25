@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 /**
  * A custom hook for persisting state to localStorage.
@@ -28,27 +28,28 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, Dispatch<S
     }
   });
 
-  // This function is a wrapped version of useState's setter.
-  // It persists the new value to localStorage.
-  const setValue: Dispatch<SetStateAction<T>> = (value) => {
+  // [CORREÇÃO] A implementação anterior calculava `value(storedValue)` na hora,
+  // usando o `storedValue` do fechamento daquele render — não o estado mais
+  // atual do React. Quando o mesmo setter era chamado várias vezes em sequência
+  // no mesmo tick (ex.: um loop criando várias tarefas), cada chamada lia o
+  // MESMO valor antigo e sobrescrevia a anterior: só a última sobrevivia.
+  //
+  // A correção é devolver o setter nativo do useState (`setStoredValue`)
+  // diretamente — ele já implementa corretamente o encadeamento de
+  // atualizações funcionais, igual a qualquer outro useState. Persistir no
+  // localStorage vira um efeito colateral que reage à mudança real do
+  // estado, depois que o React já resolveu todas as atualizações da leva.
+  useEffect(() => {
     try {
-      // Allow value to be a function so we have the same API as useState.
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value;
-      
-      // Save the new state.
-      setStoredValue(valueToStore);
-      
-      // Save to localStorage.
       if (typeof window !== "undefined") {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        window.localStorage.setItem(key, JSON.stringify(storedValue));
       }
     } catch (error) {
       // A more advanced implementation could handle the error case,
       // e.g., if localStorage is full.
       console.error(`Error setting localStorage key “${key}”:`, error);
     }
-  };
+  }, [key, storedValue]);
 
-  return [storedValue, setValue];
+  return [storedValue, setStoredValue];
 }
