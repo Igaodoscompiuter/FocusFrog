@@ -17,8 +17,8 @@ export const KoiFish: React.FC<KoiFishProps> = ({ style, delay = 0, isReversed =
         transition: {
             duration: 15 + Math.random() * 5, // Duração variada
             repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
+            repeatType: "reverse" as const,
+            ease: "easeInOut" as const,
             delay: delay,
         }
     }

@@ -4,6 +4,9 @@ import styles from './PondDecorations.module.css';
 import rockSvg from '../../assets/rocks.svg';
 import plantSvg from '../../assets/water-plants.svg';
 import algaeSvg from '../../assets/algae.svg';
+import { Heron } from './Heron';
+import { KoiFish } from './KoiFish';
+import { LotusFlower } from './LotusFlower';
 
 // --- Configuração das Zonas e Decorações ---
 
@@ -92,10 +95,62 @@ export const PondDecorations: React.FC = () => {
     });
   }, []);
 
+  // Fauna animada (Garça, Carpas, Flor de Lótus): posições calculadas uma vez
+  // com o mesmo sistema de zonas usado nas decorações estáticas acima.
+  const wildlife = useMemo(() => {
+    const heronZone = Math.random() > 0.5 ? ZONES.LEFT_EDGE : ZONES.RIGHT_EDGE;
+    const heronX = random(heronZone[0], heronZone[1]);
+    const heronY = random(65, 78); // Na margem, "em pé" na água rasa
+
+    const koi = Array.from({ length: 2 }, (_, i) => {
+      const x = random(ZONES.SUBMERGED_CENTER[0], ZONES.SUBMERGED_CENTER[1]);
+      const y = random(ZONES.SUBMERGED_CENTER[2], ZONES.SUBMERGED_CENTER[3]);
+      return {
+        isReversed: i % 2 === 0,
+        style: { top: `${y}%`, left: `${x}%`, opacity: 0.85 } as React.CSSProperties,
+      };
+    });
+
+    const lotuses = Array.from({ length: 3 }, () => {
+      const zone = Math.random() > 0.5 ? ZONES.LEFT_EDGE : ZONES.RIGHT_EDGE;
+      const x = random(zone[0], zone[1]);
+      const y = random(35, 55); // Flutuando na superfície, mais ao centro que as plantas
+      return {
+        style: { top: `${y}%`, left: `${x}%` } as React.CSSProperties,
+      };
+    });
+
+    return {
+      heron: { style: { top: `${heronY}%`, left: `${heronX}%` } as React.CSSProperties },
+      koi,
+      lotuses,
+    };
+  }, []);
+
   return (
     <div className={styles.decorationContainer}>
       {generatedDecorations.map(deco => (
         <img key={deco.id} src={deco.src} style={deco.style} alt="" />
+      ))}
+
+      {/* Fauna animada: dá vida ao lago além das decorações estáticas. */}
+      {wildlife.heron && (
+        <Heron style={{ position: 'absolute', zIndex: 2, ...wildlife.heron.style }} delay={0.3} />
+      )}
+      {wildlife.koi.map((koi, i) => (
+        <KoiFish
+          key={`koi-${i}`}
+          style={{ position: 'absolute', zIndex: 3, ...koi.style }}
+          delay={i * 0.6}
+          isReversed={koi.isReversed}
+        />
+      ))}
+      {wildlife.lotuses.map((lotus, i) => (
+        <LotusFlower
+          key={`lotus-${i}`}
+          style={{ position: 'absolute', zIndex: 2, ...lotus.style }}
+          delay={0.5 + i * 0.4}
+        />
       ))}
     </div>
   );

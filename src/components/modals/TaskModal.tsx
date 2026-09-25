@@ -93,16 +93,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
 
     const handleSaveAsTemplate = () => {
         if (!task.title?.trim()) return alert('O título é obrigatório para salvar um modelo.');
-        const templateData: Omit<TaskTemplate, 'id'> = {
-            title: task.title,
-            description: task.description,
-            quadrant: task.quadrant,
-            pomodoroEstimate: task.pomodoroEstimate,
-            customDuration: task.customDuration,
-            subtasks: task.subtasks?.map(st => ({ text: st.text })),
-            category: category || 'Personalizado'
-        };
-        handleCreateTemplateFromTask(templateData);
+        // Passa a própria tarefa (já no formato correto, com subtarefas completas):
+        // handleCreateTemplateFromTask extrai só os campos relevantes para o modelo.
+        handleCreateTemplateFromTask(task);
         onClose();
     };
     

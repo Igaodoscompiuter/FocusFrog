@@ -14,6 +14,12 @@ precacheAndRoute(self.__WB_MANIFEST || []);
 // Listener de mensagens para comunicação entre o cliente e o Service Worker.
 let notificationTimer: number | undefined;
 
+/** NotificationOptions do lib.dom.d.ts não inclui `vibrate`, embora seja suportado
+ *  pelos navegadores. Estendemos localmente em vez de usar `any` no objeto todo. */
+interface NotificationOptionsWithVibrate extends NotificationOptions {
+    vibrate?: number[];
+}
+
 self.addEventListener('message', (event) => {
     // ESSENCIAL: Permite que o usuário acione a atualização do PWA.
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -37,7 +43,7 @@ self.addEventListener('message', (event) => {
                     icon: '/icon-192.png',
                     badge: '/icon-96.png',
                     vibrate: [200, 100, 200],
-                });
+                } as NotificationOptionsWithVibrate);
             }, delay);
         }
     }
@@ -79,7 +85,7 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close(); // Fecha a notificação
 
     // Abre a janela do aplicativo ou a foca se já estiver aberta
-    const promiseChain = clients.openWindow(event.notification.data.url || '/');
+    const promiseChain = self.clients.openWindow(event.notification.data.url || '/');
     event.waitUntil(promiseChain);
 });
 // --- FIM: NOVA LÓGICA PARA NOTIFICAÇÕES PUSH ---

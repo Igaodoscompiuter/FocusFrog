@@ -29,7 +29,7 @@ interface TasksContextType {
     handleDuplicateTask: (taskId: string) => void;
     handlePostponeTask: (taskId: string, days: number) => void;
     needsMorningPlan: boolean;
-    handleCreateTemplateFromTask: (task: Task) => void;
+    handleCreateTemplateFromTask: (task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>) => void;
     handleCreateTemplate: (task: Partial<Omit<Task, 'id'>>) => TaskTemplate;
     handleDeleteTemplate: (templateId: number) => void;
     handleAddRoutine: (routine: Routine) => void;
@@ -298,7 +298,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return newTemplate;
     }, [setTaskTemplates]);
 
-    const handleCreateTemplateFromTask = useCallback((task: Task) => {
+    const handleCreateTemplateFromTask = useCallback((task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>) => {
         const newTemplate = handleCreateTemplate(task);
         addNotification(`Modelo "${newTemplate.title}" salvo na sua biblioteca.`, '📚', 'success');
     }, [handleCreateTemplate, addNotification]);

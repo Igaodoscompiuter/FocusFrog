@@ -197,7 +197,7 @@ export const RewardsScreen: React.FC = () => {
                  return <DataScreen 
                     onBack={() => setActiveSettingsScreen('main')}
                     exportData={exportData}
-                    importDataFromFile={importDataFromFile} // Passando a função sem o parâmetro 'user'
+                    importDataFromFile={(file) => importDataFromFile(file, null)} // Sync em nuvem ainda não existe — sempre local (user: null)
                     showResetModal={showResetModal}
                 />;
             // CONTEÚDO DA TELA SOBRE RESTAURADO

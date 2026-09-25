@@ -71,8 +71,12 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
 
         if (status === 'active' && lastStep) {
-            // Adiciona um pequeno delay para garantir que a UI esteja pronta
-            setTimeout(() => tour.start(lastStep), 200);
+            // [CORREÇÃO] tour.start() não aceita argumento — para retomar num passo
+            // específico é preciso iniciar e depois pular para ele com show().
+            setTimeout(() => {
+                tour.start();
+                tour.show(lastStep);
+            }, 200);
         } else {
             setTimeout(() => tour.start(), 200);
         }

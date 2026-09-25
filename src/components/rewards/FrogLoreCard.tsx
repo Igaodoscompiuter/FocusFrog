@@ -24,8 +24,7 @@ export const FrogLoreCard: React.FC<FrogLoreCardProps> = ({ species }) => {
       <div className={styles.header}>
         <div className={styles.frogContainer} style={frogContainerStyle}>
           {/* [CORREÇÃO] O ID correto é passado para garantir a exibição do sapo certo. */}
-          {/* A prop "isStatic" pode ser usada para desabilitar animações se necessário. */}
-          <ZenFrog speciesId={species.id} stage="adult" isStatic={true} />
+          <ZenFrog speciesId={species.id} stage="adult" />
         </div>
       </div>
       

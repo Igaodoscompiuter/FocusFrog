@@ -62,7 +62,7 @@ const getGreeting = () => {
 };
 
 export const HomeScreen: React.FC = () => {
-    const { tasks, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
+    const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
     const { activeTaskId, sessionStatus, startPomodoro } = usePomodoro(); 
     const { userName } = useUser();
@@ -157,7 +157,7 @@ export const HomeScreen: React.FC = () => {
 
     return (
         <div className={styles.container}> 
-            {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} />}
+            {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} tags={tags} />}
             <QuickCompleteModal />
             
             <MorningReviewModal 
@@ -247,7 +247,7 @@ export const HomeScreen: React.FC = () => {
                     onResetItems={handleResetLeavingHomeItems}
                 />
 
-                <AgendaDeHoje onEditTask={setEditingTask} />
+                <AgendaDeHoje />
             </div>
         </div>
     );
