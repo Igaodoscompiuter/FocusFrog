@@ -79,3 +79,13 @@ web_modules/
 dist/
 dev-dist/
 .vite/
+
+# Android (Capacitor) — build outputs, não versionar
+android/app/build/
+android/build/
+android/.gradle/
+android/captures/
+android/local.properties
+android/app/release/
+*.apk
+*.aab
