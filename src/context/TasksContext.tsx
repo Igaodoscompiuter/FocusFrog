@@ -1,5 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
@@ -7,6 +9,7 @@ import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
 import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
 import { syncRoutineNotifications, scheduleFrogReminder, cancelFrogReminder } from '../notifications';
+import { syncChecklistToWidget, readChecklistFromWidget } from '../widgetBridge';
 
 type CompletionMethod = 'timer' | 'button' | 'subtask';
 
@@ -111,6 +114,26 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);
+
+    // Espelha o checklist pro widget de tela inicial sempre que mudar dentro do app.
+    useEffect(() => {
+        syncChecklistToWidget(leavingHomeItems);
+    }, [leavingHomeItems]);
+
+    // Ao voltar ao primeiro plano, lê de volta o que o widget possa ter mudado
+    // enquanto o app estava fechado/minimizado (toques em "Já pegou?" na tela inicial).
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+        const sub = CapacitorApp.addListener('appStateChange', async ({ isActive }) => {
+            if (!isActive) return;
+            const fromWidget = await readChecklistFromWidget();
+            if (fromWidget && JSON.stringify(fromWidget) !== JSON.stringify(leavingHomeItems)) {
+                setLeavingHomeItems(fromWidget);
+            }
+        });
+        return () => { sub.then(s => s.remove()); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [leavingHomeItems]);
     const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
 
     const [triageQueue, setTriageQueue] = useState<Task[]>([]);

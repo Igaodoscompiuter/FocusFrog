@@ -42,6 +42,20 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Mantém visível o cronômetro de uma sessão de foco (Pomodoro) em andamento, com notificação fixa mostrando o tempo restante, mesmo com o app em segundo plano." />
         </service>
+
+        <!-- Widget de tela inicial do checklist "Já pegou?" -->
+        <receiver
+            android:name=".ChecklistWidgetProvider"
+            android:exported="false"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.focusfrog.app.WIDGET_TOGGLE_ITEM" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/checklist_widget_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->

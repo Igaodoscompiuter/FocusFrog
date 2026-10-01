@@ -4,4 +4,5 @@
     <string name="title_activity_main">FocusFrog</string>
     <string name="package_name">com.focusfrog.app</string>
     <string name="custom_url_scheme">com.focusfrog.app</string>
+    <string name="widget_checklist_description">Checklist "Já pegou?" direto na tela inicial</string>
 </resources>
