@@ -12,13 +12,14 @@ export interface ToastProps {
 export const Toast: React.FC<ToastProps> = ({ notification, onDismiss }) => {
 
     useEffect(() => {
-        // Não agenda o auto-descarte se houver uma ação, a menos que seja configurado para isso
-        const autoDismiss = !notification.action || notificationConfig.dismissActionable;
-        if (!autoDismiss) return;
-
+        // [CORREÇÃO] Antes, uma notificação com ação (ex: "Desfazer") nunca agendava
+        // o timer de descarte — ficava presa na tela pra sempre e travava a fila
+        // (só 1 notificação visível por vez). Agora sempre agenda, só que com mais
+        // tempo quando há uma ação, pra dar chance de tocar em "Desfazer".
+        const duration = notification.action ? notificationConfig.actionableDuration : notificationConfig.defaultDuration;
         const dismissTimeout = setTimeout(() => {
             onDismiss(notification.id);
-        }, notificationConfig.defaultDuration);
+        }, duration);
 
         return () => clearTimeout(dismissTimeout);
     }, [notification, onDismiss]);

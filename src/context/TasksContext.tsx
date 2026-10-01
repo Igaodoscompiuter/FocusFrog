@@ -6,6 +6,7 @@ import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
 import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
+import { syncRoutineNotifications } from '../notifications';
 
 type CompletionMethod = 'timer' | 'button' | 'subtask';
 
@@ -84,6 +85,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
 
     const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
+
+    // Sempre que as rotinas mudarem (criar/editar/excluir/definir horário),
+    // ressincroniza as notificações diárias agendadas — nativo apenas.
+    useEffect(() => {
+        syncRoutineNotifications(routines);
+    }, [routines]);
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);

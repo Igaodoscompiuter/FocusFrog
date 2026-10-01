@@ -219,6 +219,23 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                         ) : (
                             <>
                                 <div className="form-group"><label>Nome da Rotina</label><input type="text" className="g-input" value={routine.name || ''} onChange={e => handleFieldChange('name', e.target.value)} placeholder="Ex: Preparação para a Semana"/></div>
+                                <div className="form-group">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!routine.scheduledTime}
+                                            onChange={e => handleFieldChange('scheduledTime', e.target.checked ? '07:00' : undefined)}
+                                        /> Lembrar todo dia num horário
+                                    </label>
+                                    {routine.scheduledTime && (
+                                        <input
+                                            type="time"
+                                            className="g-input"
+                                            value={routine.scheduledTime}
+                                            onChange={e => handleFieldChange('scheduledTime', e.target.value)}
+                                        />
+                                    )}
+                                </div>
                                 <div className="form-group"><label>Ícone</label><div className={styles.iconSelector}>{routineIcons.map(iconName => (<button key={iconName} className={routine.icon === iconName ? styles.active : ''} onClick={() => handleFieldChange('icon', iconName)}><Icon path={icons[iconName]} /></button>))}</div></div>
                             </>
                         )}

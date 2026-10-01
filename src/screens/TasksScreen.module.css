@@ -4,12 +4,20 @@
     margin-bottom: var(--sp-lg);
 }
 
-/* [CORREÇÃO APLICADA] Barra de ações agora ocupa toda a largura e distribui os botões. */
+/* [CORREÇÃO] O space-between aqui deixava os 2 ícones grudados à esquerda e o
+   botão "Nova Tarefa" isolado à direita, com um vão morto enorme no meio.
+   Em vez disso, o botão principal agora estica pra preencher o espaço que
+   sobra — sem vão, e ganha um alvo de toque maior (é a ação primária). */
 .tasksActions {
     display: flex;
-    justify-content: space-between; /* Distribui os grupos de botões */
     align-items: center;
+    gap: var(--sp-md);
     width: 100%;
+}
+
+.tasksActions > .btn-primary {
+    flex: 1;
+    justify-content: center;
 }
 
 /* [NOVO] Contêiner para os botões de ícone à esquerda */

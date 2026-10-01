@@ -12,6 +12,7 @@ import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
 import { SplashScreen } from './screens/SplashScreen';
 import { AppLayout } from './components/AppLayout';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import InstallPromptPopup from './components/InstallPromptPopup';
 
 function App() {
@@ -31,6 +32,16 @@ function App() {
   useEffect(() => {
     document.body.className = `font-size-${fontSize}`;
   }, [fontSize]);
+
+  // Barra de status amarelo-âmbar (mesma cor do theme_color do PWA original).
+  // setOverlaysWebView(false) é o que garante que a barra fique pintada em vez
+  // de o app desenhar por baixo dela (comportamento edge-to-edge do Android 15+).
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+    StatusBar.setBackgroundColor({ color: '#FBBF24' }).catch(() => {});
+    StatusBar.setStyle({ style: Style.Light }).catch(() => {}); // ícones escuros (fundo claro)
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {

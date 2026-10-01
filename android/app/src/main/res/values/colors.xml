@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Amarelo-âmbar da marca FocusFrog (mesmo theme_color do PWA, vite.config.ts) -->
+    <color name="colorPrimary">#FBBF24</color>
+    <color name="colorPrimaryDark">#B45309</color>
+    <color name="colorAccent">#FBBF24</color>
+    <color name="statusBarColor">#FBBF24</color>
+</resources>

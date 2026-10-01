@@ -1,10 +1,13 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useUser } from './UserContext';
 import { uiEffects } from '../sounds';
 import { postMessageToSW } from '../sw-helpers';
+import { schedulePhaseEndNotification, showOngoingSessionNotification, cancelPomodoroNotifications } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
 
 export type PomodoroMode = 'quick' | 'classic';
@@ -83,22 +86,27 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
     const [activeTaskId, setActiveTaskId] = useLocalStorage<string | null>('focusfrog_activeTaskId', null);
     const [activeTaskTitle, setActiveTaskTitle] = useLocalStorage<string | null>('focusfrog_activeTaskTitle', null);
+    // [NOVO] Horário absoluto (epoch ms) em que a fase atual termina, persistido.
+    // É a peça que permite recuperar a sessão se o app for fechado/morto em segundo
+    // plano: em vez de confiar num contador de JS que para de rodar, recalculamos
+    // o tempo restante a partir desse relógio sempre que o app volta ao primeiro plano.
+    const [sessionEndsAt, setSessionEndsAt] = useLocalStorage<number | null>('focusfrog_sessionEndsAt', null);
     const [lastCompletedFocus, setLastCompletedFocus] = useState<LastCompletedFocus | null>(null);
     const [distractionNotes, setDistractionNotes] = useState('');
 
-    const [mode, setMode] = useState<PomodoroMode | null>(null);
-    const [sessionStatus, setSessionStatus] = useState<PomodoroSessionStatus>('idle');
+    const [mode, setMode] = useLocalStorage<PomodoroMode | null>('focusfrog_pomodoroMode', null);
+    const [sessionStatus, setSessionStatus] = useLocalStorage<PomodoroSessionStatus>('focusfrog_sessionStatus', 'idle');
     const [isPaused, setIsPaused] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(DEFAULT_FOCUS_DURATION);
-    const [focusDuration, setFocusDuration] = useState(DEFAULT_FOCUS_DURATION);
-    const [breakDuration, setBreakDuration] = useState(DEFAULT_BREAK_DURATION);
-    const [totalCycles, setTotalCycles] = useState(1);
-    const [currentCycle, setCurrentCycle] = useState(1);
+    const [focusDuration, setFocusDuration] = useLocalStorage('focusfrog_focusDuration', DEFAULT_FOCUS_DURATION);
+    const [breakDuration, setBreakDuration] = useLocalStorage('focusfrog_breakDuration', DEFAULT_BREAK_DURATION);
+    const [totalCycles, setTotalCycles] = useLocalStorage('focusfrog_totalCycles', 1);
+    const [currentCycle, setCurrentCycle] = useLocalStorage('focusfrog_currentCycle', 1);
 
-    const [totalSessionTime, setTotalSessionTime] = useState(0);
+    const [totalSessionTime, setTotalSessionTime] = useLocalStorage('focusfrog_totalSessionTime', 0);
     const [sessionProgress, setSessionProgress] = useState(0);
     const [cycleProgress, setCycleProgress] = useState(0);
-    const [sessionFrog, setSessionFrog] = useState<SessionFrog | null>(null);
+    const [sessionFrog, setSessionFrog] = useLocalStorage<SessionFrog | null>('focusfrog_sessionFrog', null);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -119,8 +127,9 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setSessionProgress(0);
         setCycleProgress(0);
         setSessionFrog(null);
-        postMessageToSW({ type: 'CANCEL_NOTIFICATION' });
-    }, [focusDuration, setActiveTaskId, setActiveTaskTitle]);
+        setSessionEndsAt(null);
+        cancelPomodoroNotifications();
+    }, [focusDuration, setActiveTaskId, setActiveTaskTitle, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setCurrentCycle, setTotalCycles]);
 
     const completeTask = useCallback(() => {
         if (activeTaskId) {
@@ -160,10 +169,19 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
 
         timerRef.current = setInterval(() => {
+            // [CORREÇÃO] Em vez de só decrementar (o que perde a conta se o app ficar
+            // em segundo plano e o JS for pausado pelo Android), recalcula o tempo
+            // restante a partir do relógio absoluto (sessionEndsAt) sempre que ele
+            // existe. Isso faz o timer "pular" direto pro valor certo ao voltar do
+            // background, em vez de continuar contando como se nada tivesse acontecido.
+            const real = sessionEndsAt !== null
+                ? Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000))
+                : null;
+
             setTimeRemaining(prev => {
-                // Decrementa o tempo
-                if (prev > 1) {
-                    return prev - 1;
+                const next = real !== null ? real : prev - 1;
+                if (next > 0) {
+                    return next;
                 }
 
                 // --- Fim de um intervalo (foco ou pausa) ---
@@ -189,7 +207,10 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                         if (uiEffects.breakStart) playEffect(uiEffects.breakStart);
                         setSessionStatus('break');
                         setTimeRemaining(breakDuration);
-                        postMessageToSW({ type: 'SCHEDULE_NOTIFICATION', payload: { title: 'Pausa Merecida!', body: `Sua pausa de ${breakDuration / 60} minutos começou.`, timestamp: Date.now() + breakDuration * 1000 } });
+                        const endsAt = Date.now() + breakDuration * 1000;
+                        setSessionEndsAt(endsAt);
+                        schedulePhaseEndNotification('Pausa Merecida!', `Sua pausa de ${breakDuration / 60} minutos começou.`, endsAt);
+                        showOngoingSessionNotification(activeTaskTitle || 'Tarefa', 'break', endsAt);
                     }
                 } else if (sessionStatus === 'break') {
                     // --- Fim da Pausa ---
@@ -197,7 +218,10 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                     setCurrentCycle(c => c + 1);
                     setSessionStatus('focus');
                     setTimeRemaining(focusDuration);
-                    postMessageToSW({ type: 'SCHEDULE_NOTIFICATION', payload: { title: 'De volta ao Foco!', body: `Seu bloco de trabalho de ${focusDuration / 60} minutos começou.`, timestamp: Date.now() + focusDuration * 1000 } });
+                    const endsAt = Date.now() + focusDuration * 1000;
+                    setSessionEndsAt(endsAt);
+                    schedulePhaseEndNotification('De volta ao Foco!', `Seu bloco de trabalho de ${focusDuration / 60} minutos começou.`, endsAt);
+                    showOngoingSessionNotification(activeTaskTitle || 'Tarefa', 'focus', endsAt);
                 }
 
                 return 0;
@@ -207,7 +231,22 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [mode, sessionStatus, isPaused, activeTaskId, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog]);
+    }, [mode, sessionStatus, isPaused, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, sessionEndsAt, setSessionEndsAt]);
+
+    // [NOVO] Quando o app volta ao primeiro plano (depois de minimizado/fechado),
+    // força uma reavaliação imediata — não espera o próximo tick de 1s — pra
+    // corrigir a tela assim que possível, inclusive completando a fase se ela já
+    // tiver terminado enquanto o app estava fora do ar.
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+        const sub = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+            if (isActive && sessionStatus !== 'idle' && !isPaused && sessionEndsAt !== null) {
+                const real = Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000));
+                setTimeRemaining(real);
+            }
+        });
+        return () => { sub.then(s => s.remove()); };
+    }, [sessionStatus, isPaused, sessionEndsAt]);
 
     const startPomodoro = useCallback((settings: PomodoroSettings) => {
         stopAndReset();
@@ -231,26 +270,28 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setIsPaused(false);
         
         if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
-        postMessageToSW({
-            type: 'SCHEDULE_NOTIFICATION',
-            payload: {
-                title: 'Foco Terminado!',
-                body: `A tarefa "${settings.taskTitle}" espera por você.`,
-                timestamp: Date.now() + newFocusDuration * 1000,
-            },
-        });
-    }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset]);
+        const endsAt = Date.now() + newFocusDuration * 1000;
+        setSessionEndsAt(endsAt);
+        schedulePhaseEndNotification('Foco Terminado!', `A tarefa "${settings.taskTitle}" espera por você.`, endsAt);
+        showOngoingSessionNotification(settings.taskTitle, 'focus', endsAt);
+    }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
 
     const pauseCycle = useCallback(() => {
         if (sessionStatus !== 'idle') {
             setIsPaused(true);
-            postMessageToSW({ type: 'CANCEL_NOTIFICATION' });
+            cancelPomodoroNotifications();
         }
     }, [sessionStatus]);
 
     const resumeCycle = useCallback(() => {
         if (sessionStatus !== 'idle') {
             setIsPaused(false);
+            // Pausar "congela" o relógio; ao retomar, o fim da fase desloca pra
+            // frente pelo tanto que ficou pausado — recalculado a partir do
+            // timeRemaining atual, que é a fonte confiável durante a pausa.
+            const endsAt = Date.now() + timeRemaining * 1000;
+            setSessionEndsAt(endsAt);
+            showOngoingSessionNotification(activeTaskTitle || 'Tarefa', sessionStatus === 'focus' ? 'focus' : 'break', endsAt);
             const notificationBody = sessionStatus === 'focus' 
                 ? `Foco em "${activeTaskTitle}" termina em breve.`
                 : 'Sua pausa está quase no fim.';

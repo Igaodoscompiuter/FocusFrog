@@ -89,3 +89,4 @@ android/local.properties
 android/app/release/
 *.apk
 *.aab
+android/local.properties

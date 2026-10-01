@@ -75,6 +75,8 @@ export interface Routine {
   description: string;
   taskTemplateIds: number[];
   isDefault?: boolean; 
+  /** Horário (HH:MM, 24h) em que uma notificação diária convida a iniciar esta rotina. */
+  scheduledTime?: string;
 }
 
 export interface ChecklistItem {

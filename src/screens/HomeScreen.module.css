@@ -15,11 +15,20 @@
 }
 
 .dashboardHeader {
+    /* [CORREÇÃO] Antes ficava preso ao padding horizontal do .contentWrapper
+       (16px de cada lado), apesar do border-radius já indicar a intenção de
+       ser um cabeçalho full-bleed (o .screen-content pai, aliás, já remove o
+       padding horizontal de propósito pra permitir isso — só o dashboardHeader
+       tinha ficado de fora). A margem negativa "fura" o padding do
+       .contentWrapper; o padding interno compensa pro conteúdo não colar nas
+       bordas. A área segura (notch/status bar) já é tratada pelo .screen-content
+       (padding-top: var(--safe-top)), então não repete aqui. */
+    margin-left: calc(-1 * var(--sp-lg));
+    margin-right: calc(-1 * var(--sp-lg));
+    margin-bottom: var(--sp-lg);
     padding: var(--sp-xl) var(--sp-lg);
     color: var(--text-on-primary);
     border-radius: 0 0 24px 24px;
-    /* Adicionando uma margem inferior para separar o cabeçalho do conteúdo abaixo */
-    margin-bottom: var(--sp-lg);
 }
 
 .greetingContent {
