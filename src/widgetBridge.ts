@@ -8,8 +8,24 @@ const WIDGET_PREFS_KEY = 'leavingHomeItems';
 /** Plugin nativo próprio (não vem de pacote npm) — só existe no Android. */
 interface WidgetBridgePlugin {
   refreshChecklistWidget(): Promise<void>;
+  requestPinWidget(): Promise<{ supported: boolean; requested?: boolean; reason?: string }>;
 }
 const WidgetBridge = registerPlugin<WidgetBridgePlugin>('WidgetBridge');
+
+/**
+ * Pede pro Android mostrar o diálogo nativo de "adicionar widget à tela
+ * inicial" — sem precisar explicar o caminho manual pro usuário.
+ * Devolve `supported: false` em launchers/versões do Android que não
+ * suportam esse atalho, pra quem chamar decidir como orientar o usuário.
+ */
+export async function requestPinChecklistWidget(): Promise<{ supported: boolean; reason?: string }> {
+  if (!Capacitor.isNativePlatform()) return { supported: false, reason: 'web' };
+  try {
+    return await WidgetBridge.requestPinWidget();
+  } catch {
+    return { supported: false, reason: 'error' };
+  }
+}
 
 /**
  * Espelha o checklist "Já pegou?" pra um arquivo de SharedPreferences que o

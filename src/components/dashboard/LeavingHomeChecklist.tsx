@@ -1,9 +1,12 @@
 
 import React, { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import { ChecklistModal } from '../modals/ChecklistModal';
 import type { ChecklistItem } from '../../types';
+import { useUI } from '../../context/UIContext';
+import { requestPinChecklistWidget } from '../../widgetBridge';
 import styles from './LeavingHomeChecklist.module.css';
 
 interface LeavingHomeChecklistProps {
@@ -19,6 +22,19 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const { addNotification } = useUI();
+
+    const handlePinWidget = async () => {
+        const { supported, reason } = await requestPinChecklistWidget();
+        if (!supported) {
+            const msg = reason === 'launcher_unsupported'
+                ? 'Sua tela inicial não aceita esse atalho — adicione segurando um espaço vazio dela e procurando "FocusFrog" em Widgets.'
+                : 'Esse atalho precisa do app instalado no celular (não funciona aqui no navegador).';
+            addNotification(msg, 'ℹ️', 'info');
+        }
+        // Quando suportado, o próprio Android já mostra o diálogo de confirmação —
+        // não precisa de mais nada daqui.
+    };
 
     if (!items || items.length === 0) {
         return null; 
@@ -44,6 +60,15 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
                 <div className={styles.header}>
                     <h3><Icon path={icons.briefcase} /> Já pegou?</h3>
                     <div className={styles.buttonGroup}>
+                        {Capacitor.isNativePlatform() && !isEditing && (
+                            <button
+                                className="btn btn-icon btn-secondary btn-small"
+                                onClick={handlePinWidget}
+                                title="Adicionar à tela inicial"
+                            >
+                                <Icon path={icons.layoutGrid} />
+                            </button>
+                        )}
                         {!isEditing ? (
                              <button 
                                 className="btn btn-icon btn-secondary btn-small"
