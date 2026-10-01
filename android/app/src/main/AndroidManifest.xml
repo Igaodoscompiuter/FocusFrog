@@ -27,6 +27,21 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Serviço em primeiro plano: mantém a sessão de foco (Pomodoro) ativa e visível
+             (notificação fixa) mesmo com o app minimizado, igual um player de música.
+             Tipo "specialUse": nenhuma das categorias pré-definidas do Android (localização,
+             mídia, saúde etc.) descreve um timer de produtividade — ao publicar na Play,
+             esse tipo é revisado manualmente, então a justificativa abaixo precisa bater com
+             o motivo real de uso. -->
+        <service
+            android:name="io.capawesome.capacitorjs.plugins.foregroundservice.AndroidForegroundService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Mantém visível o cronômetro de uma sessão de foco (Pomodoro) em andamento, com notificação fixa mostrando o tempo restante, mesmo com o app em segundo plano." />
+        </service>
     </application>
 
     <!-- Permissions -->
@@ -34,4 +49,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Notificação de fim de foco/pausa precisa disparar mesmo com o app fechado -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Serviço em primeiro plano do Pomodoro (ver <service> acima) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 </manifest>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -7,6 +7,15 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!-- [CORREÇÃO] Android 15 (API 35+) força layout edge-to-edge por padrão, o que
+             quebra StatusBar.setBackgroundColor() (a doc oficial do Capacitor confirma:
+             "Not available on Android 15+") e também o cálculo de área segura do CSS,
+             cortando conteúdo embaixo da barra de status. Esse atributo ainda funciona
+             na API 35, mas para de existir na API 36 — quando subirmos o targetSdk pra
+             36 (exigência da Play a partir de 31/08/2026), isso precisa virar uma view
+             nativa desenhada atrás da barra de status (abordagem recomendada pelo
+             Google pra edge-to-edge de verdade), não dá pra só reverter de novo. -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">

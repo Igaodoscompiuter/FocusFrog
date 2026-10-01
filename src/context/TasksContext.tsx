@@ -6,7 +6,7 @@ import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
 import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
-import { syncRoutineNotifications } from '../notifications';
+import { syncRoutineNotifications, scheduleFrogReminder, cancelFrogReminder } from '../notifications';
 
 type CompletionMethod = 'timer' | 'button' | 'subtask';
 
@@ -91,6 +91,23 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     useEffect(() => {
         syncRoutineNotifications(routines);
     }, [routines]);
+
+    // Lembrete do Sapo do Dia: se passar um tempo e a tarefa escolhida ainda não
+    // tiver sido concluída, um empurrãozinho. Reagenda sempre que o Sapo do Dia
+    // muda; cancela se a tarefa for concluída, trocada ou removida.
+    const FROG_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000; // 3 horas
+    useEffect(() => {
+        const frogTask = frogTaskId ? tasks.find(t => t.id === frogTaskId) : null;
+        if (frogTask && frogTask.status !== 'done') {
+            scheduleFrogReminder(frogTask.title, FROG_REMINDER_DELAY_MS);
+        } else {
+            cancelFrogReminder();
+        }
+        // Só precisa reagir à troca do Sapo do Dia ou à conclusão da tarefa em si —
+        // não a toda mudança em `tasks` (evitaria reagendar o lembrete a cada edição
+        // de qualquer outra tarefa da lista).
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [frogTaskId, frogTaskId ? tasks.find(t => t.id === frogTaskId)?.status : null]);
     const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
 
     const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);

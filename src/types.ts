@@ -77,6 +77,10 @@ export interface Routine {
   isDefault?: boolean; 
   /** Horário (HH:MM, 24h) em que uma notificação diária convida a iniciar esta rotina. */
   scheduledTime?: string;
+  /** 'alarm' = notificação de prioridade máxima (vibra forte, aparece por cima de
+   *  outros apps) — pra rotinas que não podem ser ignoradas, tipo a da manhã.
+   *  'normal' (ou ausente) = lembrete discreto, como qualquer outra notificação. */
+  alarmMode?: 'normal' | 'alarm';
 }
 
 export interface ChecklistItem {

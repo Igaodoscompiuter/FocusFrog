@@ -109,10 +109,19 @@
 
 .emptyPondMessage {
   text-align: center;
-  color: var(--text-color);
-  opacity: 0.8;
+  color: #ffffff;
   align-self: center;
   margin: auto;
+  /* [CORREÇÃO] Antes era texto solto por cima da ilustração do lago (peixe/garça),
+     ilegível por falta de contraste. Agora tem um fundo discreto + sombra de texto. */
+  position: relative;
+  z-index: 2;
+  max-width: 80%;
+  padding: var(--sp-sm) var(--sp-md);
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--border-radius-lg);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
 }
 
 .rewardContainer {

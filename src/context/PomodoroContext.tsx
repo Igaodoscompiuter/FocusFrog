@@ -7,7 +7,7 @@ import { useUI } from './UIContext';
 import { useUser } from './UserContext';
 import { uiEffects } from '../sounds';
 import { postMessageToSW } from '../sw-helpers';
-import { schedulePhaseEndNotification, showOngoingSessionNotification, cancelPomodoroNotifications } from '../notifications';
+import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
 
 export type PomodoroMode = 'quick' | 'classic';
@@ -210,7 +210,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                         const endsAt = Date.now() + breakDuration * 1000;
                         setSessionEndsAt(endsAt);
                         schedulePhaseEndNotification('Pausa Merecida!', `Sua pausa de ${breakDuration / 60} minutos começou.`, endsAt);
-                        showOngoingSessionNotification(activeTaskTitle || 'Tarefa', 'break', endsAt);
+                        startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'break', endsAt);
                     }
                 } else if (sessionStatus === 'break') {
                     // --- Fim da Pausa ---
@@ -221,7 +221,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                     const endsAt = Date.now() + focusDuration * 1000;
                     setSessionEndsAt(endsAt);
                     schedulePhaseEndNotification('De volta ao Foco!', `Seu bloco de trabalho de ${focusDuration / 60} minutos começou.`, endsAt);
-                    showOngoingSessionNotification(activeTaskTitle || 'Tarefa', 'focus', endsAt);
+                    startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'focus', endsAt);
                 }
 
                 return 0;
@@ -273,7 +273,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         const endsAt = Date.now() + newFocusDuration * 1000;
         setSessionEndsAt(endsAt);
         schedulePhaseEndNotification('Foco Terminado!', `A tarefa "${settings.taskTitle}" espera por você.`, endsAt);
-        showOngoingSessionNotification(settings.taskTitle, 'focus', endsAt);
+        startOrUpdateFocusForegroundService(settings.taskTitle, 'focus', endsAt);
     }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
 
     const pauseCycle = useCallback(() => {
@@ -291,7 +291,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             // timeRemaining atual, que é a fonte confiável durante a pausa.
             const endsAt = Date.now() + timeRemaining * 1000;
             setSessionEndsAt(endsAt);
-            showOngoingSessionNotification(activeTaskTitle || 'Tarefa', sessionStatus === 'focus' ? 'focus' : 'break', endsAt);
+            startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', sessionStatus === 'focus' ? 'focus' : 'break', endsAt);
             const notificationBody = sessionStatus === 'focus' 
                 ? `Foco em "${activeTaskTitle}" termina em breve.`
                 : 'Sua pausa está quase no fim.';

@@ -219,26 +219,48 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                         ) : (
                             <>
                                 <div className="form-group"><label>Nome da Rotina</label><input type="text" className="g-input" value={routine.name || ''} onChange={e => handleFieldChange('name', e.target.value)} placeholder="Ex: Preparação para a Semana"/></div>
-                                <div className="form-group">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!routine.scheduledTime}
-                                            onChange={e => handleFieldChange('scheduledTime', e.target.checked ? '07:00' : undefined)}
-                                        /> Lembrar todo dia num horário
-                                    </label>
-                                    {routine.scheduledTime && (
-                                        <input
-                                            type="time"
-                                            className="g-input"
-                                            value={routine.scheduledTime}
-                                            onChange={e => handleFieldChange('scheduledTime', e.target.value)}
-                                        />
-                                    )}
-                                </div>
                                 <div className="form-group"><label>Ícone</label><div className={styles.iconSelector}>{routineIcons.map(iconName => (<button key={iconName} className={routine.icon === iconName ? styles.active : ''} onClick={() => handleFieldChange('icon', iconName)}><Icon path={icons[iconName]} /></button>))}</div></div>
                             </>
                         )}
+
+                        {/* [CORREÇÃO] Agendamento disponível pra QUALQUER rotina, inclusive as
+                            padrão — antes ficava preso dentro do bloco "só rotina nova". */}
+                        <div className="form-group">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={!!routine.scheduledTime}
+                                    onChange={e => handleFieldChange('scheduledTime', e.target.checked ? '07:00' : undefined)}
+                                /> Lembrar todo dia num horário
+                            </label>
+                            {routine.scheduledTime && (
+                                <>
+                                    <input
+                                        type="time"
+                                        className="g-input"
+                                        value={routine.scheduledTime}
+                                        onChange={e => handleFieldChange('scheduledTime', e.target.value)}
+                                    />
+                                    <div className={styles.segmentedControl} style={{ marginTop: 'var(--sp-sm)' }}>
+                                        <button
+                                            type="button"
+                                            className={`${styles.segment} ${routine.alarmMode !== 'alarm' ? styles.active : ''}`}
+                                            onClick={() => handleFieldChange('alarmMode', 'normal')}
+                                        >Normal</button>
+                                        <button
+                                            type="button"
+                                            className={`${styles.segment} ${routine.alarmMode === 'alarm' ? styles.active : ''}`}
+                                            onClick={() => handleFieldChange('alarmMode', 'alarm')}
+                                        >⏰ Alarme</button>
+                                    </div>
+                                    <small style={{ color: 'var(--text-secondary-color)', display: 'block', marginTop: 'var(--sp-xs)' }}>
+                                        {routine.alarmMode === 'alarm'
+                                            ? 'Toca mais forte e aparece por cima de outros apps — pra rotinas que não podem ser ignoradas.'
+                                            : 'Lembrete discreto, como as outras notificações do app.'}
+                                    </small>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     <div className={styles.taskCreationBlock}>
