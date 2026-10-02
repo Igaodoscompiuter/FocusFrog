@@ -4,31 +4,62 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_background"
-    android:padding="12dp">
+    android:padding="14dp">
 
+    <!-- Cabeçalho: ícone + título + progresso "X/Y" + botão de resetar -->
     <LinearLayout
-        android:id="@+id/widget_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="8dp">
+        android:gravity="center_vertical">
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_stat_frog" />
-
-        <TextView
+        <LinearLayout
+            android:id="@+id/widget_header"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Já pegou?"
-            android:textColor="#F3F4F6"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="7dp"
+                android:src="@drawable/ic_stat_frog" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Já pegou?"
+                android:textColor="#F3F4F6"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text=""
+                android:textColor="#9CA3AF"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/widget_reset_button"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:padding="6dp"
+            android:background="@drawable/widget_icon_button_bg"
+            android:src="@drawable/widget_reset_icon" />
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="6dp"
+        android:background="#2D3748" />
 
     <!-- Linha 1 -->
     <LinearLayout
@@ -37,8 +68,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:minHeight="36dp">
         <ImageView android:id="@+id/widget_icon_1" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
         <TextView android:id="@+id/widget_text_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
     </LinearLayout>
@@ -50,8 +80,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:minHeight="36dp">
         <ImageView android:id="@+id/widget_icon_2" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
         <TextView android:id="@+id/widget_text_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
     </LinearLayout>
@@ -63,8 +92,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:minHeight="36dp">
         <ImageView android:id="@+id/widget_icon_3" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
         <TextView android:id="@+id/widget_text_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
     </LinearLayout>
@@ -76,8 +104,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:minHeight="36dp">
         <ImageView android:id="@+id/widget_icon_4" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
         <TextView android:id="@+id/widget_text_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
     </LinearLayout>
@@ -89,10 +116,21 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:minHeight="36dp">
         <ImageView android:id="@+id/widget_icon_5" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
         <TextView android:id="@+id/widget_text_5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
     </LinearLayout>
+
+    <!-- Estado vazio (só aparece quando não há nenhum item) -->
+    <TextView
+        android:id="@+id/widget_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="Nenhum item ainda. Abra o app pra adicionar."
+        android:textColor="#9CA3AF"
+        android:textSize="12sp"
+        android:visibility="gone" />
 
 </LinearLayout>

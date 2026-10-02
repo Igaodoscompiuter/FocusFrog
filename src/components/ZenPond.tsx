@@ -249,7 +249,7 @@ export const ZenPond: React.FC<ZenPondProps> = ({ collectedFrogs, children }) =>
               className={styles.frogWrapper}
             >
               <div className={styles.collisionBarrier} />
-              <ZenFrog speciesId={frog.speciesId} stage="adult" />
+              <ZenFrog speciesId={frog.speciesId} stage="adult" top={frog.top} left={frog.left} />
             </motion.div>
           ))
         ) : (

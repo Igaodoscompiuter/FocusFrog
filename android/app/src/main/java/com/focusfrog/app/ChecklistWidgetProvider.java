@@ -29,6 +29,7 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
     private static final String PREFS_NAME = "CapacitorStorage";
     private static final String PREFS_KEY = "leavingHomeItems";
     public static final String ACTION_TOGGLE = "com.focusfrog.app.WIDGET_TOGGLE_ITEM";
+    public static final String ACTION_RESET_ALL = "com.focusfrog.app.WIDGET_RESET_ALL";
     public static final String EXTRA_ITEM_ID = "item_id";
     private static final int MAX_ITEMS = 5;
 
@@ -40,12 +41,34 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, android.os.Bundle newOptions) {
+        // Disparado quando o usuário redimensiona o widget na tela inicial —
+        // recalcula quantas linhas cabem de verdade no novo tamanho.
+        updateWidget(context, appWidgetManager, appWidgetId);
+    }
+
+    /** Quantas linhas cabem de verdade na altura atual do widget (o usuário pode
+     *  redimensionar livremente) — evita tanto cortar item quanto sobrar vão vazio. */
+    private static int computeVisibleRows(AppWidgetManager appWidgetManager, int appWidgetId) {
+        android.os.Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        int heightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
+        if (heightDp <= 0) return MAX_ITEMS; // sem informação ainda (1ª renderização) — assume o máximo
+        // ~14dp de padding em cada ponta + ~34dp de cabeçalho/divisor + ~36dp por linha.
+        int available = (heightDp - 14 - 14 - 34) / 36;
+        return Math.max(1, Math.min(MAX_ITEMS, available));
+    }
+
+    @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (ACTION_TOGGLE.equals(intent.getAction())) {
-            String itemId = intent.getStringExtra(EXTRA_ITEM_ID);
-            if (itemId != null) {
-                toggleItem(context, itemId);
+        boolean isToggle = ACTION_TOGGLE.equals(intent.getAction());
+        boolean isReset = ACTION_RESET_ALL.equals(intent.getAction());
+        if (isToggle || isReset) {
+            if (isToggle) {
+                String itemId = intent.getStringExtra(EXTRA_ITEM_ID);
+                if (itemId != null) toggleItem(context, itemId);
+            } else {
+                resetAllItems(context);
             }
             // Atualiza todas as instâncias do widget imediatamente, sem esperar
             // o próximo ciclo automático do Android (esse pode levar até 30min).
@@ -64,6 +87,21 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         int[] ids = mgr.getAppWidgetIds(new ComponentName(context, ChecklistWidgetProvider.class));
         for (int id : ids) {
             updateWidget(context, mgr, id);
+        }
+    }
+
+    /** Botão de "desmarcar tudo" — zera o completed de todo mundo de uma vez. */
+    private static void resetAllItems(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String raw = prefs.getString(PREFS_KEY, "[]");
+        try {
+            JSONArray items = new JSONArray(raw);
+            for (int i = 0; i < items.length(); i++) {
+                items.getJSONObject(i).put("completed", false);
+            }
+            prefs.edit().putString(PREFS_KEY, items.toString()).apply();
+        } catch (Exception e) {
+            // JSON malformado ou ausente: ignora o toque.
         }
     }
 
@@ -108,8 +146,31 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
             items = new JSONArray();
         }
 
-        int count = Math.min(items.length(), MAX_ITEMS);
+        // Progresso "X/Y" no cabeçalho + estado vazio quando não há item nenhum.
+        int total = items.length();
+        int done = 0;
+        for (int i = 0; i < total; i++) {
+            JSONObject it = items.optJSONObject(i);
+            if (it != null && it.optBoolean("completed", false)) done++;
+        }
+        views.setTextViewText(R.id.widget_progress, total > 0 ? ("(" + done + "/" + total + ")") : "");
+        views.setViewVisibility(R.id.widget_empty_state, total == 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+
+        // Botão de resetar tudo.
+        Intent resetIntent = new Intent(context, ChecklistWidgetProvider.class);
+        resetIntent.setAction(ACTION_RESET_ALL);
+        PendingIntent resetPi = PendingIntent.getBroadcast(
+            context, appWidgetId * 10 + 9, resetIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        views.setOnClickPendingIntent(R.id.widget_reset_button, resetPi);
+
+        int visibleRows = computeVisibleRows(appWidgetManager, appWidgetId);
+        int count = Math.min(items.length(), visibleRows);
         for (int i = 0; i < MAX_ITEMS; i++) {
+            if (i >= visibleRows) {
+                views.setViewVisibility(rowLayoutIds[i], android.view.View.GONE);
+                continue;
+            }
             if (i < count) {
                 try {
                     JSONObject item = items.getJSONObject(i);
@@ -129,6 +190,9 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
                         "setPaintFlags",
                         completed ? (android.graphics.Paint.STRIKE_THRU_TEXT_FLAG | android.graphics.Paint.ANTI_ALIAS_FLAG) : android.graphics.Paint.ANTI_ALIAS_FLAG
                     );
+                    // Além do strikethrough, esmaece o texto do que já foi feito —
+                    // reforça a hierarquia visual (pendente chama mais atenção).
+                    views.setInt(rowTextIds[i], "setTextColor", completed ? 0xFF6B7280 : 0xFFF3F4F6);
 
                     Intent toggleIntent = new Intent(context, ChecklistWidgetProvider.class);
                     toggleIntent.setAction(ACTION_TOGGLE);

@@ -13,65 +13,74 @@
 
 .card {
   width: 100%;
-  max-width: 320px;
+  max-width: 300px;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-xl);
-  padding: var(--sp-xl) var(--sp-lg) var(--sp-lg);
-  text-align: center;
+  padding: var(--sp-lg);
   position: relative;
   overflow: hidden;
-  animation: popIn 0.35s cubic-bezier(.2, .8, .3, 1.2);
+  animation: popIn 0.3s cubic-bezier(.2, .8, .3, 1.2);
 }
 @keyframes popIn {
-  from { transform: scale(0.8) translateY(10px); opacity: 0; }
+  from { transform: scale(0.85) translateY(8px); opacity: 0; }
   to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--sp-sm);
+  right: var(--sp-sm);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--background-color-hover);
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
 }
 
 .glow {
   position: absolute;
-  top: -40%;
+  top: -35%;
   left: 50%;
   transform: translateX(-50%);
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   pointer-events: none;
   filter: blur(10px);
 }
-.glow.common { background: radial-gradient(closest-side, rgba(139, 195, 74, 0.35), transparent 70%); }
-.glow.rare { background: radial-gradient(closest-side, rgba(79, 195, 247, 0.4), transparent 70%); }
-.glow.epic { background: radial-gradient(closest-side, rgba(251, 191, 36, 0.5), transparent 70%); animation: pulse 1.8s ease-in-out infinite; }
+.glow.common { background: radial-gradient(closest-side, rgba(139, 195, 74, 0.3), transparent 70%); }
+.glow.rare { background: radial-gradient(closest-side, rgba(79, 195, 247, 0.35), transparent 70%); }
+.glow.epic { background: radial-gradient(closest-side, rgba(251, 191, 36, 0.45), transparent 70%); animation: pulse 1.8s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
-
-.eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary-color);
-  margin: 0 0 var(--sp-sm) 0;
-}
 
 .frogStage {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   margin: 0 auto var(--sp-sm);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-/* ZenFrog tem 56px fixos — amplia a arte em vez de deixá-la pequena no cartão. */
-.frogStage > div > div { transform: scale(2.2); }
+/* a própria ZenFrog tem 56px fixos — amplia só a área ao redor, a arte escala via transform */
+.frogStage > div > div { transform: scale(2); }
 
 .badge {
-  display: inline-block;
+  display: block;
+  width: fit-content;
+  margin: 0 auto var(--sp-xs);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 10px;
   border-radius: 999px;
-  margin-bottom: var(--sp-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -81,19 +90,9 @@
 
 .name {
   font-family: var(--font-poppins);
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-color);
-  margin: 0 0 var(--sp-xs) 0;
-}
-
-.description {
-  font-size: 0.9rem;
-  color: var(--text-secondary-color);
-  margin: 0 0 var(--sp-lg) 0;
-  line-height: 1.4;
-}
-
-.button {
-  width: 100%;
+  text-align: center;
+  margin: 0;
 }

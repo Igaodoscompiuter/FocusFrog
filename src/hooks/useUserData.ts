@@ -80,9 +80,9 @@ export const useUserData = () => {
 
             // Notifica o usuário com base em ser uma nova descoberta ou uma duplicata.
             if (isNewDiscovery) {
-                addNotification(`Novo Sapo Coletado!`, `Você descobriu o ${speciesName}!`, 'success');
+                addNotification(`Você descobriu o ${speciesName}!`, '🐸', 'success');
             } else {
-                addNotification(`Mais um Sapo!`, `Você coletou outro ${speciesName}!`, 'success');
+                addNotification(`Mais um ${speciesName} coletado!`, '🐸', 'success');
             }
         } catch (error) {
             console.error("Falha ao adicionar sapo à coleção:", error);
@@ -105,7 +105,7 @@ export const useUserData = () => {
             URL.revokeObjectURL(url);
             addNotification('Dados exportados com sucesso!', '👍', 'success');
         } catch (error) {
-            addNotification('Falha na exportação.', 'Ocorreu um erro ao criar o arquivo de backup.', 'error');
+            addNotification('Falha na exportação — erro ao criar o arquivo de backup.', '❌', 'error');
             console.error(error);
         }
     }, [addNotification]);
@@ -116,10 +116,10 @@ export const useUserData = () => {
             try {
                 const data = JSON.parse(event.target?.result as string);
                 restoreLocalStorageFromBackupObject(data);
-                addNotification('Importação Concluída', 'Seus dados foram restaurados. A página será recarregada.', 'success');
+                addNotification('Importação concluída — seus dados foram restaurados. Recarregando...', '✅', 'success');
                 setTimeout(() => window.location.reload(), 2000);
             } catch (error) {
-                addNotification('Arquivo Inválido', 'O arquivo selecionado não parece ser um backup válido do FocusFrog.', 'error');
+                addNotification('Arquivo inválido — isso não parece um backup do FocusFrog.', '❌', 'error');
                 console.error(error);
             }
         };
@@ -128,7 +128,7 @@ export const useUserData = () => {
 
     const resetData = useCallback(() => {
         USER_DATA_KEYS.forEach(key => localStorage.removeItem(key));
-        addNotification('Dados Resetados', 'Suas informações locais foram apagadas. A página será recarregada.', 'success');
+        addNotification('Dados resetados — suas informações locais foram apagadas. Recarregando...', '🗑️', 'success');
         setTimeout(() => window.location.reload(), 1500);
     }, [addNotification]);
     
