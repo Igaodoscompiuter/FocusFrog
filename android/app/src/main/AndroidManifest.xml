@@ -35,7 +35,7 @@
              esse tipo é revisado manualmente, então a justificativa abaixo precisa bater com
              o motivo real de uso. -->
         <service
-            android:name="io.capawesome.capacitorjs.plugins.foregroundservice.AndroidForegroundService"
+            android:name=".PomodoroForegroundService"
             android:foregroundServiceType="specialUse"
             android:exported="false">
             <property

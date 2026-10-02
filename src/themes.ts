@@ -38,6 +38,17 @@ export interface Theme {
     '--quadrant-schedule-bg': string;
     '--quadrant-delegate-bg': string;
     '--quadrant-eliminate-bg': string;
+
+    /* Usadas por Toast.module.css (e outros) — faltavam por completo antes. */
+    '--warning-color': string;
+    '--info-color': string;
+    '--primary-color-translucent': string;
+    /** Componentes RGB (sem o #, separados por vírgula) de --surface-color,
+     *  pra usar dentro de rgba(var(--surface-rgb), alpha). */
+    '--surface-rgb': string;
+    /** O mesmo, mas de --text-color. */
+    '--text-rgb': string;
+    '--danger-color-translucent': string;
   };
   preview: string;
 }
@@ -74,6 +85,12 @@ export const themes: { [key: string]: Theme } = {
       '--quadrant-schedule-bg': '#dbeafe',
       '--quadrant-delegate-bg': '#fef3c7',
       '--quadrant-eliminate-bg': '#e5e7eb',
+      '--warning-color': '#f59e0b',
+      '--info-color': '#2563eb',
+      '--primary-color-translucent': 'rgba(37, 99, 235, 0.35)',
+      '--surface-rgb': '255, 255, 255',
+      '--text-rgb': '31, 41, 55',
+      '--danger-color-translucent': 'rgba(220, 38, 38, 0.15)',
     },
     preview: 'linear-gradient(to bottom right, #f3f4f6, #ffffff)',
   },
@@ -108,6 +125,12 @@ export const themes: { [key: string]: Theme } = {
       '--quadrant-schedule-bg': 'rgba(59, 130, 246, 0.1)',
       '--quadrant-delegate-bg': 'rgba(245, 158, 11, 0.1)',
       '--quadrant-eliminate-bg': 'rgba(107, 114, 128, 0.1)',
+      '--warning-color': '#FBBF24',
+      '--info-color': '#3B82F6',
+      '--primary-color-translucent': 'rgba(59, 130, 246, 0.35)',
+      '--surface-rgb': '31, 41, 55',
+      '--text-rgb': '243, 244, 246',
+      '--danger-color-translucent': 'rgba(239, 68, 68, 0.15)',
     },
     preview: 'linear-gradient(to bottom right, #1F2937, #111827)',
   },
@@ -142,6 +165,12 @@ export const themes: { [key: string]: Theme } = {
       '--quadrant-schedule-bg': '#C6F6D5',
       '--quadrant-delegate-bg': '#FEEBC8',
       '--quadrant-eliminate-bg': '#E2E8F0',
+      '--warning-color': '#DD6B20',
+      '--info-color': '#2F855A',
+      '--primary-color-translucent': 'rgba(47, 133, 90, 0.35)',
+      '--surface-rgb': '255, 255, 255',
+      '--text-rgb': '45, 55, 72',
+      '--danger-color-translucent': 'rgba(197, 48, 48, 0.15)',
     },
     preview: 'linear-gradient(to bottom right, #F0FFF4, #C6F6D5)',
   },
@@ -176,6 +205,12 @@ export const themes: { [key: string]: Theme } = {
       '--quadrant-schedule-bg': '#BEE3F8',
       '--quadrant-delegate-bg': '#FEFCBF',
       '--quadrant-eliminate-bg': '#E2E8F0',
+      '--warning-color': '#F6E05E',
+      '--info-color': '#3182CE',
+      '--primary-color-translucent': 'rgba(49, 130, 206, 0.35)',
+      '--surface-rgb': '255, 255, 255',
+      '--text-rgb': '42, 67, 101',
+      '--danger-color-translucent': 'rgba(229, 62, 62, 0.15)',
     },
     preview: 'linear-gradient(to bottom right, #EBF8FF, #BEE3F8)',
   },
@@ -210,6 +245,12 @@ export const themes: { [key: string]: Theme } = {
       '--quadrant-schedule-bg': '#FBB6CE',
       '--quadrant-delegate-bg': '#FEEBC8',
       '--quadrant-eliminate-bg': '#E2E8F0',
+      '--warning-color': '#ED8936',
+      '--info-color': '#D53F8C',
+      '--primary-color-translucent': 'rgba(213, 63, 140, 0.35)',
+      '--surface-rgb': '255, 255, 255',
+      '--text-rgb': '74, 85, 104',
+      '--danger-color-translucent': 'rgba(197, 48, 48, 0.15)',
     },
     preview: 'linear-gradient(to bottom right, #FFF5F7, #FED7E2)',
   }

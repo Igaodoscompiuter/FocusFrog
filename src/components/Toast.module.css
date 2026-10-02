@@ -72,5 +72,5 @@
     border-radius: var(--border-radius-md);
 }
 .actionButton:hover {
-    background-color: var(--surface-highlight-color);
+    background-color: var(--background-color-hover);
 }

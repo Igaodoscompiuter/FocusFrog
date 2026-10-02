@@ -7,15 +7,16 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <!-- [CORREÇÃO] Android 15 (API 35+) força layout edge-to-edge por padrão, o que
-             quebra StatusBar.setBackgroundColor() (a doc oficial do Capacitor confirma:
-             "Not available on Android 15+") e também o cálculo de área segura do CSS,
-             cortando conteúdo embaixo da barra de status. Esse atributo ainda funciona
-             na API 35, mas para de existir na API 36 — quando subirmos o targetSdk pra
-             36 (exigência da Play a partir de 31/08/2026), isso precisa virar uma view
-             nativa desenhada atrás da barra de status (abordagem recomendada pelo
-             Google pra edge-to-edge de verdade), não dá pra só reverter de novo. -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+        <!-- Cor da barra de status já no tema nativo, pra aparecer certa desde o
+             1º frame (sem esperar o JS do StatusBar plugin rodar e sem depender
+             de nenhum hack de edge-to-edge). -->
+        <item name="android:statusBarColor">@color/statusBarColor</item>
+        <!-- [CORREÇÃO DE VERDADE] A tentativa anterior (windowOptOutEdgeToEdgeEnforcement
+             sozinho) não bastava — o próprio fórum oficial do Capacitor confirma que isso
+             sozinho não resolve, e esse atributo é desativado no Android 16. A solução
+             oficial e definitiva é a config adjustMarginsForEdgeToEdge do Capacitor
+             (ver capacitor.config.json), que já faz tudo isso certo e vai virar o padrão
+             no Capacitor 8 — então nada precisa ficar aqui no tema. -->
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">

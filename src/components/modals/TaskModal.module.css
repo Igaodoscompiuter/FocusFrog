@@ -47,10 +47,10 @@
 .matrixResult .resultSubtitle { font-size: var(--font-size-sm); line-height: var(--line-height-sm); opacity: 0.9; display: block; }
 
 .quadrant-inbox { background-color: var(--surface-secondary-color); }
-.quadrant-do { background-color: var(--color-success); color: #fff; }
-.quadrant-schedule { background-color: var(--color-primary); color: #fff; }
-.quadrant-delegate { background-color: var(--color-warning); color: #fff; }
-.quadrant-eliminate { background-color: var(--color-danger); color: #fff; }
+.quadrant-do { background-color: var(--success-color); color: #fff; }
+.quadrant-schedule { background-color: var(--primary-color); color: #fff; }
+.quadrant-delegate { background-color: var(--warning-color); color: #fff; }
+.quadrant-eliminate { background-color: var(--danger-color); color: #fff; }
 .quadrant-do .resultIcon, .quadrant-schedule .resultIcon, .quadrant-delegate .resultIcon, .quadrant-eliminate .resultIcon { background-color: rgba(0,0,0,0.2); }
 
 .subtaskList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -92,7 +92,7 @@
 .categoryCard.selected {
     border-color: var(--accent-color);
     background-color: var(--accent-color);
-    color: var(--text-color-dark);
+    color: var(--text-color);
     box-shadow: 0 4px 10px rgba(255, 200, 55, 0.4);
 }
 

@@ -10,6 +10,7 @@ import { MoodboardScreen } from '../screens/MoodboardScreen';
 import { useUI } from '../context/UIContext';
 import type { Screen } from '../types';
 import { NotificationContainer } from './NotificationContainer';
+import { FrogRewardModal } from './FrogRewardModal';
 import UpdatePrompt from './UpdatePrompt';
 
 // Nota de arquitetura: o TasksProvider NÃO é montado aqui — ele já envolve toda a
@@ -39,6 +40,7 @@ export const AppLayout: React.FC = () => {
 
             {/* Containers de notificação globais */}
             <NotificationContainer />
+            <FrogRewardModal />
             <UpdatePrompt />
         </div>
     );

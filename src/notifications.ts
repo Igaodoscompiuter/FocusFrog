@@ -1,12 +1,45 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { ForegroundService } from '@capawesome-team/capacitor-android-foreground-service';
 import { postMessageToSW } from './sw-helpers';
 
 // IDs fixos (um por "slot") — agendar de novo com o mesmo ID substitui a anterior,
 // em vez de empilhar notificações repetidas.
 const NOTIF_ID_PHASE_END = 9001;   // "Sua pausa começou" / "De volta ao foco"
-const FOREGROUND_NOTIF_ID = 9002;  // notificação fixa do serviço em primeiro plano
+
+/** Serviço em primeiro plano próprio (PomodoroForegroundService.java) — não usa
+ *  mais plugin de terceiros, porque precisava de cronômetro nativo ao vivo
+ *  (setUsesChronometer) e de garantia real de não-descartável (setOngoing),
+ *  que o plugin anterior não entregava de forma confiável. */
+interface WidgetBridgePluginIface {
+  startFocusService(opts: { title: string; body: string; endsAt: number }): Promise<void>;
+  stopFocusService(): Promise<void>;
+  checkExactAlarmPermission(): Promise<{ granted: boolean }>;
+  openExactAlarmSettings(): Promise<void>;
+}
+const NativeBridge = registerPlugin<WidgetBridgePluginIface>('WidgetBridge');
+
+let exactAlarmChecked = false;
+
+/**
+ * [CORREÇÃO] No Android 12+, declarar SCHEDULE_EXACT_ALARM no manifesto (já
+ * fazíamos) NÃO basta — o usuário precisa ligar isso manualmente numa tela
+ * própria do sistema. Sem isso, alarmes de rotina e os avisos de fim de
+ * foco/pausa podem simplesmente não disparar, sem nenhum erro visível. Checa
+ * uma vez por sessão e, se não estiver concedida, abre essa tela direto —
+ * só chamada quando o recurso é realmente usado (não no app inteiro à toa).
+ */
+async function ensureExactAlarmPermission() {
+    if (!Capacitor.isNativePlatform() || exactAlarmChecked) return;
+    exactAlarmChecked = true;
+    try {
+        const { granted } = await NativeBridge.checkExactAlarmPermission();
+        if (!granted) {
+            await NativeBridge.openExactAlarmSettings();
+        }
+    } catch {
+        // Plugin indisponível (ex.: Android antigo) — segue sem bloquear nada.
+    }
+}
 
 let permissionChecked = false;
 
@@ -32,6 +65,7 @@ async function ensureNativePermission() {
 export async function schedulePhaseEndNotification(title: string, body: string, atTimestamp: number) {
     if (Capacitor.isNativePlatform()) {
         await ensureNativePermission();
+        await ensureExactAlarmPermission();
         try {
             await LocalNotifications.schedule({
                 notifications: [{
@@ -57,20 +91,16 @@ export async function schedulePhaseEndNotification(title: string, body: string, 
  */
 let foregroundServiceRunning = false;
 
+/** Inicia (ou atualiza, chamando de novo com o mesmo ID) o serviço em primeiro
+ *  plano com cronômetro nativo ao vivo contando até endsAt. */
 export async function startOrUpdateFocusForegroundService(taskTitle: string, phase: 'focus' | 'break', endsAt: number) {
     if (!Capacitor.isNativePlatform()) return;
     await ensureNativePermission();
-    const endTime = new Date(endsAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const title = phase === 'focus' ? `🐸 Em foco: ${taskTitle}` : '☕ Pausa';
-    const body = phase === 'focus' ? `Termina às ${endTime}` : `Volta ao foco às ${endTime}`;
+    const body = phase === 'focus' ? 'Toque para voltar ao app' : 'Hora de respirar um pouco';
     try {
-        const options = { id: FOREGROUND_NOTIF_ID, title, body, smallIcon: 'ic_stat_frog', silent: true };
-        if (foregroundServiceRunning) {
-            await ForegroundService.updateForegroundService(options);
-        } else {
-            await ForegroundService.startForegroundService(options);
-            foregroundServiceRunning = true;
-        }
+        await NativeBridge.startFocusService({ title, body, endsAt });
+        foregroundServiceRunning = true;
     } catch (e) {
         console.warn('[notifications] falha ao iniciar serviço em primeiro plano:', e);
     }
@@ -80,7 +110,7 @@ export async function startOrUpdateFocusForegroundService(taskTitle: string, pha
 export async function stopFocusForegroundService() {
     if (!Capacitor.isNativePlatform() || !foregroundServiceRunning) return;
     try {
-        await ForegroundService.stopForegroundService();
+        await NativeBridge.stopFocusService();
     } catch { /* nada a fazer */ }
     foregroundServiceRunning = false;
 }
@@ -187,7 +217,9 @@ async function ensureAlarmChannel() {
  */
 export async function syncRoutineNotifications(routines: ScheduledRoutine[]) {
     if (!Capacitor.isNativePlatform()) return; // notificação diária repetida é só nativa
+    if (!routines.some(r => r.scheduledTime)) return; // nada agendado, não precisa checar nada ainda
     await ensureNativePermission();
+    await ensureExactAlarmPermission();
     await ensureAlarmChannel();
 
     const withTime = routines.filter(r => r.scheduledTime);

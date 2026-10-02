@@ -35,11 +35,11 @@
     padding: var(--sp-xs);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
-    color: var(--icon-color);
+    color: var(--text-color);
     transition: background-color var(--transition-fast);
 }
 
-.closeButton:hover { background-color: var(--surface-secondary-hover-color); }
+.closeButton:hover { background-color: var(--background-color-hover); }
 
 .panelBody {
     padding: var(--sp-lg);
@@ -81,8 +81,8 @@
 }
 
 .filterChip:hover {
-    background-color: var(--surface-secondary-hover-color);
-    border-color: var(--border-color-hover);
+    background-color: var(--background-color-hover);
+    border-color: var(--border-color-light);
 }
 
 .filterChip.active {

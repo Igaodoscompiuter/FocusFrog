@@ -38,7 +38,7 @@
 }
 
 .greetingContent h2 {
-    font-family: var(--font-display);
+    font-family: var(--font-poppins);
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: var(--sp-sm);

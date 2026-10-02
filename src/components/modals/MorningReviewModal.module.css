@@ -55,7 +55,7 @@
 }
 
 .taskButton:hover {
-    background-color: var(--surface-secondary-hover-color);
+    background-color: var(--background-color-hover);
     transform: scale(1.04); 
     box-shadow: 
         0 0 0 2px var(--accent-color-light), 
@@ -63,7 +63,7 @@
 }
 
 .taskButton.selected {
-    background-color: var(--surface-secondary-hover-color);
+    background-color: var(--background-color-hover);
     font-weight: 600;
     transform: scale(1.04); 
     box-shadow: 
@@ -103,7 +103,7 @@
 
 .secondary:hover {
     background-color: var(--surface-secondary-color);
-    border-color: var(--border-color-hover);
+    border-color: var(--border-color-light);
     color: var(--text-color);
 }
 

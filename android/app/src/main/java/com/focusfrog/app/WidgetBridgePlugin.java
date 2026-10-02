@@ -1,11 +1,14 @@
 package com.focusfrog.app;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -25,6 +28,52 @@ public class WidgetBridgePlugin extends Plugin {
     @PluginMethod
     public void refreshChecklistWidget(PluginCall call) {
         ChecklistWidgetProvider.refreshAll(getContext());
+        call.resolve(new JSObject());
+    }
+
+    /**
+     * No Android 12+ (API 31+), SCHEDULE_EXACT_ALARM precisa ser LIGADA PELO
+     * USUÁRIO numa tela própria do sistema — declarar a permissão no manifesto
+     * (como já fazemos) não é suficiente e não mostra nenhum diálogo sozinho.
+     * Sem isso ligado, alarmes de horário exato (rotinas, fim de foco/pausa)
+     * podem simplesmente não disparar, sem erro nenhum visível. Esse método
+     * deixa o JS checar o estado e, se precisar, abrir essa tela direto.
+     */
+    @PluginMethod
+    public void checkExactAlarmPermission(PluginCall call) {
+        JSObject result = new JSObject();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+            result.put("granted", am != null && am.canScheduleExactAlarms());
+        } else {
+            result.put("granted", true); // versões antigas não exigem essa permissão separada
+        }
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void openExactAlarmSettings(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+            intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+        }
+        call.resolve(new JSObject());
+    }
+
+    @PluginMethod
+    public void startFocusService(PluginCall call) {
+        String title = call.getString("title", "FocusFrog");
+        String body = call.getString("body", "");
+        long endsAt = call.getLong("endsAt", 0L);
+        PomodoroForegroundService.start(getContext(), title, body, endsAt);
+        call.resolve(new JSObject());
+    }
+
+    @PluginMethod
+    public void stopFocusService(PluginCall call) {
+        PomodoroForegroundService.stop(getContext());
         call.resolve(new JSObject());
     }
 

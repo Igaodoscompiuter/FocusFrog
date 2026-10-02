@@ -14,11 +14,11 @@
 
 .iconContainer {
     margin-bottom: 0.5rem;
-    color: var(--color-success);
+    color: var(--success-color);
 }
 
 .promptText {
-    color: var(--color-text-secondary);
+    color: var(--text-secondary-color);
     font-size: 0.95rem;
     line-height: 1.4;
     max-width: 90%;
@@ -67,7 +67,7 @@
 }
 
 .secondary:hover {
-    background-color: var(--surface-secondary-hover-color);
+    background-color: var(--background-color-hover);
     color: var(--text-color);
 }
 

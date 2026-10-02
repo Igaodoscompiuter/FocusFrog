@@ -53,7 +53,7 @@
 }
 
 .routineCard:hover {
-    border-color: var(--border-color-hover);
+    border-color: var(--border-color-light);
 }
 
 /* Ações de Edição e Exclusão da Rotina (SEMPRE VISÍVEL) */
@@ -72,7 +72,7 @@
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-full);
-    color: var(--icon-color-secondary);
+    color: var(--text-secondary-color);
     padding: var(--sp-xs);
     display: flex;
     align-items: center;
@@ -123,7 +123,7 @@
 }
 
 .accordionItem.open {
-    border-color: var(--border-color-hover);
+    border-color: var(--border-color-light);
 }
 
 .accordionHeader {
@@ -171,7 +171,7 @@
 }
 
 .templateItem:hover {
-    background-color: var(--surface-secondary-hover-color);
+    background-color: var(--background-color-hover);
 }
 
 .templateItem input[type="checkbox"] {
@@ -216,7 +216,7 @@
 .deleteTemplateButton {
     background: none;
     border: none;
-    color: var(--icon-color-secondary);
+    color: var(--text-secondary-color);
     cursor: pointer;
     padding: var(--sp-xs);
     margin-left: var(--sp-sm);
@@ -230,7 +230,7 @@
 
 .deleteTemplateButton:hover {
     color: var(--danger-color);
-    background-color: var(--danger-color-light-bg);
+    background-color: var(--danger-color-translucent);
     opacity: 1;
 }
 

@@ -28,4 +28,15 @@ export const baseTokens = {
   '--border-radius-lg': '12px',
   '--transition-fast': '200ms ease',
   '--transition-slow': '400ms ease',
+
+  /* Sombras — faltavam por completo; Toast.module.css (entre outros) usa
+     --shadow-lg sem nunca ter sido definida em lugar nenhum. */
+  '--shadow-sm': '0 1px 3px rgba(0, 0, 0, 0.25)',
+  '--shadow-md': '0 4px 10px rgba(0, 0, 0, 0.3)',
+  '--shadow-lg': '0 10px 25px rgba(0, 0, 0, 0.35)',
+  '--shadow-xl': '0 20px 40px rgba(0, 0, 0, 0.4)',
+  '--shadow-md-inset': 'inset 0 2px 6px rgba(0, 0, 0, 0.25)',
+
+  '--sp-xxs': '2px',
+  '--fw-bold': '700',
 };

@@ -124,40 +124,10 @@
   backdrop-filter: blur(2px);
 }
 
-.rewardContainer {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
-  padding: var(--sp-lg);
-}
-
-.rewardTitle {
-  font-size: 2rem;
-  color: var(--accent-color);
-}
-
-.rewardDescription {
-  margin: var(--sp-sm) 0 var(--sp-lg) 0;
-  font-size: 1.1rem;
-}
-
-.rewardButton {
-  background: var(--accent-color);
-  color: white; /* Usando cor fixa, pois é provável que seja --text-on-accent */
-  border: none;
-  padding: var(--sp-md) var(--sp-xl);
-  font-size: 1.2rem;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  margin-top: var(--sp-lg);
-}
+/* .rewardContainer e afins foram removidos — a revelação de sapo agora mora
+   em src/components/FrogRewardModal.tsx, montada globalmente, não só aqui. */
+/* A revelação de sapo coletado agora mora em src/components/FrogRewardModal.tsx,
+   montada globalmente no AppLayout — não só dentro desta tela. */
 
 .collectionCard {
   background: var(--surface-color);

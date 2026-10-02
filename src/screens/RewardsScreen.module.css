@@ -108,7 +108,7 @@ input:checked + .switchSlider:before { transform: translateX(22px); }
 .coffeeButton, .instagramButton { text-decoration: none; padding: 12px; border-radius: var(--border-radius-medium); display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; transition: all 0.2s ease; }
 .coffeeButton { background-color: var(--accent-color); color: white; }
 .instagramButton { background-color: var(--surface-secondary-color); color: var(--text-color); border: 1px solid var(--border-color); }
-.instagramButton:hover { background-color: var(--background-hover-color); }
+.instagramButton:hover { background-color: var(--background-color-hover); }
 .appVersion { cursor: pointer; user-select: none; text-align: center; color: var(--text-secondary-color); font-size: 0.9rem; margin-top: 1.5rem; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

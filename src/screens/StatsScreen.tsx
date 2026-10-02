@@ -6,7 +6,6 @@ import { useUser } from '../context/UserContext';
 import { ZenPond } from '../components/ZenPond';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
-import { ZenFrog } from '../components/zen/ZenFrog';
 import { frogSpecies, FrogSpeciesData } from '../utils/frogSpecies';
 import { LoreModal } from '../components/modals/LoreModal';
 
@@ -15,7 +14,7 @@ const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQu
 export const StatsScreen: React.FC = () => {
   const { tasks } = useTasks();
   const { pomodorosCompleted } = usePomodoro();
-  const { collectedFrogs, newlyAcquiredFrog, clearNewlyAcquiredFrog } = useUser();
+  const { collectedFrogs } = useUser();
   
   const [selectedFrog, setSelectedFrog] = useState<FrogSpeciesData | null>(null);
 
@@ -80,24 +79,9 @@ export const StatsScreen: React.FC = () => {
     };
   }, [tasks, pomodorosCompleted]);
 
-  const newSpecies = newlyAcquiredFrog ? frogSpecies[newlyAcquiredFrog.speciesId as keyof typeof frogSpecies] : null;
-
   return (
     <main className="screen-content">
       <div className={styles.statsContainer}>
-
-        {newlyAcquiredFrog && newSpecies && (
-          <div className={styles.rewardContainer}>
-            <h3 className={styles.rewardTitle}>Novo Sapo Coletado!</h3>
-            <p className={styles.rewardDescription}>
-              Parabéns! Pelo seu foco você coletou um <strong>{newSpecies.name}</strong>.
-            </p>
-            <ZenFrog speciesId={newlyAcquiredFrog.speciesId} stage="adult" />
-            <button className={styles.rewardButton} onClick={clearNewlyAcquiredFrog}>
-              Oba!
-            </button>
-          </div>
-        )}
 
         <div className={styles.centeredStreakCard}>
             <span className={styles.streakNumber}>{stats.streakDays}</span>

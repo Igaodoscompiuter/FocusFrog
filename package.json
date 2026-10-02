@@ -20,7 +20,6 @@
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.6",
     "@capacitor/toast": "^7.0.2",
-    "@capawesome-team/capacitor-android-foreground-service": "^7.0.1",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@react-spring/web": "^10.0.3",
     "@supabase/supabase-js": "^2.87.3",

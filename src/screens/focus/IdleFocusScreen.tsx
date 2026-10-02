@@ -39,7 +39,7 @@ export const IdleFocusScreen: React.FC<{ onStart: (settings: any) => void }> = (
             </header>
 
             <div className={styles.idleCharacter}>
-                 <MemoizedFocusFrogCharacter status="idle" size={120} />
+                 <MemoizedFocusFrogCharacter status="idle" size={92} />
             </div>
             
             <div className={styles.optionsContainer}>

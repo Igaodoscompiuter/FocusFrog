@@ -33,7 +33,7 @@
 }
 
 .item:hover {
-    background-color: var(--surface-secondary-hover-color);
+    background-color: var(--background-color-hover);
 }
 
 .item svg {

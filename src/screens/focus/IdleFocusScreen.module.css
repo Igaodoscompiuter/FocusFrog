@@ -3,12 +3,15 @@
 /* =================================================================== */
 
 /* --- Contêineres Principais --- */
-.idleContainer { display: flex; flex-direction: column; align-items: center; width: 100%; gap: var(--sp-lg); }
-.greetingBanner { width: 100%; background-color: var(--surface-color); padding: var(--sp-xl) var(--sp-lg); text-align: center; border-bottom: 1px solid var(--border-color); }
-.greetingBanner h1 { font-family: var(--font-poppins); font-size: 2.2rem; font-weight: 700; color: var(--text-color); margin: 0 0 var(--sp-xs) 0; }
-.greetingBanner p { font-size: 1rem; color: var(--text-secondary-color); max-width: 45ch; margin: 0 auto; }
-.idleCharacter { margin-top: var(--sp-md); }
-.optionsContainer { display: flex; flex-direction: column; gap: var(--sp-lg); width: 100%; max-width: 450px; padding: 0 var(--sp-lg); }
+/* [CORREÇÃO] Espaçamento reduzido — a tela toda tinha folga demais empilhada
+   (banner + personagem + 2 cards grandes) e acabava exigindo rolagem numa
+   tela que devia caber inteira de uma vez, por ser só uma seleção simples. */
+.idleContainer { display: flex; flex-direction: column; align-items: center; width: 100%; gap: var(--sp-md); }
+.greetingBanner { width: 100%; background-color: var(--surface-color); padding: var(--sp-lg); text-align: center; border-bottom: 1px solid var(--border-color); }
+.greetingBanner h1 { font-family: var(--font-poppins); font-size: 1.9rem; font-weight: 700; color: var(--text-color); margin: 0 0 var(--sp-xs) 0; }
+.greetingBanner p { font-size: 0.95rem; color: var(--text-secondary-color); max-width: 45ch; margin: 0 auto; }
+.idleCharacter { margin-top: 0; }
+.optionsContainer { display: flex; flex-direction: column; gap: var(--sp-md); width: 100%; max-width: 450px; padding: 0 var(--sp-lg); }
 
 /* --- Estilos dos Cards Balanceados --- */
 /* Layout de 3 colunas: [Icon Wrapper] [Text] [Action Wrapper] */
@@ -57,7 +60,7 @@
 /* ESTILOS DO CARD POMODORO - "CONTROLE UNIFICADO"                  */
 /* =================================================================== */
 
-:global(#pomodoro-config-card).configCard { background-color: var(--surface-color); border-radius: var(--border-radius-xl); border: 1px solid var(--border-color); width: 100%; padding: var(--sp-lg); display: flex; flex-direction: column; gap: var(--sp-sm); }
+:global(#pomodoro-config-card).configCard { background-color: var(--surface-color); border-radius: var(--border-radius-xl); border: 1px solid var(--border-color); width: 100%; padding: var(--sp-md) var(--sp-lg); display: flex; flex-direction: column; gap: var(--sp-xs); }
 :global(#pomodoro-config-card) .divider { width: 100%; height: 1px; background-color: var(--border-color); margin: var(--sp-sm) 0; }
 
 /* Contêiner principal para o controle, agora centralizado */

@@ -13,7 +13,7 @@
 .subtitle {
     width: 100%;
     text-align: center;
-    color: var(--color-text-secondary);
+    color: var(--text-secondary-color);
     margin-top: 0.5rem;
     margin-bottom: 1.5rem; /* Aumenta o espaço antes dos botões */
     font-size: 0.95rem;
@@ -28,8 +28,8 @@
 }
 
 .optionButton {
-    background-color: var(--color-background-hover);
-    border: 1px solid var(--color-border);
+    background-color: var(--background-color-hover);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius-large);
     padding: 1.5rem 1rem;
     display: flex;
@@ -45,7 +45,7 @@
 .optionButton:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-medium);
-    border-color: var(--color-border-hover);
+    border-color: var(--border-color-light);
 }
 
 .optionButton svg {
@@ -57,12 +57,12 @@
 .optionTitle {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--text-primary-color);
 }
 
 .optionSubtitle {
     font-size: 0.8rem;
-    color: var(--color-text-secondary);
+    color: var(--text-secondary-color);
 }
 
 /* Cores específicas para cada quadrante */
@@ -73,7 +73,7 @@
 .footerButton {
     background: none;
     border: none;
-    color: var(--color-text-secondary);
+    color: var(--text-secondary-color);
     cursor: pointer;
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius-medium);
@@ -81,8 +81,8 @@
 }
 
 .footerButton:hover {
-    background-color: var(--color-background-hover);
-    color: var(--color-text-primary);
+    background-color: var(--background-color-hover);
+    color: var(--text-primary-color);
 }
 
 /* Ajuste para o rodapé do g-modal */

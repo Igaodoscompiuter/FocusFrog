@@ -4,6 +4,9 @@
   "appName": "FocusFrog",
   "webDir": "dist",
   "bundledWebRuntime": false,
+  "android": {
+    "adjustMarginsForEdgeToEdge": "auto"
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0,

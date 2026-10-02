@@ -27,8 +27,8 @@
   position: absolute;
   top: -12px;
   right: -12px;
-  background-color: var(--color-background-light);
-  border: 2px solid var(--color-border);
+  background-color: var(--background-color-light);
+  border: 2px solid var(--border-color);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -36,16 +36,16 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  color: var(--color-text-primary);
-  font-size: var(--fs-xl);
+  color: var(--text-primary-color);
+  font-size: var(--font-size-xl);
   box-shadow: var(--shadow-md);
   transition: all 0.2s ease;
 }
 
 .closeButton:hover {
   transform: scale(1.1) rotate(90deg);
-  background-color: var(--color-danger-muted);
-  color: var(--color-danger);
+  background-color: var(--danger-color-translucent);
+  color: var(--danger-color);
 }
 
 @keyframes fadeIn {

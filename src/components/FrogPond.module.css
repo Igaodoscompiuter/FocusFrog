@@ -8,7 +8,7 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(180deg, var(--water-color-light) 0%, var(--water-color-dark) 100%);
-  border-radius: var(--br-md);
+  border-radius: var(--border-radius-md);
   overflow: hidden; /* Esconde partes dos SVGs que ficam fora */
   border: 3px solid #A1887F; /* Uma cor base de terra/madeira para a borda */
   box-shadow: inset 0 0 15px rgba(0,0,0,0.4); /* Sombra interna para profundidade */
