@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background>
-        <inset android:drawable="@mipmap/ic_launcher_background" android:inset="16.7%" />
-    </background>
+    <!-- [CORREÇÃO] O fundo estava com o mesmo recuo de 16.7% do primeiro plano —
+         isso deixava uma margem transparente (exibida como preta em vários
+         launchers) ao redor da camada de fundo. O fundo deve preencher a tela
+         toda (sem recuo); só o PRIMEIRO PLANO precisa de recuo, pra não ser
+         cortado pelas diferentes máscaras de formato (círculo, quadrado
+         arredondado etc.) que cada fabricante usa. -->
+    <background android:drawable="@mipmap/ic_launcher_background" />
     <foreground>
         <inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="16.7%" />
     </foreground>

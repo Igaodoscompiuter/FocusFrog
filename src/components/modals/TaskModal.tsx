@@ -189,19 +189,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                         )}
                     </div>
 
-                    <div className={styles.grid}>
-                         <div className={styles.formGroup}>
-                            <label><Icon path={icons.calendar} /> Data</label>
-                            <input type="date" className="g-input" value={task.dueDate || ''} onChange={e => handleChange('dueDate', e.target.value)} />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label><Icon path={icons.sun} /> Período</label>
-                            <div className={styles.buttonSelector}>
-                                {timeOfDayOptions.map(opt => (
-                                    <button key={opt.id} className={task.timeOfDay === opt.id ? styles.selected : ''} onClick={() => handleChange('timeOfDay', opt.id)}>{opt.label}</button>
-                                ))}
-                            </div>
-                        </div>
+                    {/* [CORREÇÃO] Período (Manhã/Tarde/Noite) removido — confirmado que
+                        task.timeOfDay nunca era lido em lugar nenhum fora deste modal,
+                        só pesava no formulário sem servir pra nada. Data continua porque
+                        Agenda de Hoje depende dela pra filtrar as tarefas do dia. */}
+                    <div className={styles.formGroup}>
+                        <label><Icon path={icons.calendar} /> Data</label>
+                        <input type="date" className="g-input" value={task.dueDate || ''} onChange={e => handleChange('dueDate', e.target.value)} />
                     </div>
 
                      <div className={styles.formGroup}>
@@ -243,13 +237,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                     </div>
                 </div>
             </main>
-            <footer className="g-modal-footer">
-                <div> 
-                    {task.id && <button className="btn btn-tertiary btn-danger" onClick={handleDelete}><Icon path={icons.trash} /> Excluir</button>}
-                </div>
+            <footer className={`g-modal-footer ${styles.footerWrap}`}>
+                {task.id && (
+                    <button className="btn btn-tertiary btn-danger btn-icon" onClick={handleDelete} aria-label="Excluir tarefa" title="Excluir">
+                        <Icon path={icons.trash} />
+                    </button>
+                )}
                 <div className={styles.footerActions}>
-                    <button className="btn btn-secondary" onClick={handleSaveAsTemplate}><Icon path={icons.bookOpen} /> Salvar como Modelo</button>
-                    <button className="btn btn-primary" onClick={handleUpsertTask}><Icon path={icons.plus} /> {task.id ? 'Atualizar Tarefa' : 'Adicionar Tarefa'}</button>
+                    <button className="btn btn-secondary" onClick={handleSaveAsTemplate}><Icon path={icons.bookOpen} /> Salvar modelo</button>
+                    <button className="btn btn-primary" onClick={handleUpsertTask}><Icon path={icons.plus} /> {task.id ? 'Atualizar' : 'Adicionar'}</button>
                 </div>
             </footer>
         </>

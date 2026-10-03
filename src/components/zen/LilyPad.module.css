@@ -1,0 +1,24 @@
+@keyframes bob {
+    0%, 100% { transform: rotate(-2deg) translateY(0); }
+    50%      { transform: rotate(2deg) translateY(-3px); }
+}
+
+.wrap {
+    position: absolute;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+}
+
+.shadow {
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.35), transparent 75%);
+    filter: blur(3px);
+}
+
+.pad {
+    position: relative;
+    animation: bob 6s ease-in-out infinite;
+}

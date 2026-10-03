@@ -223,3 +223,29 @@ a {
 * {
   scrollbar-width: none;
 }
+
+/* [CORREÇÃO] Preenche a área da barra de status com a cor da marca, desenhada
+   por trás da barra transparente que o Android 15+ força — é a forma correta
+   de "colorir" a barra em edge-to-edge de verdade, sem brigar com APIs nativas
+   antigas que o sistema já não respeita mais (ver App.tsx). */
+.statusBarFill {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: #FBBF24;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+/* [CORREÇÃO] Sem isso, o Android mostrava um quadrado azul translúcido
+   (-webkit-tap-highlight-color padrão do WebView) sobre QUALQUER elemento
+   tocável por alguns segundos após o toque — sapos do Lago Zen, botões,
+   cards. Dava a impressão de um app malacabado. Removido globalmente. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+*:focus {
+  outline: none;
+}

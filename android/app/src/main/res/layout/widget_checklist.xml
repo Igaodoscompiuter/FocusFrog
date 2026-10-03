@@ -54,7 +54,11 @@
             android:src="@drawable/widget_reset_icon" />
     </LinearLayout>
 
-    <View
+    <!-- [CORREÇÃO] <View> puro não está na lista de views que o RemoteViews
+         aceita inflar (a inflação acontece no processo do LAUNCHER, não no do
+         app — por isso nenhum try/catch meu pegava esse erro). Um LinearLayout
+         vazio com background é 100% suportado e dá o mesmo efeito visual. -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="10dp"

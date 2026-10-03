@@ -90,11 +90,14 @@
 }
 
 .frogPondCard {
+  /* [CORREÇÃO] 350px fixos, somados ao resto da tela (card de sequência +
+     2 caixas de estatística + lista de coleção), estourava o viewport em
+     telas menores — sobrava um pequeno espaço rolável vazio embaixo. */
   background: var(--surface-color);
   padding: var(--sp-md);
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-color);
-  height: 350px;
+  height: 290px;
   display: flex;
   flex-direction: column;
 }

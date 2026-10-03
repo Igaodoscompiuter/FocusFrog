@@ -24,20 +24,24 @@
 }
 
 .closeButton {
+  /* [CORREÇÃO] top/right negativos jogavam o botão PRA FORA do card — ficava
+     flutuando desconectado e cortado na borda da tela. Agora fica por dentro,
+     no canto, com um respiro — mesmo padrão usado no resto do app. */
   position: absolute;
-  top: -12px;
-  right: -12px;
+  top: var(--sp-sm);
+  right: var(--sp-sm);
+  z-index: 1;
   background-color: var(--background-color-light);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   color: var(--text-primary-color);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   box-shadow: var(--shadow-md);
   transition: all 0.2s ease;
 }

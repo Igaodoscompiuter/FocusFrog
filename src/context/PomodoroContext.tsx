@@ -109,6 +109,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [sessionFrog, setSessionFrog] = useLocalStorage<SessionFrog | null>('focusfrog_sessionFrog', null);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const heartbeatTick = useRef(0);
 
     const clearLastCompletedFocus = useCallback(() => setLastCompletedFocus(null), []);
 
@@ -162,6 +163,63 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     }, [timeRemaining, sessionStatus, isPaused, currentCycle, focusDuration, breakDuration, totalSessionTime]);
 
+    // [CORREÇÃO] Antes, a lógica de "fase terminou" (dar ponto, coletar sapo,
+    // trocar pra pausa) só existia DENTRO do tick do setInterval. Se o Android
+    // suspendesse o timer de JS em segundo plano (comum — é exatamente pra
+    // isso que existe o throttling de timer em WebView/Chrome), o app voltava
+    // ao primeiro plano, o listener de appStateChange só ATUALIZAVA O
+    // MOSTRADOR pro tempo certo (inclusive "00:00"), mas a conclusão de
+    // verdade nunca rodava — sem pontos, sem sapo, sem transição de fase.
+    // Agora essa lógica mora numa função só, chamada tanto pelo tick normal
+    // quanto diretamente ao retomar o app, então ela roda de qualquer jeito.
+    const handlePhaseEnd = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+
+        if (sessionStatus === 'focus') {
+            setPomodorosCompleted(p => p + 1);
+
+            // --- Lógica de Conclusão de Ciclo de Foco ---
+            if (mode === 'quick' || currentCycle >= totalCycles) {
+                if (activeTaskId && sessionFrog && !sessionFrog.isCollected) {
+                    addFrogToCollection(sessionFrog.speciesId);
+                }
+
+                if (activeTaskId) {
+                    setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'timer' });
+                }
+
+                if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
+                stopAndReset();
+
+            } else {
+                if (uiEffects.breakStart) playEffect(uiEffects.breakStart);
+                setSessionStatus('break');
+                setTimeRemaining(breakDuration);
+                const endsAt = Date.now() + breakDuration * 1000;
+                setSessionEndsAt(endsAt);
+                // [CORREÇÃO] Antes essa notificação dizia "Pausa Merecida!" tanto
+                // aqui (começo da pausa) quanto era confundida com "foco terminado"
+                // pelo usuário — o título agora deixa claro que é uma MUDANÇA de
+                // estado (foco -> pausa), não o fim de tudo.
+                schedulePhaseEndNotification('☕ Hora da pausa', `Seu foco virou uma pausa de ${breakDuration / 60} min.`, endsAt);
+                startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'break', endsAt);
+            }
+        } else if (sessionStatus === 'break') {
+            // --- Fim da Pausa ---
+            if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
+            setCurrentCycle(c => c + 1);
+            setSessionStatus('focus');
+            setTimeRemaining(focusDuration);
+            const endsAt = Date.now() + focusDuration * 1000;
+            setSessionEndsAt(endsAt);
+            schedulePhaseEndNotification('🐸 De volta ao foco!', `Seu bloco de ${focusDuration / 60} min começou.`, endsAt);
+            startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'focus', endsAt);
+        }
+
+        setTimeRemaining(0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mode, sessionStatus, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, setSessionEndsAt]);
+
     // Efeito principal do temporizador
     useEffect(() => {
         if (sessionStatus === 'idle' || isPaused) {
@@ -169,84 +227,51 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
 
         timerRef.current = setInterval(() => {
-            // [CORREÇÃO] Em vez de só decrementar (o que perde a conta se o app ficar
-            // em segundo plano e o JS for pausado pelo Android), recalcula o tempo
-            // restante a partir do relógio absoluto (sessionEndsAt) sempre que ele
-            // existe. Isso faz o timer "pular" direto pro valor certo ao voltar do
-            // background, em vez de continuar contando como se nada tivesse acontecido.
+            // Recalcula a partir do relógio absoluto (sessionEndsAt) sempre que
+            // ele existe — corrige deriva/throttling em vez de só decrementar.
             const real = sessionEndsAt !== null
                 ? Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000))
                 : null;
 
-            setTimeRemaining(prev => {
-                const next = real !== null ? real : prev - 1;
-                if (next > 0) {
-                    return next;
-                }
+            if (real !== null && real <= 0) {
+                handlePhaseEnd();
+                return;
+            }
 
-                // --- Fim de um intervalo (foco ou pausa) ---
-                clearInterval(timerRef.current!);
+            // [CORREÇÃO] setOngoing(true) deveria bastar pra notificação não sumir,
+            // mas alguns fabricantes ignoram isso no botão "limpar tudo" do sistema.
+            // A cada ~30s reposta ela de novo como rede de segurança — mesmo que
+            // alguém consiga descartá-la, ela volta sozinha logo em seguida, em vez
+            // de ficar ausente até a próxima troca de fase (até 25min de distância).
+            heartbeatTick.current += 1;
+            if (heartbeatTick.current % 30 === 0 && sessionEndsAt !== null) {
+                startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', sessionStatus === 'break' ? 'break' : 'focus', sessionEndsAt);
+            }
 
-                if (sessionStatus === 'focus') {
-                    setPomodorosCompleted(p => p + 1);
-
-                    // --- Lógica de Conclusão de Ciclo de Foco ---
-                    if (mode === 'quick' || currentCycle >= totalCycles) {
-                        if (activeTaskId && sessionFrog && !sessionFrog.isCollected) {
-                            addFrogToCollection(sessionFrog.speciesId);
-                        }
-                        
-                        if (activeTaskId) {
-                            setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'timer' });
-                        }
-
-                        if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
-                        stopAndReset();
-
-                    } else {
-                        if (uiEffects.breakStart) playEffect(uiEffects.breakStart);
-                        setSessionStatus('break');
-                        setTimeRemaining(breakDuration);
-                        const endsAt = Date.now() + breakDuration * 1000;
-                        setSessionEndsAt(endsAt);
-                        schedulePhaseEndNotification('Pausa Merecida!', `Sua pausa de ${breakDuration / 60} minutos começou.`, endsAt);
-                        startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'break', endsAt);
-                    }
-                } else if (sessionStatus === 'break') {
-                    // --- Fim da Pausa ---
-                    if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
-                    setCurrentCycle(c => c + 1);
-                    setSessionStatus('focus');
-                    setTimeRemaining(focusDuration);
-                    const endsAt = Date.now() + focusDuration * 1000;
-                    setSessionEndsAt(endsAt);
-                    schedulePhaseEndNotification('De volta ao Foco!', `Seu bloco de trabalho de ${focusDuration / 60} minutos começou.`, endsAt);
-                    startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'focus', endsAt);
-                }
-
-                return 0;
-            });
+            setTimeRemaining(prev => (real !== null ? real : Math.max(0, prev - 1)));
         }, 1000);
 
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [mode, sessionStatus, isPaused, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, sessionEndsAt, setSessionEndsAt]);
+    }, [sessionStatus, isPaused, sessionEndsAt, handlePhaseEnd, activeTaskTitle]);
 
-    // [NOVO] Quando o app volta ao primeiro plano (depois de minimizado/fechado),
-    // força uma reavaliação imediata — não espera o próximo tick de 1s — pra
-    // corrigir a tela assim que possível, inclusive completando a fase se ela já
-    // tiver terminado enquanto o app estava fora do ar.
+    // Quando o app volta ao primeiro plano, força uma reavaliação imediata —
+    // se a fase já tiver terminado enquanto o app estava fora do ar, completa
+    // de verdade (pontos, sapo, transição) em vez de só corrigir o mostrador.
     useEffect(() => {
         if (!Capacitor.isNativePlatform()) return;
         const sub = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-            if (isActive && sessionStatus !== 'idle' && !isPaused && sessionEndsAt !== null) {
-                const real = Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000));
+            if (!isActive || sessionStatus === 'idle' || isPaused || sessionEndsAt === null) return;
+            const real = Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000));
+            if (real <= 0) {
+                handlePhaseEnd();
+            } else {
                 setTimeRemaining(real);
             }
         });
         return () => { sub.then(s => s.remove()); };
-    }, [sessionStatus, isPaused, sessionEndsAt]);
+    }, [sessionStatus, isPaused, sessionEndsAt, handlePhaseEnd]);
 
     const startPomodoro = useCallback((settings: PomodoroSettings) => {
         stopAndReset();

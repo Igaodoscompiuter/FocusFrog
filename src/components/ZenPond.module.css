@@ -1,17 +1,22 @@
 /* 
-  ZenPond.module.css - Estilos para o lago, com barreira de colisão invisível.
+  ZenPond.module.css — fundo d'água IDÊNTICO ao protótipo zen-lake-v3.html:
+  gradiente radial de profundidade, brilho (shine) à deriva, linhas de onda
+  em SVG, margem (shore) e moldura arredondada 3:4.
 */
 
 @keyframes ripple-effect {
-  from { transform: scale(0); opacity: 0.8; }
-  to { transform: scale(1.5); opacity: 0; }
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: .6; }
+  100% { transform: translate(-50%, -50%) scale(7); opacity: 0; }
 }
 
-/* Animação sutil para a barreira de colisão (mantida caso queira reativar) */
-@keyframes pulse-barrier {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4); }
-  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+@keyframes driftShine {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(3%, -4%) rotate(6deg); }
+}
+
+@keyframes waveDrift {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  50%      { transform: translateX(2%) scaleY(1.15); }
 }
 
 .zenPondContainer {
@@ -28,34 +33,73 @@
   position: relative;
   width: 100%;
   max-width: 500px;
-  aspect-ratio: 16 / 9;
-  border-radius: 50%;
-  background-color: #3A6B6F;
-  background-image:
-    radial-gradient(circle at center, rgba(137, 196, 203, 0.4) 0%, rgba(58, 107, 111, 0.7) 70%),
-    linear-gradient(315deg, rgba(78, 137, 143, 0.5) 0%, rgba(45, 87, 91, 0.8) 100%);
-  border: 5px solid #8B7D6B;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), inset 0 8px 15px rgba(0,0,0,0.4);
+  aspect-ratio: 3 / 4;
+  border-radius: 24px;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 30% 15%, #1b7568 0%, #114f49 45%, #0a3733 100%);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.45), 0 8px 30px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+}
+
+.shine {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(35% 18% at 20% 20%, rgba(255, 255, 255, 0.10) 0%, transparent 70%),
+    radial-gradient(25% 14% at 70% 55%, rgba(255, 255, 255, 0.10) 0%, transparent 70%),
+    radial-gradient(30% 16% at 45% 80%, rgba(255, 255, 255, 0.10) 0%, transparent 70%);
+  animation: driftShine 22s ease-in-out infinite alternate;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .5;
+  z-index: 1;
+}
+
+.wavelines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .35;
+  width: 100%;
+  height: 100%;
+}
+.wavelines path { animation: waveDrift 9s ease-in-out infinite; }
+.wavelines path:nth-child(2) { animation-delay: -3s; opacity: .6; }
+.wavelines path:nth-child(3) { animation-delay: -6s; opacity: .4; }
+
+.shore {
+  position: absolute;
+  left: 0; right: 0; bottom: 0; height: 14%;
+  z-index: 2;
+  background: radial-gradient(80% 100% at 50% 100%, #2c4a35 0%, #1c3323 70%, transparent 100%);
+  filter: blur(1px);
+  pointer-events: none;
 }
 
 .ripple {
   position: absolute;
-  width: 56px;
-  height: 56px;
+  z-index: 3;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.6);
-  animation: ripple-effect 1s ease-out forwards;
-  transform: translate(-50%, -50%);
-  z-index: 5;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  animation: ripple-effect 1.8s ease-out forwards;
+  pointer-events: none;
+}
+
+.ambientRipple {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  animation: ripple-effect 4s linear forwards;
+  pointer-events: none;
 }
 
 .frogWrapper {
   position: absolute;
-  z-index: 3; 
+  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +110,6 @@
   width: 110px;
   height: 110px;
   border-radius: 50%;
-  /* [FIX] Torna a barreira completamente invisível */
   background-color: transparent;
   border: none;
   z-index: -1;

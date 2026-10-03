@@ -1,0 +1,17 @@
+@keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50%      { transform: translate(var(--dx, 0px), var(--dy, 0px)); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: .12; }
+    50%      { opacity: .95; }
+}
+
+.firefly {
+    position: absolute;
+    z-index: 5;
+    border-radius: 50%;
+    background: #FBBF24;
+    pointer-events: none;
+}

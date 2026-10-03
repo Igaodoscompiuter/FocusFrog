@@ -25,9 +25,14 @@
 }
 
 .taskList {
+  /* [CORREÇÃO] Sem limite, um dia cheio de tarefas agendadas esticava o card
+     infinitamente e empurrava a Home inteira pra baixo. Agora rola por dentro
+     depois de uma altura razoável, igual os quadrantes de Tarefas. */
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 .emptyState {

@@ -7,7 +7,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
-import { initialRoutines, initialTaskTemplates, defaultTags } from '../constants';
+import { initialRoutines, initialTaskTemplates, defaultTags, focusFrogMarketingTask, FOCUS_FROG_MARKETING_TASK_ID } from '../constants';
 import { syncRoutineNotifications, scheduleFrogReminder, cancelFrogReminder } from '../notifications';
 import { syncChecklistToWidget, readChecklistFromWidget } from '../widgetBridge';
 
@@ -82,9 +82,13 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return Date.now() * 1000 + (idCounterRef.current % 1000);
     }, []);
 
-    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
+    // [NOVO] Instalação nova já nasce com o card especial FocusFrog como tarefa
+    // de verdade (antes só existia como template na Biblioteca, nunca aparecia
+    // sozinho) — estratégia de marketing combinada com frogTaskId abaixo.
+    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', [focusFrogMarketingTask]);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', defaultTags);
-    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', null);
+    // Sapo do Dia padrão = o card especial acima, só na 1ª instalação.
+    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', FOCUS_FROG_MARKETING_TASK_ID);
     const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
 
     const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);

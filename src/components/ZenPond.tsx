@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import styles from './ZenPond.module.css';
 import { ZenFrog } from './zen/ZenFrog';
-import { PondDecorations } from './zen/PondDecorations';
+import { LilyPad, LILYPADS } from './zen/LilyPad';
+import { KoiFish } from './zen/KoiFish';
+import { Fireflies } from './zen/Fireflies';
 import { frogPersonalities } from '../config/frogPersonalities'; // [NEW] Importa as personalidades
 
 // --- Interfaces ---
@@ -235,7 +237,16 @@ export const ZenPond: React.FC<ZenPondProps> = ({ collectedFrogs, children }) =>
   return (
     <div className={styles.zenPondContainer}>
       <div className={styles.water}>
-        <PondDecorations />
+        <div className={styles.shine} />
+        <svg className={styles.wavelines} viewBox="0 0 380 500" preserveAspectRatio="none">
+          <path d="M0 120 Q95 108 190 120 T380 120" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+          <path d="M0 260 Q95 248 190 260 T380 260" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" />
+          <path d="M0 380 Q95 368 190 380 T380 380" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none" />
+        </svg>
+        {LILYPADS.map((pad, i) => <LilyPad key={i} pad={pad} index={i} />)}
+        <KoiFish />
+        <Fireflies />
+        <div className={styles.shore} />
         {ripples.map(ripple => (
           <div key={ripple.id} className={styles.ripple} style={{ top: ripple.top, left: ripple.left }} />
         ))}

@@ -51,7 +51,7 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
      *  redimensionar livremente) — evita tanto cortar item quanto sobrar vão vazio. */
     private static int computeVisibleRows(AppWidgetManager appWidgetManager, int appWidgetId) {
         android.os.Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
-        int heightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
+        int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
         if (heightDp <= 0) return MAX_ITEMS; // sem informação ainda (1ª renderização) — assume o máximo
         // ~14dp de padding em cada ponta + ~34dp de cabeçalho/divisor + ~36dp por linha.
         int available = (heightDp - 14 - 14 - 34) / 36;
@@ -124,6 +124,20 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
     }
 
     private static void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+        try {
+            updateWidgetInner(context, appWidgetManager, appWidgetId);
+        } catch (Exception e) {
+            // [CORREÇÃO] Rede de segurança: qualquer erro inesperado aqui antes
+            // derrubava a adição do widget inteira ("Não foi possível adicionar
+            // widget"). Melhor mostrar um estado mínimo do que travar tudo.
+            try {
+                RemoteViews fallback = new RemoteViews(context.getPackageName(), R.layout.widget_checklist);
+                appWidgetManager.updateAppWidget(appWidgetId, fallback);
+            } catch (Exception ignored) { /* nada mais a fazer */ }
+        }
+    }
+
+    private static void updateWidgetInner(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_checklist);
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

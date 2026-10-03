@@ -13,10 +13,16 @@
     border: 1px solid rgba(var(--text-rgb), 0.1); /* Borda sutil */
     box-shadow: var(--shadow-lg);
     display: flex;
-    align-items: center;
+    /* [CORREÇÃO] align-items:center ficava estranho em mensagens de 2-3
+       linhas (ícone flutuando no meio do bloco de texto). flex-start com um
+       pequeno ajuste fino no ícone alinha pela primeira linha, consistente
+       com mensagem curta ou longa. */
+    align-items: flex-start;
     gap: var(--sp-md);
     width: 100%;
     max-width: 420px;
+    /* Nunca mais largo que a viewport, com a margem que o container já dá. */
+    box-sizing: border-box;
     transition: transform 0.3s ease-out, opacity 0.3s ease-out;
     border-left: 4px solid var(--border-color);
 }

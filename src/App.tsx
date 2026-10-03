@@ -33,13 +33,17 @@ function App() {
     document.body.className = `font-size-${fontSize}`;
   }, [fontSize]);
 
-  // Barra de status amarelo-âmbar (mesma cor do theme_color do PWA original).
-  // setOverlaysWebView(false) é o que garante que a barra fique pintada em vez
-  // de o app desenhar por baixo dela (comportamento edge-to-edge do Android 15+).
+  // [CORREÇÃO DE VERDADE] setOverlaysWebView()/setBackgroundColor() usam uma
+  // API do Android anterior ao Android 11 (SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN),
+  // que o Android 15 não respeita mais de forma confiável — e brigava com o
+  // adjustMarginsForEdgeToEdge:auto (esse sim moderno) que cuida do CONTEÚDO.
+  // Resultado: a barra ficava transparente de qualquer jeito. Mantemos só
+  // setStyle (API moderna, WindowInsetsControllerCompat, funciona bem) pra
+  // cor do ÍCONE; a cor de FUNDO da barra agora é uma div própria no CSS
+  // (ver .statusBarFill), desenhada atrás da barra transparente do sistema —
+  // é a abordagem que o próprio Google recomenda pra edge-to-edge de verdade.
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
-    StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
-    StatusBar.setBackgroundColor({ color: '#FBBF24' }).catch(() => {});
     StatusBar.setStyle({ style: Style.Light }).catch(() => {}); // ícones escuros (fundo claro)
   }, []);
 
@@ -89,7 +93,13 @@ function App() {
     setShowInstallPopup(false);
   };
 
-  if (showSplash) {
+  {/* [CORREÇÃO] No app nativo, a splash do Capacitor já mostra (fica visível
+      até CapacitorSplashScreen.hide() ser chamado). Esse componente React
+      mostrava o MESMO logo por baixo dela — a pessoa via a splash nativa
+      sumir e revelar essa segunda, quase idêntica, fazendo sua própria
+      animação. No nativo pulamos direto pro app real; no PWA/web (sem
+      splash nativa nenhuma) ele continua sendo a única splash que existe. */}
+  if (showSplash && !Capacitor.isNativePlatform()) {
     return <SplashScreen isFadingOut={isFadingOut} />;
   }
 
@@ -108,6 +118,7 @@ function App() {
 
   return (
     <div id="app-container">
+      {Capacitor.isNativePlatform() && <div className="statusBarFill" />}
       {screenContent}
       <InstallPromptPopup 
         show={showInstallPopup}

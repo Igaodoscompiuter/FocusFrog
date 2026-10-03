@@ -63,7 +63,19 @@
 .subtaskAddGroup input:focus { outline: none; }
 
 .modalFooter { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--surface-color); flex-shrink: 0; }
-.footerActions { display: flex; gap: 0.5rem; }
+.footerActions { display: flex; gap: 0.5rem; flex: 1; min-width: 0; }
+.footerActions > button { flex: 1; min-width: 0; white-space: nowrap; }
+
+/* [CORREÇÃO] 3 botões (Excluir + Salvar modelo + Atualizar) numa linha só,
+   sem quebra, estouravam a largura em telas estreitas — texto cortado/
+   vazando. "Excluir" virou ícone só (ação secundária, menos espaço), e o
+   rodapé agora pode quebrar linha como última rede de segurança. */
+.footerWrap {
+    flex-wrap: wrap;
+}
+.footerWrap .btn-icon {
+    flex-shrink: 0;
+}
 
 .categorySelector { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 

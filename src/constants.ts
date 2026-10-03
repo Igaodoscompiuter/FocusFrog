@@ -1,5 +1,5 @@
 
-import type { Quadrant, Routine, TaskTemplate, Tag } from './types';
+import type { Quadrant, Routine, TaskTemplate, Tag, Task } from './types';
 import { icons } from './components/Icons';
 
 export const quadrants: { id: Quadrant; title: string; subtitle: string; icon: keyof typeof icons; }[] = [
@@ -46,26 +46,6 @@ export const routineIcons: (keyof typeof icons)[] = [
 ];
 
 export const initialTaskTemplates: TaskTemplate[] = [
-    {
-        id: 80,
-        title: "Teste: Foco 5 Segundos (1 Ciclo)",
-        quadrant: 'do',
-        description: "Tarefa para testar um único ciclo de foco com 5 segundos.",
-        category: "Teste",
-        pomodoroEstimate: 1,
-        customDuration: 5 / 60, // 5 segundos
-        isDefault: true
-    },
-    {
-        id: 81,
-        title: "!!Teste!! 2 Ciclos (Foco 5s, Pausa 3s)",
-        quadrant: 'do',
-        description: "Tarefa para testar 2 ciclos com 5s de foco e 3s de pausa.",
-        category: "Teste",
-        pomodoroEstimate: 2,
-        customDuration: 5 / 60, // 5 segundos de foco
-        isDefault: true
-    },
     {
         id: 50, 
         title: "🐸 Card Especial FocusFrog N.1", 
@@ -141,3 +121,28 @@ export const initialRoutines: Routine[] = [
     { id: 'routine-study', name: 'Ritual de Hiperfoco', description: 'Elimine distrações antes de começar e quebre a tarefa até ela parecer ridícula de tão fácil.', icon: 'bookOpen', taskTemplateIds: [30, 31, 32, 33, 34], isDefault: true },
     { id: 'routine-shutdown', name: 'Desligamento Noturno', description: "Facilite a vida do seu \'Eu do Futuro\'. Reduza a ansiedade da manhã seguinte.", icon: 'moon', taskTemplateIds: [10, 11, 12, 13], isDefault: true },
 ];
+
+// ---------------------------------------------------------------
+// Card especial FocusFrog — estratégia de marketing: na primeira instalação,
+// já nasce como uma tarefa de verdade (não só disponível na Biblioteca) e
+// definido como o Sapo do Dia por padrão, pra todo usuário novo já ver essa
+// tela logo de cara.
+// ---------------------------------------------------------------
+export const FOCUS_FROG_MARKETING_TASK_ID = 'focusfrog-marketing-card-v1';
+
+export const focusFrogMarketingTask: Task = {
+    id: FOCUS_FROG_MARKETING_TASK_ID,
+    title: "🐸 Card Especial FocusFrog N.1",
+    quadrant: 'do',
+    status: 'todo',
+    displayOrder: 0,
+    description: "O FocusFrog é a sua arquitetura mental, transformando o caos TDAH em rotinas visuais e gerenciáveis. Ele ativa a Dopamina de micro-recompensa para te dar foco e paz",
+    pomodoroEstimate: 0,
+    subtasks: [
+        { id: 'ffm-1', text: "Siga nossa página ➕🐸", completed: false },
+        { id: 'ffm-2', text: "Acesse o link da bio pelo navegador 🔗🐸", completed: false },
+        { id: 'ffm-3', text: "Baixe o FocusFrog no seu celular 🐸💖", completed: false },
+        { id: 'ffm-4', text: "Crie rotinas e marque @focus.frog 💬🐸", completed: false },
+        { id: 'ffm-5', text: "Inspire outras pessoas com suas rotinas e estratégias próprias 🐸📅 ", completed: false },
+    ],
+};

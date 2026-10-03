@@ -42,14 +42,17 @@
 .quadrant-someday { grid-area: someday; }
 
 .quadrantColumn {
+    /* [CORREÇÃO] height:100% forçava TODO quadrante a esticar até a altura do
+       grid inteiro, mesmo vazio — por isso o vão enorme em "Foco Imediato (0)"
+       etc. Agora o card hug o próprio conteúdo; ganha min-height só pra ainda
+       dar uma área de soltar (drag-and-drop) razoável quando está vazio. */
     display: flex;
     flex-direction: column;
     gap: var(--sp-md);
-    height: 100%;
+    min-height: 120px;
     background-color: var(--surface-color);
     border-radius: var(--border-radius-lg);
     padding: var(--sp-lg);
-    overflow: hidden;
 }
 
 .quadrantHeader {
@@ -61,11 +64,14 @@
 }
 
 .taskList {
+    /* [CORREÇÃO] Idem — era height:100% esticando até o pai. Agora hug o
+       conteúdo (poucas tarefas = card pequeno) e só rola POR DENTRO quando a
+       lista fica realmente longa, em vez de empurrar a página toda pra baixo. */
     display: flex;
     flex-direction: column;
     gap: var(--sp-md);
-    min-height: 100px;
-    height: 100%;
+    min-height: 60px;
+    max-height: 50vh;
     overflow-y: auto;
 }
 
