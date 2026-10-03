@@ -1,182 +1,184 @@
+/* [PORTADO EXATO do zen-lake-v3.html — mesmas cores, tamanhos e estrutura,
+   não uma reinterpretação. Paleta fixa do protótipo (não usa os tokens de
+   tema do app) porque a carta é uma peça de identidade visual própria,
+   igual carta de Pokémon/Yu-Gi-Oh — não devia mudar com o tema do app. */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
   z-index: 2000;
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sp-lg);
-  animation: fadeIn 0.2s ease;
-  perspective: 800px; /* profundidade 3D pro giro do cartão (ver .card) */
+  padding: 24px;
+  opacity: 0;
+  animation: backdropIn 0.2s ease forwards;
 }
-@keyframes fadeIn { from { opacity: 0; } }
+@keyframes backdropIn { to { opacity: 1; } }
 
 .card {
+  position: relative;
   width: 100%;
-  max-width: 320px;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-xl);
-  padding: var(--sp-lg);
-  position: relative;
-  overflow: hidden;
-  /* [PORTADO do protótipo] O cartão gira de lado (90°) até ficar de frente —
-     não é um flip de 2 faces (o protótipo não tem isso), é uma animação de
-     ENTRADA só. perspective no .overlay dá a profundidade pro giro parecer 3D. */
-  animation: cardReveal 0.5s cubic-bezier(.2, .8, .3, 1.1) forwards;
+  max-width: 300px;
+  border-radius: 20px;
+  padding: 4px; /* a "moldura" colorida por raridade aparece nesse respiro */
   transform: scale(0.85) rotateY(90deg);
+  animation: cardReveal 0.5s cubic-bezier(.2, .8, .3, 1.1) forwards;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
-@keyframes cardReveal {
-  to { transform: scale(1) rotateY(0deg); }
-}
+@keyframes cardReveal { to { transform: scale(1) rotateY(0deg); } }
 
-.closeButton {
-  position: absolute;
-  top: var(--sp-sm);
-  right: var(--sp-sm);
-  z-index: 2;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: var(--background-color-hover);
-  color: var(--text-color);
-  font-size: 1rem;
-  cursor: pointer;
+.card.common { background: linear-gradient(160deg, #6b7d6f, #3c473e); }
+.card.rare   { background: linear-gradient(160deg, #4FC3F7, #0d47a1); }
+.card.epic   { background: linear-gradient(160deg, #FFE082, #B45309); }
+
+.cardInner {
+  background: #16211e;
+  border-radius: 17px;
+  padding: 14px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.glow {
-  position: absolute;
-  top: -35%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(10px);
-}
-.glow.common { background: radial-gradient(closest-side, rgba(139, 195, 74, 0.3), transparent 70%); }
-.glow.rare { background: radial-gradient(closest-side, rgba(79, 195, 247, 0.35), transparent 70%); }
-.glow.epic { background: radial-gradient(closest-side, rgba(251, 191, 36, 0.45), transparent 70%); animation: pulse 1.8s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
-
-.topRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--sp-sm);
-  margin-bottom: var(--sp-sm);
+  flex-direction: column;
+  gap: 10px;
   position: relative;
-  z-index: 1;
-}
-
-.name {
-  font-family: var(--font-poppins);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0;
-  padding-right: 28px; /* espaço pro X */
-}
-.countTag {
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--text-secondary-color);
-}
-
-.badge {
-  flex-shrink: 0;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-top: 2px;
-}
-.badge.common { background: rgba(139, 195, 74, 0.2); color: #8BC34A; }
-.badge.rare { background: rgba(79, 195, 247, 0.2); color: #4FC3F7; }
-.badge.epic { background: rgba(251, 191, 36, 0.25); color: var(--accent-color); }
-
-.frogStage {
-  position: relative;
-  height: 130px;
-  margin: 0 auto var(--sp-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(120% 100% at 50% 20%, rgba(255,255,255,0.06), transparent 70%);
-  border-radius: var(--border-radius-lg);
   overflow: hidden;
 }
-.frogStage .shine {
+
+.shine {
   position: absolute;
-  top: -50%; left: -60%;
-  width: 40%; height: 200%;
-  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
   transform: rotate(20deg);
   animation: shineSweep 2.6s ease-in-out infinite;
   pointer-events: none;
 }
 @keyframes shineSweep { 0% { left: -60%; } 50%, 100% { left: 140%; } }
 
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #eef5f1;
+  margin: 0;
+}
+.countTag {
+  opacity: 0.6;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #1b1b1b;
+  flex-shrink: 0;
+}
+.badge.common { background: #8BC34A; }
+.badge.rare { background: #4FC3F7; }
+.badge.epic { background: linear-gradient(90deg, #FBBF24, #FFE082); animation: badgeGlow 1.6s ease-in-out infinite; }
+@keyframes badgeGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+
+.frogStage {
+  position: relative;
+  border-radius: 14px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 100% at 50% 20%, #1b7568, #0a3733);
+  overflow: hidden;
+}
+.portraitGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.frogStage.common .portraitGlow { background: radial-gradient(closest-side, rgba(139, 195, 74, 0.25), transparent 70%); }
+.frogStage.rare .portraitGlow { background: radial-gradient(closest-side, rgba(79, 195, 247, 0.4), transparent 70%); animation: glowPulse 2.2s ease-in-out infinite; }
+.frogStage.epic .portraitGlow { background: radial-gradient(closest-side, rgba(251, 191, 36, 0.5), transparent 70%); animation: glowPulse 1.6s ease-in-out infinite; }
+@keyframes glowPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+
 .flavor {
-  font-size: 0.85rem;
+  font-size: 12.5px;
   font-style: italic;
-  color: var(--text-secondary-color);
-  text-align: center;
+  color: #9db8ac;
   line-height: 1.4;
-  margin: 0 0 var(--sp-md);
+  margin: 0;
 }
 
 .statsWrap {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-xs);
-  margin-bottom: var(--sp-md);
+  gap: 6px;
 }
 .statRow {
   display: flex;
   align-items: center;
-  gap: var(--sp-sm);
-  font-size: 0.75rem;
-  color: var(--text-secondary-color);
+  gap: 8px;
+  font-size: 11px;
+  color: #9db8ac;
 }
 .statLabel { width: 78px; flex-shrink: 0; }
 .statTrack {
   flex: 1;
   height: 6px;
   border-radius: 3px;
-  background: var(--background-color-hover);
+  background: rgba(128, 128, 128, 0.25);
   overflow: hidden;
 }
 .statFill {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: var(--accent-color);
-  animation: fillIn 0.6s ease forwards;
+  background: #FBBF24;
+  animation: fillIn 0.7s ease forwards;
   transform-origin: left;
 }
 @keyframes fillIn { from { transform: scaleX(0); } }
 
-.actionBtn {
-  width: 100%;
-  padding: var(--sp-sm) var(--sp-md);
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--border-color);
-  background: var(--background-color-hover);
-  color: var(--text-color);
-  font-weight: 600;
-  font-size: 0.9rem;
+.closeButton {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #16211e;
+  border: 1px solid #24352f;
+  color: #eef5f1;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
-.actionBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+
+.actionsWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
 }
+.actionBtn {
+  font: inherit;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #16211e;
+  color: #eef5f1;
+  border: 1px solid #24352f;
+  border-radius: 999px;
+}
+.actionBtn:active { transform: scale(0.97); }
+.actionBtn:disabled { opacity: 0.5; cursor: not-allowed; }

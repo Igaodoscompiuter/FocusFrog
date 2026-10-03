@@ -64,21 +64,6 @@ const getSmartLeapPosition = (frog: PondFrog, allFrogs: PondFrog[], jumpDistance
   return getNewLeapPosition(frog, jumpDistance, bounds);
 };
 
-// Diversidade: primeiro espécies ainda não presentes, depois alterna — evita a lagoa virar só duplicatas.
-const diversityOrder = (candidates: PondFrog[], present: { speciesId: string }[]): PondFrog[] => {
-  const seen = new Set(present.map(f => f.speciesId));
-  const bySpecies = new Map<string, PondFrog[]>();
-  candidates.forEach(c => { const l = bySpecies.get(c.speciesId) ?? []; l.push(c); bySpecies.set(c.speciesId, l); });
-  const result: PondFrog[] = [];
-  bySpecies.forEach((list, speciesId) => { if (!seen.has(speciesId) && list.length > 0) result.push(list.shift()!); });
-  let added = true;
-  while (added) {
-    added = false;
-    bySpecies.forEach(list => { const next = list.shift(); if (next) { result.push(next); added = true; } });
-  }
-  return result;
-};
-
 const spawnFrog = (f: FrogInput, location: 'pond' | 'storage' = 'storage'): PondFrog => ({
   ...f,
   top: random(POND_BOUNDS.top, POND_BOUNDS.bottom),
@@ -192,23 +177,18 @@ export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs
         }
       }
 
+      // [CORREÇÃO] Removido o "puxar sozinho do viveiro a cada tick quando
+      // sobra vaga" — isso NÃO existe no protótipo original (conferido: o
+      // viveiro lá só muda por ação explícita do usuário, nunca pela
+      // simulação). Eu tinha herdado isso de um sistema de fila automática
+      // mais antigo, de antes do viveiro manual existir — e ele brigava
+      // direto com "Guardar no viveiro": o usuário guardava um sapo, e 2s
+      // depois (próximo tick) esse código via "tem vaga" e puxava ele (ou
+      // outro) de volta sozinho, parecendo que o sapo tinha sido excluído.
+      // Agora o viveiro só muda via sendToStorage/releaseToPond — igual o
+      // protótipo.
       const finalFrogs = updatedFrogs.filter(f => f.merging || f.scale >= MIN_FROG_SCALE);
-      const active = finalFrogs.filter(f => !f.merging);
-      let refill: PondFrog[] = [];
-      if (active.length < MAX_POND_FROGS) {
-        setStorageFrogs(prevStorage => {
-          if (prevStorage.length === 0) return prevStorage;
-          const ordered = diversityOrder(prevStorage, active);
-          const room = MAX_POND_FROGS - active.length;
-          const toRelease = ordered.slice(0, room);
-          if (toRelease.length === 0) return prevStorage;
-          refill = toRelease.map(f => ({ ...f, location: 'pond' as const, ...spawnFrog(f, 'pond'), id: f.id, count: f.count }));
-          const releasedIds = new Set(toRelease.map(f => f.id));
-          return prevStorage.filter(f => !releasedIds.has(f.id));
-        });
-      }
-
-      setPondFrogs([...finalFrogs, ...refill]);
+      setPondFrogs(finalFrogs);
     }, SIMULATION_TICK_RATE);
 
     return () => clearInterval(gameLoop);
