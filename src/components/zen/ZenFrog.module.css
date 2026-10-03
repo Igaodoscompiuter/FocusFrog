@@ -14,9 +14,10 @@
 }
 
 .creatureWrapper {
-    /* O tamanho foi reduzido em 30% (de 80px para 56px) */
-    width: 56px; 
-    height: 56px;
+    /* [CORREÇÃO] width/height agora vêm da prop `size` (inline, em ZenFrog.tsx)
+       — antes eram fixos aqui em 56px e a FrogCard tentava aumentar via
+       transform:scale() externo, que brigava com o transform que o Framer
+       Motion já aplica inline no mesmo elemento (causava achatamento). */
     display: flex;
     align-items: center;
     justify-content: center;

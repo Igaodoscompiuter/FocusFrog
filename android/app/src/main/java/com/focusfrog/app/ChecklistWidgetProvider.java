@@ -31,7 +31,9 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
     public static final String ACTION_TOGGLE = "com.focusfrog.app.WIDGET_TOGGLE_ITEM";
     public static final String ACTION_RESET_ALL = "com.focusfrog.app.WIDGET_RESET_ALL";
     public static final String EXTRA_ITEM_ID = "item_id";
-    private static final int MAX_ITEMS = 5;
+    private static final int MAX_ROWS = 3;
+    private static final int MAX_COLS = 2;
+    private static final int MAX_ITEMS = MAX_ROWS * MAX_COLS; // 6 vagas na grade
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -47,15 +49,24 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         updateWidget(context, appWidgetManager, appWidgetId);
     }
 
-    /** Quantas linhas cabem de verdade na altura atual do widget (o usuário pode
-     *  redimensionar livremente) — evita tanto cortar item quanto sobrar vão vazio. */
-    private static int computeVisibleRows(AppWidgetManager appWidgetManager, int appWidgetId) {
+    /** 1 coluna em widgets estreitos, 2 colunas quando há largura de sobra —
+     *  é o que faz os itens se reorganizarem de verdade, não só encolherem. */
+    private static int computeColumns(AppWidgetManager appWidgetManager, int appWidgetId) {
+        android.os.Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        int widthDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0) : 0;
+        if (widthDp <= 0) return 1; // sem informação ainda — assume o mais conservador
+        return widthDp >= 250 ? 2 : 1;
+    }
+
+    /** Quantas LINHAS da grade cabem de verdade na altura atual do widget —
+     *  evita tanto cortar item quanto sobrar vão vazio embaixo. */
+    private static int computeRows(AppWidgetManager appWidgetManager, int appWidgetId) {
         android.os.Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
         int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
-        if (heightDp <= 0) return MAX_ITEMS; // sem informação ainda (1ª renderização) — assume o máximo
+        if (heightDp <= 0) return MAX_ROWS;
         // ~14dp de padding em cada ponta + ~34dp de cabeçalho/divisor + ~36dp por linha.
         int available = (heightDp - 14 - 14 - 34) / 36;
-        return Math.max(1, Math.min(MAX_ITEMS, available));
+        return Math.max(1, Math.min(MAX_ROWS, available));
     }
 
     @Override
@@ -144,14 +155,19 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         String raw = prefs.getString(PREFS_KEY, "[]");
 
         int[] rowLayoutIds = {
-            R.id.widget_row_1, R.id.widget_row_2, R.id.widget_row_3, R.id.widget_row_4, R.id.widget_row_5
+            R.id.widget_row_1, R.id.widget_row_2, R.id.widget_row_3,
+            R.id.widget_row_4, R.id.widget_row_5, R.id.widget_row_6
         };
         int[] rowTextIds = {
-            R.id.widget_text_1, R.id.widget_text_2, R.id.widget_text_3, R.id.widget_text_4, R.id.widget_text_5
+            R.id.widget_text_1, R.id.widget_text_2, R.id.widget_text_3,
+            R.id.widget_text_4, R.id.widget_text_5, R.id.widget_text_6
         };
         int[] rowIconIds = {
-            R.id.widget_icon_1, R.id.widget_icon_2, R.id.widget_icon_3, R.id.widget_icon_4, R.id.widget_icon_5
+            R.id.widget_icon_1, R.id.widget_icon_2, R.id.widget_icon_3,
+            R.id.widget_icon_4, R.id.widget_icon_5, R.id.widget_icon_6
         };
+        // Cada linha visual da grade tem 2 células (índices pares/ímpares).
+        int[] gridRowIds = { R.id.widget_grid_row_1, R.id.widget_grid_row_2, R.id.widget_grid_row_3 };
 
         JSONArray items;
         try {
@@ -178,10 +194,23 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         );
         views.setOnClickPendingIntent(R.id.widget_reset_button, resetPi);
 
-        int visibleRows = computeVisibleRows(appWidgetManager, appWidgetId);
-        int count = Math.min(items.length(), visibleRows);
+        // [NOVO] Grade de verdade: colunas vêm da LARGURA, linhas vêm da ALTURA —
+        // os itens se reorganizam (1 ou 2 colunas) em vez de só aparecer/sumir.
+        int columns = computeColumns(appWidgetManager, appWidgetId);
+        int visibleGridRows = computeRows(appWidgetManager, appWidgetId);
+        int visibleSlots = columns * visibleGridRows;
+        int count = Math.min(items.length(), Math.min(visibleSlots, MAX_ITEMS));
+
+        // Esconde linhas INTEIRAS da grade além do que a altura permite.
+        for (int r = 0; r < MAX_ROWS; r++) {
+            views.setViewVisibility(gridRowIds[r], r < visibleGridRows ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+
         for (int i = 0; i < MAX_ITEMS; i++) {
-            if (i >= visibleRows) {
+            boolean isSecondColumn = (i % MAX_COLS) == 1;
+            boolean columnAllowed = !isSecondColumn || columns >= 2;
+            boolean rowAllowed = (i / MAX_COLS) < visibleGridRows;
+            if (!columnAllowed || !rowAllowed) {
                 views.setViewVisibility(rowLayoutIds[i], android.view.View.GONE);
                 continue;
             }

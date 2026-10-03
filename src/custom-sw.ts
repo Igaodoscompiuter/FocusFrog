@@ -57,7 +57,6 @@ self.addEventListener('message', (event) => {
 
 // --- INÍCIO: NOVA LÓGICA PARA NOTIFICAÇÕES PUSH ---
 self.addEventListener('push', (event) => {
-    console.log('[Service Worker] Push Recebido.');
 
     // Extrai os dados da notificação push. 
     // Espera-se que o servidor envie um JSON com o formato { title: '', body: '', ... }
@@ -80,7 +79,6 @@ self.addEventListener('push', (event) => {
 
 // Listener para cliques na notificação
 self.addEventListener('notificationclick', (event) => {
-    console.log('[Service Worker] Clique na notificação recebido.');
 
     event.notification.close(); // Fecha a notificação
 

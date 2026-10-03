@@ -71,7 +71,7 @@
   justify-content: center;
 }
 /* a própria ZenFrog tem 56px fixos — amplia só a área ao redor, a arte escala via transform */
-.frogStage > div > div { transform: scale(2); }
+
 
 .badge {
   display: block;

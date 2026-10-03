@@ -25,7 +25,7 @@ export const FrogCard: React.FC<FrogCardProps> = ({ speciesId, onClose }) => {
                 <button className={styles.closeButton} onClick={onClose} aria-label="Fechar">✕</button>
                 <div className={`${styles.glow} ${styles[species.rarity]}`} />
                 <div className={styles.frogStage}>
-                    <ZenFrog speciesId={species.id} stage="adult" />
+                    <ZenFrog speciesId={species.id} stage="adult" size={120} />
                 </div>
                 <span className={`${styles.badge} ${styles[species.rarity]}`}>{rarityLabel[species.rarity]}</span>
                 <h3 className={styles.name}>{species.name}</h3>

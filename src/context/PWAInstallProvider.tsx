@@ -37,13 +37,11 @@ export const PWAInstallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       e.preventDefault();
       deferredPrompt.current = e as BeforeInstallPromptEvent;
       setIsInstallable(true);
-      console.log('Evento beforeinstallprompt capturado com sucesso!');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     const handleAppInstalled = () => {
-        console.log('PWA instalado com sucesso!');
         // Aqui também poderíamos rastrear, mas rastrear no userChoice é mais direto
         // para atribuir a fonte do clique.
         setIsInstallable(false);
@@ -60,14 +58,11 @@ export const PWAInstallProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const triggerInstall = async () => {
     if (deferredPrompt.current) {
-      console.log('A acionar o prompt de instalação...');
       await deferredPrompt.current.prompt();
 
       const { outcome } = await deferredPrompt.current.userChoice;
-      console.log(`Escolha do utilizador: ${outcome}`);
 
       if (outcome === 'accepted') {
-          console.log('O utilizador aceitou a instalação. A rastrear o evento...');
           // Rastreia o evento de instalação com a fonte correta, como definido no manual!
           trackPWAInstall('install_button');
           setIsInstallable(false);

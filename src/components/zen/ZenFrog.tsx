@@ -30,9 +30,14 @@ interface ZenFrogProps {
    *  começou (a posição em si é controlada pelo motion.div pai, no ZenPond). */
   top?: number;
   left?: number;
+  /** Tamanho em px (padrão 56, igual ao lago). A FrogCard usa um valor maior
+   *  pra exibir o retrato — via prop de verdade, não via transform:scale()
+   *  externo, que entra em conflito com o transform que o Framer Motion já
+   *  aplica inline no mesmo elemento (causava o "achatamento" no card). */
+  size?: number;
 }
 
-export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left }) => {
+export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, size = 56 }) => {
   const species = frogSpecies[speciesId];
   const [showCard, setShowCard] = useState(false);
 
@@ -82,6 +87,7 @@ export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left })
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.5, opacity: 0 }}
         className={styles.creatureWrapper}
+        style={{ width: size, height: size }}
         onClick={() => setShowCard(true)}
         role="button"
         aria-label={`Ver ${species.name}`}

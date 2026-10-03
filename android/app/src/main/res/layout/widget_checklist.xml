@@ -54,78 +54,78 @@
             android:src="@drawable/widget_reset_icon" />
     </LinearLayout>
 
-    <!-- [CORREÇÃO] <View> puro não está na lista de views que o RemoteViews
-         aceita inflar (a inflação acontece no processo do LAUNCHER, não no do
-         app — por isso nenhum try/catch meu pegava esse erro). Um LinearLayout
-         vazio com background é 100% suportado e dá o mesmo efeito visual. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="6dp"
+        android:layout_marginBottom="4dp"
         android:background="#2D3748" />
 
-    <!-- Linha 1 -->
+    <!-- Grade 2 colunas x 3 linhas (6 vagas). O Java decide em tempo real
+         quantas colunas/linhas mostrar, de acordo com a largura/altura reais
+         que a pessoa escolheu ao redimensionar o widget na tela inicial. -->
     <LinearLayout
-        android:id="@+id/widget_row_1"
+        android:id="@+id/widget_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:minHeight="36dp">
-        <ImageView android:id="@+id/widget_icon_1" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
-        <TextView android:id="@+id/widget_text_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
+        android:orientation="vertical">
+
+        <!-- Linha 1 -->
+        <LinearLayout
+            android:id="@+id/widget_grid_row_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout android:id="@+id/widget_row_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingEnd="6dp">
+                <ImageView android:id="@+id/widget_icon_1" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
+                <TextView android:id="@+id/widget_text_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/widget_row_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingStart="6dp">
+                <ImageView android:id="@+id/widget_icon_2" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
+                <TextView android:id="@+id/widget_text_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Linha 2 -->
+        <LinearLayout
+            android:id="@+id/widget_grid_row_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout android:id="@+id/widget_row_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingEnd="6dp">
+                <ImageView android:id="@+id/widget_icon_3" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
+                <TextView android:id="@+id/widget_text_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/widget_row_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingStart="6dp">
+                <ImageView android:id="@+id/widget_icon_4" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
+                <TextView android:id="@+id/widget_text_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Linha 3 -->
+        <LinearLayout
+            android:id="@+id/widget_grid_row_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout android:id="@+id/widget_row_5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingEnd="6dp">
+                <ImageView android:id="@+id/widget_icon_5" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
+                <TextView android:id="@+id/widget_text_5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/widget_row_6" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingStart="6dp">
+                <ImageView android:id="@+id/widget_icon_6" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
+                <TextView android:id="@+id/widget_text_6" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Linha 2 -->
-    <LinearLayout
-        android:id="@+id/widget_row_2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:minHeight="36dp">
-        <ImageView android:id="@+id/widget_icon_2" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
-        <TextView android:id="@+id/widget_text_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
-    </LinearLayout>
-
-    <!-- Linha 3 -->
-    <LinearLayout
-        android:id="@+id/widget_row_3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:minHeight="36dp">
-        <ImageView android:id="@+id/widget_icon_3" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
-        <TextView android:id="@+id/widget_text_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
-    </LinearLayout>
-
-    <!-- Linha 4 -->
-    <LinearLayout
-        android:id="@+id/widget_row_4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:minHeight="36dp">
-        <ImageView android:id="@+id/widget_icon_4" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
-        <TextView android:id="@+id/widget_text_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
-    </LinearLayout>
-
-    <!-- Linha 5 -->
-    <LinearLayout
-        android:id="@+id/widget_row_5"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:minHeight="36dp">
-        <ImageView android:id="@+id/widget_icon_5" android:layout_width="22dp" android:layout_height="22dp" android:layout_marginEnd="10dp" android:src="@drawable/widget_checkbox_unchecked" />
-        <TextView android:id="@+id/widget_text_5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" />
-    </LinearLayout>
-
-    <!-- Estado vazio (só aparece quando não há nenhum item) -->
+    <!-- Estado vazio -->
     <TextView
         android:id="@+id/widget_empty_state"
         android:layout_width="match_parent"

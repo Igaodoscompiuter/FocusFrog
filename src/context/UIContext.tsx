@@ -22,7 +22,6 @@ const initializeAudio = () => {
             AudioEngine.effectsGain = AudioEngine.context.createGain();
             AudioEngine.effectsGain.gain.value = 0.4;
             AudioEngine.effectsGain.connect(AudioEngine.context.destination);
-            console.log("Audio Engine Initialized.");
         } catch (e) {
             console.error("Failed to initialize AudioContext:", e);
         }
@@ -140,7 +139,6 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
         if (context.state === 'suspended') {
             context.resume().then(() => {
-                console.log("AudioContext Resumed!");
                 setSoundEnabled(current => !current);
             });
         } else {

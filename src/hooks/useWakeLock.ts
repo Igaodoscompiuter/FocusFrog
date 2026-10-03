@@ -11,7 +11,6 @@ export const useWakeLock = () => {
             try {
                 const wl = await (navigator as any).wakeLock.request('screen');
                 setWakeLock(wl);
-                console.log('Screen Wake Lock ativado!');
             } catch (err: any) {
                 console.error(`${err.name}, ${err.message}`);
             }
@@ -23,7 +22,6 @@ export const useWakeLock = () => {
             try {
                 await wakeLock.release();
                 setWakeLock(null);
-                console.log('Screen Wake Lock liberado.');
             } catch (err: any) {
                 console.error(`${err.name}, ${err.message}`);
             }

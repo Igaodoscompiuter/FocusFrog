@@ -16,7 +16,6 @@ export interface SWMessage {
 export function postMessageToSW(message: SWMessage) {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage(message);
-        console.log('Mensagem enviada para o SW:', message.type);
     } else {
         console.warn('Não foi possível enviar a mensagem para o Service Worker. Controller não encontrado.');
     }

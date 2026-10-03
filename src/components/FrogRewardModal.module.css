@@ -62,8 +62,7 @@
   align-items: center;
   justify-content: center;
 }
-/* ZenFrog tem 56px fixos — amplia a arte em vez de deixá-la pequena no cartão. */
-.frogStage > div > div { transform: scale(2.2); }
+
 
 .badge {
   display: inline-block;
