@@ -30,14 +30,24 @@ interface ZenFrogProps {
    *  começou (a posição em si é controlada pelo motion.div pai, no ZenPond). */
   top?: number;
   left?: number;
+  /** ID da instância (frog.id) — só existe quando chamado de dentro do Lago
+   *  Zen (via ZenPond). Permite a carta achar a instância certa no Context
+   *  pra saber quantas vezes fundiu (count) e se guardar/soltar faz sentido.
+   *  Sem isso (ex.: FrogRewardModal), a carta mostra só os dados da espécie. */
+  frogId?: string;
   /** Tamanho em px (padrão 56, igual ao lago). A FrogCard usa um valor maior
    *  pra exibir o retrato — via prop de verdade, não via transform:scale()
    *  externo, que entra em conflito com o transform que o Framer Motion já
    *  aplica inline no mesmo elemento (causava o "achatamento" no card). */
   size?: number;
+  /** [CORREÇÃO] Quando a ZenFrog é usada só pra EXIBIR (dentro da própria
+   *  FrogCard, ou na FrogRewardModal), ela não deve abrir outra carta ao ser
+   *  tocada — sem isso, tocar no retrato da carta abria uma carta por cima
+   *  da outra, repetidamente. Padrão true (lago) pra não quebrar o uso normal. */
+  clickable?: boolean;
 }
 
-export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, size = 56 }) => {
+export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, frogId, size = 56, clickable = true }) => {
   const species = frogSpecies[speciesId];
   const [showCard, setShowCard] = useState(false);
 
@@ -87,10 +97,10 @@ export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, s
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.5, opacity: 0 }}
         className={styles.creatureWrapper}
-        style={{ width: size, height: size }}
-        onClick={() => setShowCard(true)}
-        role="button"
-        aria-label={`Ver ${species.name}`}
+        style={{ width: size, height: size, cursor: clickable ? 'pointer' : 'default' }}
+        onClick={clickable ? () => setShowCard(true) : undefined}
+        role={clickable ? 'button' : undefined}
+        aria-label={clickable ? `Ver ${species.name}` : undefined}
       >
         <svg viewBox="0 0 100 100" className={styles.frogContainer}>
           {/* Pivô do pulo inteiro ancorado nos pés — todo o corpo deforma junto. */}
@@ -123,7 +133,7 @@ export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, s
           </motion.g>
         </svg>
       </motion.div>
-      {showCard && <FrogCard speciesId={speciesId} onClose={() => setShowCard(false)} />}
+      {showCard && <FrogCard speciesId={speciesId} frogId={frogId} onClose={() => setShowCard(false)} />}
     </div>
   );
 };

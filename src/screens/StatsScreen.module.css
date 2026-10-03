@@ -90,16 +90,40 @@
 }
 
 .frogPondCard {
-  /* [CORREÇÃO] 350px fixos, somados ao resto da tela (card de sequência +
-     2 caixas de estatística + lista de coleção), estourava o viewport em
-     telas menores — sobrava um pequeno espaço rolável vazio embaixo. */
+  /* [CORREÇÃO DE VERDADE] A altura fixa de 290px era de ANTES do lago virar
+     um retângulo 3:4 (igual o protótipo) — o lago queria ser mais alto que
+     isso, e sem overflow:hidden ele vazava visualmente por cima do que vinha
+     depois na página (exatamente o "lago jogado em cima" relatado). Agora o
+     card cresce com o conteúdo de verdade, com overflow:hidden como rede de
+     segurança — a página inteira já rola normalmente por fora (screen-content). */
   background: var(--surface-color);
   padding: var(--sp-md);
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-color);
-  height: 290px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.pondHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+}
+.pondHeaderRow .sectionTitle { margin-bottom: 0; }
+.viveiroBtn {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--background-color-hover);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .sectionTitle {

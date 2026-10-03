@@ -189,6 +189,12 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 }
 
                 if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
+                // [CORREÇÃO] Faltava justamente essa notificação — ao concluir de vez
+                // (não ir pra pausa), o código só limpava o estado e CANCELAVA a
+                // notificação do serviço em primeiro plano (correto, a sessão acabou),
+                // mas nunca avisava a conclusão em si. Com o app em segundo plano,
+                // o usuário não ficava sabendo que tinha terminado.
+                schedulePhaseEndNotification('✅ Foco concluído!', `Você terminou seu bloco de foco${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''}.`, Date.now());
                 stopAndReset();
 
             } else {

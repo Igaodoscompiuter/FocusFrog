@@ -4,6 +4,8 @@ import { useTasks } from '../context/TasksContext';
 import { usePomodoro } from '../context/PomodoroContext';
 import { useUser } from '../context/UserContext';
 import { ZenPond } from '../components/ZenPond';
+import { ZenPondProvider, useZenPond } from '../context/ZenPondContext';
+import { ViveiroSheet } from '../components/zen/ViveiroSheet';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
 import { frogSpecies, FrogSpeciesData } from '../utils/frogSpecies';
@@ -11,12 +13,27 @@ import { LoreModal } from '../components/modals/LoreModal';
 
 const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
+/** Cabeçalho "Lagoa X/8 · Viveiro N" — precisa estar DENTRO do
+ *  ZenPondProvider pra ler os contadores reais via contexto. */
+const ZenPondHeader: React.FC<{ onOpenViveiro: () => void }> = ({ onOpenViveiro }) => {
+    const { pondFrogs, storageFrogs, maxPond } = useZenPond();
+    return (
+        <div className={styles.pondHeaderRow}>
+            <h2 className={styles.sectionTitle}>Jardim Zen</h2>
+            <button className={styles.viveiroBtn} onClick={onOpenViveiro}>
+                Lagoa {pondFrogs.filter(f => !f.merging).length}/{maxPond} · 🧺 {storageFrogs.length}
+            </button>
+        </div>
+    );
+};
+
 export const StatsScreen: React.FC = () => {
   const { tasks } = useTasks();
   const { pomodorosCompleted } = usePomodoro();
   const { collectedFrogs } = useUser();
   
   const [selectedFrog, setSelectedFrog] = useState<FrogSpeciesData | null>(null);
+  const [showViveiro, setShowViveiro] = useState(false);
 
   // [CORREÇÃO] Filtra a lista de sapos para remover quaisquer valores inválidos ou `undefined`.
   // Isso garante que apenas IDs de espécies existentes sejam usados nos cálculos seguintes.
@@ -107,14 +124,17 @@ export const StatsScreen: React.FC = () => {
         </div>
         
         <div className={styles.frogPondCard}>
-            <h2 className={styles.sectionTitle}>Jardim Zen</h2>
-            <ZenPond collectedFrogs={frogsForPond}> 
-                {frogsForPond.length === 0 && (
-                    <p className={styles.emptyPondMessage}>
-                        Complete sessões de foco para colecionar sapos!
-                    </p>
-                )}
-            </ZenPond>
+            <ZenPondProvider collectedFrogs={frogsForPond}>
+                <ZenPondHeader onOpenViveiro={() => setShowViveiro(true)} />
+                <ZenPond>
+                    {frogsForPond.length === 0 && (
+                        <p className={styles.emptyPondMessage}>
+                            Complete sessões de foco para colecionar sapos!
+                        </p>
+                    )}
+                </ZenPond>
+                {showViveiro && <ViveiroSheet onClose={() => setShowViveiro(false)} />}
+            </ZenPondProvider>
         </div>
 
         {frogCollection.length > 0 && (

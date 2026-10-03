@@ -31,7 +31,7 @@ export const FrogRewardModal: React.FC = () => {
                 <div className={`${styles.glow} ${styles[species.rarity]}`} />
                 <p className={styles.eyebrow}>🐸 Novo sapo coletado!</p>
                 <div className={styles.frogStage}>
-                    <ZenFrog speciesId={species.id} stage="adult" size={130} />
+                    <ZenFrog speciesId={species.id} stage="adult" size={130} clickable={false} />
                 </div>
                 <span className={`${styles.badge} ${styles[species.rarity]}`}>{rarityLabel[species.rarity]}</span>
                 <h3 className={styles.name}>{species.name}</h3>

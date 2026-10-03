@@ -8,29 +8,34 @@
   justify-content: center;
   padding: var(--sp-lg);
   animation: fadeIn 0.2s ease;
+  perspective: 800px; /* profundidade 3D pro giro do cartão (ver .card) */
 }
 @keyframes fadeIn { from { opacity: 0; } }
 
 .card {
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-xl);
   padding: var(--sp-lg);
   position: relative;
   overflow: hidden;
-  animation: popIn 0.3s cubic-bezier(.2, .8, .3, 1.2);
+  /* [PORTADO do protótipo] O cartão gira de lado (90°) até ficar de frente —
+     não é um flip de 2 faces (o protótipo não tem isso), é uma animação de
+     ENTRADA só. perspective no .overlay dá a profundidade pro giro parecer 3D. */
+  animation: cardReveal 0.5s cubic-bezier(.2, .8, .3, 1.1) forwards;
+  transform: scale(0.85) rotateY(90deg);
 }
-@keyframes popIn {
-  from { transform: scale(0.85) translateY(8px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
+@keyframes cardReveal {
+  to { transform: scale(1) rotateY(0deg); }
 }
 
 .closeButton {
   position: absolute;
   top: var(--sp-sm);
   right: var(--sp-sm);
+  z-index: 2;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -42,7 +47,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
 }
 
 .glow {
@@ -50,8 +54,8 @@
   top: -35%;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 200px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
   pointer-events: none;
   filter: blur(10px);
@@ -61,38 +65,118 @@
 .glow.epic { background: radial-gradient(closest-side, rgba(251, 191, 36, 0.45), transparent 70%); animation: pulse 1.8s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
 
-.frogStage {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto var(--sp-sm);
+.topRow {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+  position: relative;
+  z-index: 1;
 }
-/* a própria ZenFrog tem 56px fixos — amplia só a área ao redor, a arte escala via transform */
 
+.name {
+  font-family: var(--font-poppins);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+  padding-right: 28px; /* espaço pro X */
+}
+.countTag {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-secondary-color);
+}
 
 .badge {
-  display: block;
-  width: fit-content;
-  margin: 0 auto var(--sp-xs);
+  flex-shrink: 0;
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 10px;
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  margin-top: 2px;
 }
 .badge.common { background: rgba(139, 195, 74, 0.2); color: #8BC34A; }
 .badge.rare { background: rgba(79, 195, 247, 0.2); color: #4FC3F7; }
 .badge.epic { background: rgba(251, 191, 36, 0.25); color: var(--accent-color); }
 
-.name {
-  font-family: var(--font-poppins);
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text-color);
+.frogStage {
+  position: relative;
+  height: 130px;
+  margin: 0 auto var(--sp-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 100% at 50% 20%, rgba(255,255,255,0.06), transparent 70%);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+.frogStage .shine {
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: rotate(20deg);
+  animation: shineSweep 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shineSweep { 0% { left: -60%; } 50%, 100% { left: 140%; } }
+
+.flavor {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-secondary-color);
   text-align: center;
-  margin: 0;
+  line-height: 1.4;
+  margin: 0 0 var(--sp-md);
+}
+
+.statsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  margin-bottom: var(--sp-md);
+}
+.statRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: 0.75rem;
+  color: var(--text-secondary-color);
+}
+.statLabel { width: 78px; flex-shrink: 0; }
+.statTrack {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--background-color-hover);
+  overflow: hidden;
+}
+.statFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent-color);
+  animation: fillIn 0.6s ease forwards;
+  transform-origin: left;
+}
+@keyframes fillIn { from { transform: scaleX(0); } }
+
+.actionBtn {
+  width: 100%;
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--background-color-hover);
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
