@@ -373,13 +373,17 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, [taskTemplates, setTaskTemplates, addNotification]);
 
     const handleAddTemplates = useCallback((templates: TaskTemplate[]) => {
-        const today = new Date().toISOString().split('T')[0];
+        // [CORREÇÃO] Antes toda tarefa de rotina ganhava dueDate=hoje automático,
+        // mesmo quando a rotina não tem relação nenhuma com um dia específico —
+        // isso inflava a Agenda de Hoje com tarefas que o usuário não agendou de
+        // propósito. A tarefa continua caindo certinho no quadrante dela (Foco
+        // Imediato, Agendar etc.) — só não reivindica "hoje" sozinha. Quem quiser
+        // mesmo agendar pra hoje ainda pode, editando a tarefa normalmente.
         const newTasks: Omit<Task, 'id' | 'status' | 'displayOrder'>[] = templates.map(template => ({
             ...template,
             quadrant: template.quadrant || 'inbox',
             pomodoroEstimate: template.pomodoroEstimate ?? 1,
             subtasks: template.subtasks?.map((st, i) => ({ id: `sub-${Date.now()}-${i}`, text: st.text, completed: false })),
-            dueDate: today,
         }));
         if (newTasks.length > 0) {
             handleAddTasks(newTasks);
