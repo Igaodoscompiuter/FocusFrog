@@ -61,71 +61,27 @@
         android:layout_marginBottom="4dp"
         android:background="#2D3748" />
 
-    <!-- Grade 2 colunas x 3 linhas (6 vagas). O Java decide em tempo real
-         quantas colunas/linhas mostrar, de acordo com a largura/altura reais
-         que a pessoa escolheu ao redimensionar o widget na tela inicial. -->
-    <LinearLayout
-        android:id="@+id/widget_grid"
+    <!-- [NOVO] GridView nativo em vez de um grid fixo "na mão": numColumns
+         auto_fit decide SOZINHO quantas colunas cabem pela largura real do
+         widget (1 coluna estreita = vira lista; largo = 2-3 colunas), e rola
+         verticalmente por padrão quando os itens não cabem na altura — é a
+         ferramenta certa do Android pra exatamente esse problema, em vez de
+         eu tentar recriar isso manualmente com linhas fixas que escondiam
+         item ou cortavam na borda. -->
+    <GridView
+        android:id="@+id/widget_grid_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:numColumns="auto_fit"
+        android:columnWidth="128dp"
+        android:stretchMode="columnWidth"
+        android:horizontalSpacing="4dp"
+        android:verticalSpacing="0dp"
+        android:gravity="start"
+        android:scrollbars="none" />
 
-        <!-- Linha 1 -->
-        <LinearLayout
-            android:id="@+id/widget_grid_row_1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <LinearLayout android:id="@+id/widget_row_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingEnd="6dp">
-                <ImageView android:id="@+id/widget_icon_1" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
-                <TextView android:id="@+id/widget_text_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/widget_row_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingStart="6dp">
-                <ImageView android:id="@+id/widget_icon_2" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
-                <TextView android:id="@+id/widget_text_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Linha 2 -->
-        <LinearLayout
-            android:id="@+id/widget_grid_row_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <LinearLayout android:id="@+id/widget_row_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingEnd="6dp">
-                <ImageView android:id="@+id/widget_icon_3" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
-                <TextView android:id="@+id/widget_text_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/widget_row_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingStart="6dp">
-                <ImageView android:id="@+id/widget_icon_4" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
-                <TextView android:id="@+id/widget_text_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Linha 3 -->
-        <LinearLayout
-            android:id="@+id/widget_grid_row_3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <LinearLayout android:id="@+id/widget_row_5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingEnd="6dp">
-                <ImageView android:id="@+id/widget_icon_5" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
-                <TextView android:id="@+id/widget_text_5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/widget_row_6" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="36dp" android:paddingStart="6dp">
-                <ImageView android:id="@+id/widget_icon_6" android:layout_width="20dp" android:layout_height="20dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_checkbox_unchecked" />
-                <TextView android:id="@+id/widget_text_6" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F3F4F6" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Estado vazio -->
+    <!-- Estado vazio (GridView esconde sozinho via setEmptyView quando tem item) -->
     <TextView
         android:id="@+id/widget_empty_state"
         android:layout_width="match_parent"
