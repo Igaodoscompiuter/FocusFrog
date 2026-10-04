@@ -12,6 +12,7 @@ import type { Screen } from '../types';
 import { NotificationContainer } from './NotificationContainer';
 import { FrogRewardModal } from './FrogRewardModal';
 import UpdatePrompt from './UpdatePrompt';
+import { Capacitor } from '@capacitor/core';
 
 // Nota de arquitetura: o TasksProvider NÃO é montado aqui — ele já envolve toda a
 // árvore lá em cima, em index.tsx. Montá-lo de novo aqui criava um segundo estado de
@@ -41,7 +42,8 @@ export const AppLayout: React.FC = () => {
             {/* Containers de notificação globais */}
             <NotificationContainer />
             <FrogRewardModal />
-            <UpdatePrompt />
+            {/* aviso de nova versão é só do PWA — no APK quem atualiza é a instalação */}
+            {!Capacitor.isNativePlatform() && <UpdatePrompt />}
         </div>
     );
 };
