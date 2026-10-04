@@ -6,7 +6,7 @@
 /* [CORREÇÃO] Espaçamento reduzido — a tela toda tinha folga demais empilhada
    (banner + personagem + 2 cards grandes) e acabava exigindo rolagem numa
    tela que devia caber inteira de uma vez, por ser só uma seleção simples. */
-.idleContainer { display: flex; flex-direction: column; align-items: center; width: 100%; gap: var(--sp-md); }
+.idleContainer { display: flex; flex-direction: column; align-items: center; width: 100%; gap: var(--sp-md); padding-bottom: calc(80px + var(--safe-bottom)); /* espaço da barra de navegação (ver .screen-focus em App.css) */ }
 .greetingBanner { width: 100%; background-color: var(--surface-color); padding: var(--sp-lg); text-align: center; border-bottom: 1px solid var(--border-color); }
 .greetingBanner h1 { font-family: var(--font-poppins); font-size: 1.9rem; font-weight: 700; color: var(--text-color); margin: 0 0 var(--sp-xs) 0; }
 .greetingBanner p { font-size: 0.95rem; color: var(--text-secondary-color); max-width: 45ch; margin: 0 auto; }

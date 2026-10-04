@@ -17,7 +17,8 @@ const USER_DATA_KEYS = [
     'focusfrog_sound',
     'focusfrog_ui_settings',
     'focusfrog_collectedFrogs',
-    'focusfrog_pomodorosCompleted'
+    'focusfrog_pomodorosCompleted',
+    'focusfrog_zenState' // lagoa + viveiro (entra no backup também)
 ];
 
 const BACKUP_VERSION = '2.2.0';
@@ -127,7 +128,14 @@ export const useUserData = () => {
     }, [addNotification]);
 
     const resetData = useCallback(() => {
-        USER_DATA_KEYS.forEach(key => localStorage.removeItem(key));
+        // [CORREÇÃO] Antes só apagava 13 chaves fixas — lagoa, viveiro,
+        // sessão de foco em andamento, configurações etc. SOBREVIVIAM ao
+        // reset (por isso sapos antigos reapareciam depois de "apagar os
+        // dados"). Agora apaga toda chave do app, inclusive as que forem
+        // criadas no futuro, sem depender de lembrar de atualizar a lista.
+        Object.keys(localStorage)
+            .filter(key => key.startsWith('focusfrog_'))
+            .forEach(key => localStorage.removeItem(key));
         addNotification('Dados resetados — suas informações locais foram apagadas. Recarregando...', '🗑️', 'success');
         setTimeout(() => window.location.reload(), 1500);
     }, [addNotification]);

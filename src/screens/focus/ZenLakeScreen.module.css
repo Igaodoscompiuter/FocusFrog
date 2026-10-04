@@ -12,8 +12,13 @@
     justify-content: flex-start;
     width: 100%;
     min-height: 100%;
+    box-sizing: border-box;
     padding: var(--sp-lg);
     padding-top: var(--sp-xl);
+    /* o espaço reservado pra barra de navegação agora fica DENTRO desta tela
+       (ver .screen-focus .screen-content em App.css), então o fundo dela vai
+       até a barra em vez de parar 100px antes */
+    padding-bottom: calc(80px + var(--safe-bottom) + var(--sp-md));
     gap: var(--sp-xl);
     background-color: var(--background-color);
     transition: background-color 0.5s ease;
@@ -30,8 +35,13 @@
     max-width: 320px;
 }
 
-.lakeScreen.focus { background: radial-gradient(ellipse at bottom, var(--surface-secondary-color) 0%, var(--background-color) 70%); }
-.lakeScreen.break { background: radial-gradient(ellipse at bottom, var(--surface-color) 0%, var(--background-color) 70%); }
+/* [CORREÇÃO] O degradê era 'ellipse at bottom' — o ponto MAIS CLARO ficava
+   colado na borda de baixo, exatamente onde a tela era cortada, gerando uma
+   linha reta visível antes da barra de navegação. Agora fica centrado atrás
+   do cronômetro e chega à cor de fundo antes de qualquer borda — não existe
+   mais ponto de corte visível, seja qual for a altura do aparelho. */
+.lakeScreen.focus { background: radial-gradient(ellipse 120% 60% at 50% 40%, var(--surface-secondary-color) 0%, var(--background-color) 75%); }
+.lakeScreen.break { background: radial-gradient(ellipse 120% 60% at 50% 40%, var(--surface-color) 0%, var(--background-color) 75%); }
 .focusPanel { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xl); width: 100%; }
 .taskCard { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: var(--sp-md) var(--sp-lg); box-shadow: 0 4px 10px rgba(0,0,0,0.08); min-height: 60px; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 380px; }
 .taskContent { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xxs); }

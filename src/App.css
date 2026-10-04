@@ -249,3 +249,8 @@ a {
 *:focus {
   outline: none;
 }
+
+/* [CORREÇÃO] Na tela de foco, o padding inferior que reserva espaço pra barra
+   de navegação passa pra DENTRO da própria tela do cronômetro — senão ele
+   ficava fora do fundo dela, como uma faixa de ~100px sem o degradê. */
+.screen-focus .screen-content { padding-bottom: 0; }

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useRef, useState, ReactNode, useCallback } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { frogPersonalities } from '../config/frogPersonalities';
 
 export interface FrogInput {
@@ -103,128 +102,175 @@ interface ZenPondProviderProps {
  * são persistidos de verdade, com ações manuais de guardar/soltar — é o
  * sistema completo do protótipo zen-lake-v3.html, não só a simulação.
  */
+const STATE_KEY = 'focusfrog_zenState';
+const LEGACY_POND_KEY = 'focusfrog_zenPondFrogs';
+const LEGACY_STORAGE_KEY = 'focusfrog_zenStorageFrogs';
+
+interface ZenState {
+  pond: PondFrog[];
+  storage: PondFrog[];
+  /** IDs de coleta que JÁ viraram sapo na lagoa/viveiro — persistido. É o que
+   *  impede reinserir tudo de novo a cada vez que a tela monta. */
+  ingested: string[];
+}
+
+const readJSON = <T,>(key: string, fallback: T): T => {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as T : fallback; } catch { return fallback; }
+};
+
+/** Remove cópias com o mesmo id (dados corrompidos pela versão anterior):
+ *  mantém a 1ª ocorrência, com a lagoa tendo prioridade sobre o viveiro. */
+const dedupe = (pond: PondFrog[], storage: PondFrog[]) => {
+  const seen = new Set<string>();
+  const keep = (f: PondFrog) => { if (!f || !f.id || f.merging || seen.has(f.id)) return false; seen.add(f.id); return true; };
+  const p = pond.filter(keep).map(f => ({ ...f, location: 'pond' as const }));
+  const st = storage.filter(keep).map(f => ({ ...f, location: 'storage' as const }));
+  return { pond: p, storage: st };
+};
+
+const loadInitialState = (collected: FrogInput[]): ZenState => {
+  const saved = readJSON<ZenState | null>(STATE_KEY, null);
+  if (saved && Array.isArray(saved.pond) && Array.isArray(saved.storage)) {
+    return { ...dedupe(saved.pond, saved.storage), ingested: Array.isArray(saved.ingested) ? saved.ingested : [] };
+  }
+  // Migração da versão anterior (2 chaves separadas, sem lista de recebidos).
+  const legacy = dedupe(readJSON<PondFrog[]>(LEGACY_POND_KEY, []), readJSON<PondFrog[]>(LEGACY_STORAGE_KEY, []));
+  const hadFrogs = legacy.pond.length + legacy.storage.length > 0;
+  return {
+    ...legacy,
+    // Se já havia sapos, a coleção atual já está representada (inclusive os
+    // que se fundiram) — marca tudo como recebido pra não reinserir nada.
+    ingested: hadFrogs ? collected.map(f => f.id) : [],
+  };
+};
+
+/**
+ * [REESCRITO] Lagoa, viveiro e a lista de "já recebidos" vivem num ÚNICO
+ * estado salvo, e toda ação é UMA atualização atômica. A versão anterior
+ * tinha três bugs reais, que causavam sapos sumindo e trocando de lugar:
+ *  1. Reinserção a cada montagem: o controle de "sapos já recebidos" era
+ *     só em memória e começava vazio — toda visita a Estatísticas inseria a
+ *     coleção inteira de novo, com IDs repetidos.
+ *  2. "Soltar" apagava o sapo: tirava do viveiro numa atualização aninhada
+ *     dentro de outra; a de dentro só roda depois, então a checagem "achei o
+ *     sapo?" sempre falhava — ele saía do viveiro e nunca entrava na lagoa.
+ *  3. Corrida com a simulação: o tick gravava a lagoa a partir de uma foto
+ *     antiga, podendo desfazer um guardar/soltar feito no mesmo instante.
+ */
 export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs, children }) => {
-  const [pondFrogs, setPondFrogs] = useLocalStorage<PondFrog[]>('focusfrog_zenPondFrogs', []);
-  const [storageFrogs, setStorageFrogs] = useLocalStorage<PondFrog[]>('focusfrog_zenStorageFrogs', []);
+  const [state, setState] = useState<ZenState>(() => loadInitialState(collectedFrogs));
   const [ripples, setRipples] = useState<Ripple[]>([]);
-  // [CORREÇÃO] Precisa começar VAZIO, não com collectedFrogs — senão o diff
-  // da 1ª renderização já acha "tudo igual ao anterior" e nenhum sapo jamais
-  // entra na lagoa (bug real, achado testando antes de gerar o APK).
-  const prevCollectedFrogsRef = useRef<FrogInput[]>([]);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
-  const pondFrogsRef = useRef<PondFrog[]>(pondFrogs);
-  useEffect(() => { pondFrogsRef.current = pondFrogs; }, [pondFrogs]);
-
-  // Entrada de sapos novos (vindos de UserContext.collectedFrogs): cada
-  // ENTRADA NOVA no log vira uma instância — se couber, pulso direto na
-  // lagoa; senão, pro viveiro, esperando o usuário (ou uma fusão) abrir vaga.
+  // Persistência (uma chave só) + limpeza das chaves antigas.
   useEffect(() => {
-    const prevIds = new Set(prevCollectedFrogsRef.current.map(f => f.id));
-    const newOnes = collectedFrogs.filter(f => !prevIds.has(f.id));
-    prevCollectedFrogsRef.current = collectedFrogs;
-    if (newOnes.length === 0) return;
+    try {
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      localStorage.removeItem(LEGACY_POND_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch { /* armazenamento cheio/indisponível — segue em memória */ }
+  }, [state]);
 
-    const current = pondFrogsRef.current.filter(f => !f.merging);
-    const room = Math.max(0, MAX_POND_FROGS - current.length);
-    const toPond = newOnes.slice(0, room).map(f => spawnFrog(f, 'pond'));
-    const toStorage = newOnes.slice(room).map(f => spawnFrog(f, 'storage'));
-    if (toPond.length) setPondFrogs(prev => [...prev, ...toPond]);
-    if (toStorage.length) setStorageFrogs(prev => [...prev, ...toStorage]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Entrada de sapos novos: só IDs que ainda não estão na lista persistida.
+  useEffect(() => {
+    setState(prev => {
+      const done = new Set(prev.ingested);
+      const fresh = collectedFrogs.filter(f => !done.has(f.id));
+      if (fresh.length === 0) return prev;
+      const room = Math.max(0, MAX_POND_FROGS - prev.pond.filter(f => !f.merging).length);
+      return {
+        pond: [...prev.pond, ...fresh.slice(0, room).map(f => spawnFrog(f, 'pond'))],
+        storage: [...prev.storage, ...fresh.slice(room).map(f => spawnFrog(f, 'storage'))],
+        ingested: [...prev.ingested, ...fresh.map(f => f.id)],
+      };
+    });
   }, [collectedFrogs]);
 
-  // Simulação: movimento + interação (fusão/disputa), igual antes.
+  // Simulação (movimento + fusão). Calcula a partir do estado atual e só
+  // aplica se ninguém mexeu nele no meio do caminho — senão pula este tick.
   useEffect(() => {
     const gameLoop = setInterval(() => {
+      const snapshot = stateRef.current;
       const now = Date.now();
-      const frogs = pondFrogs.filter(f => !f.merging);
+      const frogs = snapshot.pond.filter(f => !f.merging).map(f => ({ ...f }));
+      const newRipples: Ripple[] = [];
 
-      const updatedFrogs = frogs.map(frog => {
+      const updated = frogs.map(frog => {
         if (now < frog.moveAt) return frog;
         const personality = frogPersonalities[frog.speciesId] || frogPersonalities.DEFAULT;
-        const potentialPosition = getSmartLeapPosition(frog, frogs, personality.jumpDistance, POND_BOUNDS);
-        const isPathClear = !frogs.some(other => {
-          if (frog.id === other.id) return false;
-          if (other.speciesId === frog.speciesId) return false;
-          return getDistance(potentialPosition, other) < FROG_COLLISION_RADIUS;
-        });
-        if (isPathClear) {
-          const newRipple: Ripple = { id: now + Math.random(), top: `${frog.top}%`, left: `${frog.left}%` };
-          setRipples(prev => [...prev, newRipple]);
-          setTimeout(() => setRipples(prev => prev.filter(r => r.id !== newRipple.id)), 1000);
-          return { ...frog, ...potentialPosition, moveAt: now + random(personality.moveInterval.min, personality.moveInterval.max) };
-        }
-        return { ...frog, moveAt: now + random(2000, 4000) };
+        const target = getSmartLeapPosition(frog, frogs, personality.jumpDistance, POND_BOUNDS);
+        const blocked = frogs.some(o => o.id !== frog.id && o.speciesId !== frog.speciesId && getDistance(target, o) < FROG_COLLISION_RADIUS);
+        if (blocked) return { ...frog, moveAt: now + random(2000, 4000) };
+        newRipples.push({ id: now + Math.random(), top: `${frog.top}%`, left: `${frog.left}%` });
+        return { ...frog, ...target, moveAt: now + random(personality.moveInterval.min, personality.moveInterval.max) };
       });
 
-      const toRemove = new Set<string>();
-      for (let i = 0; i < updatedFrogs.length; i++) {
-        for (let j = i + 1; j < updatedFrogs.length; j++) {
-          const a = updatedFrogs[i], b = updatedFrogs[j];
-          if (toRemove.has(a.id) || toRemove.has(b.id)) continue;
-          if (getDistance(a, b) < FROG_INTERACTION_DISTANCE) {
-            if (a.speciesId === b.speciesId) {
-              a.scale = Math.min(a.scale * 1.1, 2.0);
-              a.count += b.count;
-              b.merging = true; b.left = a.left; b.top = a.top; b.scale = 0.15;
-              toRemove.add(b.id);
-            } else {
-              const [larger, smaller] = a.scale > b.scale ? [a, b] : [b, a];
-              larger.scale = Math.min(larger.scale * 1.02, 2.0);
-              smaller.scale *= 0.98;
-            }
+      const absorbed = new Set<string>();
+      for (let i = 0; i < updated.length; i++) {
+        for (let j = i + 1; j < updated.length; j++) {
+          const a = updated[i], b = updated[j];
+          if (absorbed.has(a.id) || absorbed.has(b.id)) continue;
+          if (getDistance(a, b) >= FROG_INTERACTION_DISTANCE) continue;
+          if (a.speciesId === b.speciesId) {
+            updated[i] = { ...a, scale: Math.min(a.scale * 1.1, 2.0), count: a.count + b.count };
+            updated[j] = { ...b, merging: true, left: a.left, top: a.top, scale: 0.15 };
+            absorbed.add(b.id);
+          } else {
+            const aBig = a.scale > b.scale;
+            updated[i] = { ...a, scale: aBig ? Math.min(a.scale * 1.02, 2.0) : a.scale * 0.98 };
+            updated[j] = { ...b, scale: aBig ? b.scale * 0.98 : Math.min(b.scale * 1.02, 2.0) };
           }
         }
       }
+      const nextPond = updated.filter(f => f.merging || f.scale >= MIN_FROG_SCALE);
 
-      // [CORREÇÃO] Removido o "puxar sozinho do viveiro a cada tick quando
-      // sobra vaga" — isso NÃO existe no protótipo original (conferido: o
-      // viveiro lá só muda por ação explícita do usuário, nunca pela
-      // simulação). Eu tinha herdado isso de um sistema de fila automática
-      // mais antigo, de antes do viveiro manual existir — e ele brigava
-      // direto com "Guardar no viveiro": o usuário guardava um sapo, e 2s
-      // depois (próximo tick) esse código via "tem vaga" e puxava ele (ou
-      // outro) de volta sozinho, parecendo que o sapo tinha sido excluído.
-      // Agora o viveiro só muda via sendToStorage/releaseToPond — igual o
-      // protótipo.
-      const finalFrogs = updatedFrogs.filter(f => f.merging || f.scale >= MIN_FROG_SCALE);
-      setPondFrogs(finalFrogs);
+      let applied = false;
+      setState(prev => {
+        if (prev !== snapshot) return prev; // usuário mexeu no meio — pula
+        applied = true;
+        return { ...prev, pond: nextPond };
+      });
+      if (applied && newRipples.length) {
+        setRipples(r => [...r, ...newRipples]);
+        const ids = new Set(newRipples.map(r => r.id));
+        setTimeout(() => setRipples(r => r.filter(x => !ids.has(x.id))), 1000);
+      }
     }, SIMULATION_TICK_RATE);
-
     return () => clearInterval(gameLoop);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pondFrogs]);
+  }, []);
 
   const sendToStorage = useCallback((frogId: string) => {
-    setPondFrogs(prev => {
-      const frog = prev.find(f => f.id === frogId);
+    setState(prev => {
+      const frog = prev.pond.find(f => f.id === frogId && !f.merging);
       if (!frog) return prev;
-      setStorageFrogs(s => [...s, { ...frog, location: 'storage' }]);
-      return prev.filter(f => f.id !== frogId);
+      return {
+        ...prev,
+        pond: prev.pond.filter(f => f.id !== frogId),
+        storage: [...prev.storage, { ...frog, location: 'storage' }],
+      };
     });
-  }, [setPondFrogs, setStorageFrogs]);
+  }, []);
 
   const releaseToPond = useCallback((frogId: string): boolean => {
-    let released = false;
-    setPondFrogs(prevPond => {
-      if (prevPond.filter(f => !f.merging).length >= MAX_POND_FROGS) return prevPond;
-      let movedFrog: PondFrog | null = null;
-      setStorageFrogs(prevStorage => {
-        const frog = prevStorage.find(f => f.id === frogId);
-        if (!frog) return prevStorage;
-        movedFrog = frog;
-        return prevStorage.filter(f => f.id !== frogId);
-      });
-      if (!movedFrog) return prevPond;
-      released = true;
+    const cur = stateRef.current;
+    const canRelease = cur.storage.some(f => f.id === frogId) && cur.pond.filter(f => !f.merging).length < MAX_POND_FROGS;
+    if (!canRelease) return false;
+    setState(prev => {
+      const frog = prev.storage.find(f => f.id === frogId);
+      if (!frog || prev.pond.filter(f => !f.merging).length >= MAX_POND_FROGS) return prev;
       const spot = { left: random(POND_BOUNDS.left, POND_BOUNDS.right), top: random(POND_BOUNDS.top, POND_BOUNDS.bottom) };
-      return [...prevPond, { ...(movedFrog as PondFrog), location: 'pond', ...spot, moveAt: Date.now() + random(2500, 6000) }];
+      return {
+        ...prev,
+        storage: prev.storage.filter(f => f.id !== frogId),
+        pond: [...prev.pond, { ...frog, ...spot, location: 'pond', moveAt: Date.now() + random(2500, 6000) }],
+      };
     });
-    return released;
-  }, [setPondFrogs, setStorageFrogs]);
+    return true;
+  }, []);
 
   return (
-    <ZenPondContext.Provider value={{ pondFrogs, storageFrogs, ripples, maxPond: MAX_POND_FROGS, sendToStorage, releaseToPond }}>
+    <ZenPondContext.Provider value={{ pondFrogs: state.pond, storageFrogs: state.storage, ripples, maxPond: MAX_POND_FROGS, sendToStorage, releaseToPond }}>
       {children}
     </ZenPondContext.Provider>
   );
