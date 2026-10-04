@@ -45,9 +45,13 @@ interface ZenFrogProps {
    *  tocada — sem isso, tocar no retrato da carta abria uma carta por cima
    *  da outra, repetidamente. Padrão true (lago) pra não quebrar o uso normal. */
   clickable?: boolean;
+  /** [NOVO] Sobrescreve as cores da espécie — usado só pela silhueta do
+   *  Álbum (espécie ainda não descoberta: mesma forma, cores escuras,
+   *  sem revelar nada sobre a espécie real). */
+  forceColors?: { primary: string; secondary: string; accent: string };
 }
 
-export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, frogId, size = 56, clickable = true }) => {
+export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, frogId, size = 56, clickable = true, forceColors }) => {
   const species = frogSpecies[speciesId];
   const [showCard, setShowCard] = useState(false);
 
@@ -83,7 +87,7 @@ export const ZenFrog: React.FC<ZenFrogProps> = ({ speciesId, stage, top, left, f
   }
   if (stage !== 'adult') return null;
 
-  const { colors } = species.stages.adult;
+  const colors = forceColors || species.stages.adult.colors;
   const style = {
     '--frog-color-primary': colors.primary,
     '--frog-color-secondary': colors.secondary,

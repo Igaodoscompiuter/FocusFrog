@@ -113,6 +113,7 @@
   margin-bottom: var(--sp-sm);
 }
 .pondHeaderRow .sectionTitle { margin-bottom: 0; }
+.pondHeaderButtons { display: flex; gap: var(--sp-xs); }
 .viveiroBtn {
   font: inherit;
   font-size: 0.78rem;

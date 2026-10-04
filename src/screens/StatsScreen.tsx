@@ -6,23 +6,30 @@ import { useUser } from '../context/UserContext';
 import { ZenPond } from '../components/ZenPond';
 import { ZenPondProvider, useZenPond } from '../context/ZenPondContext';
 import { ViveiroSheet } from '../components/zen/ViveiroSheet';
+import { FrogAlbumSheet } from '../components/zen/FrogAlbumSheet';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
-import { frogSpecies, FrogSpeciesData } from '../utils/frogSpecies';
-import { LoreModal } from '../components/modals/LoreModal';
+import { frogSpecies } from '../utils/frogSpecies';
 
 const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
 /** Cabeçalho "Lagoa X/8 · Viveiro N" — precisa estar DENTRO do
  *  ZenPondProvider pra ler os contadores reais via contexto. */
-const ZenPondHeader: React.FC<{ onOpenViveiro: () => void }> = ({ onOpenViveiro }) => {
+const ZenPondHeader: React.FC<{ onOpenViveiro: () => void; onOpenAlbum: () => void }> = ({ onOpenViveiro, onOpenAlbum }) => {
     const { pondFrogs, storageFrogs, maxPond } = useZenPond();
+    const totalSpecies = Object.keys(frogSpecies).length;
+    const foundSpecies = new Set([...pondFrogs, ...storageFrogs].map(f => f.speciesId)).size;
     return (
         <div className={styles.pondHeaderRow}>
             <h2 className={styles.sectionTitle}>Jardim Zen</h2>
-            <button className={styles.viveiroBtn} onClick={onOpenViveiro}>
-                Lagoa {pondFrogs.filter(f => !f.merging).length}/{maxPond} · 🧺 {storageFrogs.length}
-            </button>
+            <div className={styles.pondHeaderButtons}>
+                <button className={styles.viveiroBtn} onClick={onOpenAlbum}>
+                    📖 {foundSpecies}/{totalSpecies}
+                </button>
+                <button className={styles.viveiroBtn} onClick={onOpenViveiro}>
+                    Lagoa {pondFrogs.filter(f => !f.merging).length}/{maxPond} · 🧺 {storageFrogs.length}
+                </button>
+            </div>
         </div>
     );
 };
@@ -32,7 +39,7 @@ export const StatsScreen: React.FC = () => {
   const { pomodorosCompleted } = usePomodoro();
   const { collectedFrogs } = useUser();
   
-  const [selectedFrog, setSelectedFrog] = useState<FrogSpeciesData | null>(null);
+  const [showAlbum, setShowAlbum] = useState(false);
   const [showViveiro, setShowViveiro] = useState(false);
 
   // [CORREÇÃO] Filtra a lista de sapos para remover quaisquer valores inválidos ou `undefined`.
@@ -46,18 +53,6 @@ export const StatsScreen: React.FC = () => {
     return validCollectedFrogs.map((speciesId, index) => ({
       id: `${speciesId}-${index}`,
       speciesId: speciesId,
-    }));
-  }, [validCollectedFrogs]);
-
-  const frogCollection = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    // Usa a lista já filtrada e segura.
-    validCollectedFrogs.forEach(id => {
-      counts[id] = (counts[id] || 0) + 1;
-    });
-    return Object.entries(counts).map(([speciesId, count]) => ({
-      species: frogSpecies[speciesId],
-      count,
     }));
   }, [validCollectedFrogs]);
 
@@ -125,7 +120,7 @@ export const StatsScreen: React.FC = () => {
         
         <div className={styles.frogPondCard}>
             <ZenPondProvider collectedFrogs={frogsForPond}>
-                <ZenPondHeader onOpenViveiro={() => setShowViveiro(true)} />
+                <ZenPondHeader onOpenViveiro={() => setShowViveiro(true)} onOpenAlbum={() => setShowAlbum(true)} />
                 <ZenPond>
                     {frogsForPond.length === 0 && (
                         <p className={styles.emptyPondMessage}>
@@ -133,31 +128,12 @@ export const StatsScreen: React.FC = () => {
                         </p>
                     )}
                 </ZenPond>
+                {showAlbum && <FrogAlbumSheet collectedFrogs={frogsForPond} onClose={() => setShowAlbum(false)} />}
                 {showViveiro && <ViveiroSheet onClose={() => setShowViveiro(false)} />}
             </ZenPondProvider>
         </div>
 
-        {frogCollection.length > 0 && (
-            <div className={styles.collectionCard}>
-                <h2 className={styles.sectionTitle}>Minha Coleção</h2>
-                <div className={styles.collectionList}>
-                    {frogCollection.map(({ species, count }) => (
-                        <button key={species.id} className={styles.collectionItem} onClick={() => setSelectedFrog(species)}>
-                            <div 
-                                className={styles.collectionIcon}
-                                style={{ backgroundColor: species.stages.adult.colors.primary }}
-                            />
-                            <span className={styles.collectionName}>{species.name}</span>
-                            <span className={styles.collectionCount}>x{count}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-        )}
-
       </div>
-      
-      <LoreModal species={selectedFrog} onClose={() => setSelectedFrog(null)} />
     </main>
   );
 };
