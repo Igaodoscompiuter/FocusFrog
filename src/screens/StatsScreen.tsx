@@ -4,35 +4,15 @@ import { useTasks } from '../context/TasksContext';
 import { usePomodoro } from '../context/PomodoroContext';
 import { useUser } from '../context/UserContext';
 import { ZenPond } from '../components/ZenPond';
-import { ZenPondProvider, useZenPond } from '../context/ZenPondContext';
+import { ZenPondProvider } from '../context/ZenPondContext';
 import { ViveiroSheet } from '../components/zen/ViveiroSheet';
 import { FrogAlbumSheet } from '../components/zen/FrogAlbumSheet';
+import { PondDock } from '../components/zen/PondDock';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
 import { frogSpecies } from '../utils/frogSpecies';
 
 const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
-
-/** Cabeçalho "Lagoa X/8 · Viveiro N" — precisa estar DENTRO do
- *  ZenPondProvider pra ler os contadores reais via contexto. */
-const ZenPondHeader: React.FC<{ onOpenViveiro: () => void; onOpenAlbum: () => void }> = ({ onOpenViveiro, onOpenAlbum }) => {
-    const { pondFrogs, storageFrogs, maxPond } = useZenPond();
-    const totalSpecies = Object.keys(frogSpecies).length;
-    const foundSpecies = new Set([...pondFrogs, ...storageFrogs].map(f => f.speciesId)).size;
-    return (
-        <div className={styles.pondHeaderRow}>
-            <h2 className={styles.sectionTitle}>Jardim Zen</h2>
-            <div className={styles.pondHeaderButtons}>
-                <button className={styles.viveiroBtn} onClick={onOpenAlbum}>
-                    📖 {foundSpecies}/{totalSpecies}
-                </button>
-                <button className={styles.viveiroBtn} onClick={onOpenViveiro}>
-                    Lagoa {pondFrogs.filter(f => !f.merging).length}/{maxPond} · 🧺 {storageFrogs.length}
-                </button>
-            </div>
-        </div>
-    );
-};
 
 export const StatsScreen: React.FC = () => {
   const { tasks } = useTasks();
@@ -120,7 +100,7 @@ export const StatsScreen: React.FC = () => {
         
         <div className={styles.frogPondCard}>
             <ZenPondProvider collectedFrogs={frogsForPond}>
-                <ZenPondHeader onOpenViveiro={() => setShowViveiro(true)} onOpenAlbum={() => setShowAlbum(true)} />
+                <h2 className={styles.sectionTitle}>Jardim Zen</h2>
                 <ZenPond>
                     {frogsForPond.length === 0 && (
                         <p className={styles.emptyPondMessage}>
@@ -128,6 +108,7 @@ export const StatsScreen: React.FC = () => {
                         </p>
                     )}
                 </ZenPond>
+                <PondDock collectedFrogs={frogsForPond} onOpenViveiro={() => setShowViveiro(true)} onOpenAlbum={() => setShowAlbum(true)} />
                 {showAlbum && <FrogAlbumSheet collectedFrogs={frogsForPond} onClose={() => setShowAlbum(false)} />}
                 {showViveiro && <ViveiroSheet onClose={() => setShowViveiro(false)} />}
             </ZenPondProvider>

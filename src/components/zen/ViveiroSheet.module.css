@@ -96,3 +96,11 @@
     color: #eef5f1;
 }
 .miniBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* [PORTADO de lagoa-zen-index.html — terrário] cartão inteiro clicável,
+   raridade escrita colorida, estado bloqueado do Álbum. */
+.mini { cursor: pointer; }
+.miniTag { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.mini.locked { background: rgba(255, 255, 255, .03); opacity: .75; cursor: default; }
+.albumBar { height: 6px; border-radius: 4px; background: rgba(255, 255, 255, .08); overflow: hidden; margin: 4px 0 10px; }
+.albumBar span { display: block; height: 100%; background: #FBBF24; border-radius: 4px; }

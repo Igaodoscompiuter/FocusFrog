@@ -4,6 +4,7 @@ import { ZenFrog } from './ZenFrog';
 import { FrogCard } from './FrogCard';
 import type { FrogInput } from '../../context/ZenPondContext';
 import styles from './ViveiroSheet.module.css';
+import { RARITY_LABEL, RARITY_COLOR } from './ViveiroSheet';
 
 const rarityRank: Record<string, number> = { epic: 0, rare: 1, common: 2 };
 const LOCKED_COLORS = { primary: '#0b1512', secondary: '#101c18', accent: '#0b1512' };
@@ -47,31 +48,30 @@ export const FrogAlbumSheet: React.FC<FrogAlbumSheetProps> = ({ collectedFrogs, 
                     <button className={styles.closeBtn} onClick={onClose}>Fechar</button>
                 </div>
 
-                <div style={{ height: 6, borderRadius: 3, background: 'rgba(128,128,128,0.25)', overflow: 'hidden', marginBottom: 'var(--sp-sm)' }}>
-                    <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--accent-color)', borderRadius: 3 }} />
-                </div>
+                <div className={styles.albumBar}><span style={{ width: `${progressPct}%` }} /></div>
 
                 <div className={styles.grid}>
                     {allSpecies.map(sp => {
                         const known = foundIds.has(sp.id);
                         return (
-                            <div key={sp.id} className={`${styles.mini} ${known ? styles[sp.rarity] : ''}`}>
-                                <div
-                                    className={styles.miniPic}
-                                    style={{ cursor: known ? 'pointer' : 'default' }}
-                                    onClick={() => known && setCardSpeciesId(sp.id)}
-                                >
+                            <div
+                                key={sp.id}
+                                className={`${styles.mini} ${known ? styles[sp.rarity] : styles.locked}`}
+                                onClick={() => known && setCardSpeciesId(sp.id)}
+                            >
+                                <div className={styles.miniPic}>
                                     <ZenFrog
                                         speciesId={sp.id}
                                         stage="adult"
-                                        size={44}
+                                        size={46}
                                         clickable={false}
                                         forceColors={known ? undefined : LOCKED_COLORS}
                                     />
                                 </div>
                                 <div className={styles.miniName}>{known ? sp.name : '???'}</div>
-                                <div className={styles.miniName} style={{ opacity: 0.7, fontSize: '10px' }}>
-                                    {known ? (countBySpecies[sp.id] > 1 ? `×${countBySpecies[sp.id]}` : '') : ''}
+                                {/* igual o arquivo: raridade aparece mesmo bloqueada (dá a "pista" do que falta) */}
+                                <div className={styles.miniTag} style={{ color: RARITY_COLOR[sp.rarity] }}>
+                                    {RARITY_LABEL[sp.rarity]}{known && countBySpecies[sp.id] > 1 ? ` · ×${countBySpecies[sp.id]}` : ''}
                                 </div>
                             </div>
                         );

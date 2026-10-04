@@ -1,0 +1,14 @@
+/* [PORTADO de lagoa-zen-index.html] linha de contagem + dock sob a lagoa. */
+.chipRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.count { font-size: 13px; color: #9db8ac; white-space: nowrap; }
+.tip { font-size: 11px; color: #9db8ac; text-align: right; }
+.dock { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+.dockBtn {
+  font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; position: relative;
+  background: #16211e; color: #eef5f1; border: 1px solid #24352f;
+  border-radius: 16px; padding: 9px 2px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.dockBtn i { font-style: normal; font-size: 20px; line-height: 1; }
+.dockBtn b { font-weight: 700; color: #9db8ac; }
+.dockBtn:active { transform: scale(.96); }

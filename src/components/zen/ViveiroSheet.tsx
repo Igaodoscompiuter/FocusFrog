@@ -1,23 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { frogSpecies } from '../../utils/frogSpecies';
 import { useZenPond, PondFrog } from '../../context/ZenPondContext';
 import { ZenFrog } from './ZenFrog';
+import { FrogCard } from './FrogCard';
 import styles from './ViveiroSheet.module.css';
 
 const rarityRank: Record<string, number> = { epic: 0, rare: 1, common: 2 };
+export const RARITY_LABEL: Record<string, string> = { common: 'Comum', rare: 'Rara', epic: 'Épica' };
+export const RARITY_COLOR: Record<string, string> = { common: '#8BC34A', rare: '#4FC3F7', epic: '#FBBF24' };
 
 interface ViveiroSheetProps {
     onClose: () => void;
 }
 
 /**
- * [NOVO] Bottom sheet que mostra a coleção inteira — "Na lagoa" e "No
- * viveiro" — com um mini-cartão por sapo e um botão de guardar/soltar em
- * cada um. Porta o `renderSheet`/`miniCard` do protótipo zen-lake-v3.html
- * pro React, usando o mesmo ZenPondContext que a FrogCard.
+ * [PORTADO de lagoa-zen-index.html — terrário] Mesmo renderSheet/miniCard do
+ * arquivo: "Na lagoa" / "No viveiro", cartão inteiro abre a carta completa,
+ * raridade escrita colorida, botão Guardar/Soltar em cada um.
+ * Deliberadamente SEM o botão "✨ Fundir iguais" do arquivo (pedido do
+ * usuário) — a fusão continua só a natural, dentro da lagoa.
  */
 export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
     const { pondFrogs, storageFrogs, maxPond, sendToStorage, releaseToPond } = useZenPond();
+    const [cardFrog, setCardFrog] = useState<PondFrog | null>(null);
+
+    const activePond = pondFrogs.filter(f => !f.merging);
+    const pondFull = activePond.length >= maxPond;
 
     const sorter = (a: PondFrog, b: PondFrog) => {
         const sa = frogSpecies[a.speciesId], sb = frogSpecies[b.speciesId];
@@ -25,7 +33,7 @@ export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
     };
 
     const sections: [string, PondFrog[]][] = [
-        ['Na lagoa', [...pondFrogs].filter(f => !f.merging).sort(sorter)],
+        ['Na lagoa', [...activePond].sort(sorter)],
         ['No viveiro', [...storageFrogs].sort(sorter)],
     ];
 
@@ -35,7 +43,7 @@ export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
                 <div className={styles.header}>
                     <div>
                         <div className={styles.title}>Coleção</div>
-                        <div className={styles.subtitle}>Lagoa {pondFrogs.filter(f => !f.merging).length}/{maxPond} · Viveiro {storageFrogs.length}</div>
+                        <div className={styles.subtitle}>Lagoa {activePond.length}/{maxPond} · Viveiro {storageFrogs.length}</div>
                     </div>
                     <button className={styles.closeBtn} onClick={onClose}>Fechar</button>
                 </div>
@@ -50,18 +58,25 @@ export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
                                 {frogs.map(frog => {
                                     const species = frogSpecies[frog.speciesId];
                                     if (!species) return null;
+                                    const blocked = frog.location === 'storage' && pondFull;
                                     return (
-                                        <div key={frog.id} className={`${styles.mini} ${styles[species.rarity]}`}>
+                                        <div key={frog.id} className={`${styles.mini} ${styles[species.rarity]}`} onClick={() => setCardFrog(frog)}>
                                             <div className={styles.miniPic}>
-                                                <ZenFrog speciesId={species.id} stage="adult" size={44} frogId={frog.id} />
+                                                <ZenFrog speciesId={species.id} stage="adult" size={46} clickable={false} />
                                             </div>
                                             <div className={styles.miniName}>
                                                 {species.name}{frog.count > 1 ? ` ×${frog.count}` : ''}
                                             </div>
+                                            <div className={styles.miniTag} style={{ color: RARITY_COLOR[species.rarity] }}>
+                                                {RARITY_LABEL[species.rarity]}
+                                            </div>
                                             <button
                                                 className={styles.miniBtn}
-                                                onClick={() => frog.location === 'pond' ? sendToStorage(frog.id) : releaseToPond(frog.id)}
-                                                disabled={frog.location === 'storage' && pondFrogs.filter(f => !f.merging).length >= maxPond}
+                                                disabled={blocked}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (frog.location === 'pond') sendToStorage(frog.id); else releaseToPond(frog.id);
+                                                }}
                                             >
                                                 {frog.location === 'pond' ? 'Guardar' : 'Soltar'}
                                             </button>
@@ -73,6 +88,7 @@ export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
                     </div>
                 ))}
             </div>
+            {cardFrog && <FrogCard speciesId={cardFrog.speciesId} frogId={cardFrog.id} onClose={() => setCardFrog(null)} />}
         </div>
     );
 };
