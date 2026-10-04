@@ -71,7 +71,7 @@ const defaultLeavingHomeItems: ChecklistItem[] = [
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { addNotification } = useUI();
     const { setPontosFoco } = useTheme();
-    const { activeTaskId, stopCycle, lastCompletedFocus, clearLastCompletedFocus } = usePomodoro();
+    const { activeTaskId, activeTaskTitle, sessionStatus, stopCycle, lastCompletedFocus, clearLastCompletedFocus } = usePomodoro();
 
     // Gerador de ID numérico único. Date.now() sozinho colide quando a mesma função
     // é chamada várias vezes no mesmo milissegundo (ex.: salvar uma rotina com várias
@@ -287,15 +287,32 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleCompleteTask(taskId, 'subtask', subtaskId);
     }, [handleCompleteTask]);
 
+    // [CORREÇÃO] Mesmo risco do botão "Comer o Sapo": trocar o Sapo do Dia
+    // enquanto ELE MESMO está em foco interrompia o ciclo em silêncio, sem
+    // perguntar nada. Agora confirma antes, igual o botão de comer já faz.
     const handleSetFrog = useCallback((id: string | null) => {
-        if (frogTaskId === activeTaskId && frogTaskId !== id) stopCycle();
+        const isFocusingCurrentFrog = frogTaskId === activeTaskId && sessionStatus !== 'idle' && frogTaskId !== id;
+        if (isFocusingCurrentFrog) {
+            const troca = window.confirm(
+                `Você está em foco${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''} agora. Trocar o Sapo do Dia vai interromper esse foco. Continuar?`
+            );
+            if (!troca) return;
+            stopCycle();
+        }
         setFrogTaskId(id);
-    }, [frogTaskId, activeTaskId, stopCycle, setFrogTaskId]);
+    }, [frogTaskId, activeTaskId, activeTaskTitle, sessionStatus, stopCycle, setFrogTaskId]);
 
     const handleUnsetFrog = useCallback(() => {
-        if (frogTaskId === activeTaskId) stopCycle();
+        const isFocusingCurrentFrog = frogTaskId === activeTaskId && sessionStatus !== 'idle';
+        if (isFocusingCurrentFrog) {
+            const continuar = window.confirm(
+                `Você está em foco${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''} agora. Remover o Sapo do Dia vai interromper esse foco. Continuar?`
+            );
+            if (!continuar) return;
+            stopCycle();
+        }
         setFrogTaskId(null);
-    }, [frogTaskId, activeTaskId, stopCycle, setFrogTaskId]);
+    }, [frogTaskId, activeTaskId, activeTaskTitle, sessionStatus, stopCycle, setFrogTaskId]);
 
     const handleSaveTag = useCallback((tag: Partial<Tag>) => {
         setTags(prev => {

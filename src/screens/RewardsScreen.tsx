@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 import UpdatePrompt from '../components/UpdatePrompt';
-import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive } from 'react-icons/fi';
+import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiGlobe } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 
@@ -157,7 +157,7 @@ export const RewardsScreen: React.FC = () => {
     };
 
     const handleCoffeeClick = () => {
-        window.open('https://shop.beacons.ai/focus.frog/667fee49-a713-4a08-b541-e40ae2321696', '_blank');
+        window.open('https://focusfrog.netlify.app/', '_blank');
     };
 
     const renderSettingsContent = () => {
@@ -233,6 +233,9 @@ export const RewardsScreen: React.FC = () => {
                                 </button>
                                 <a href="https://www.instagram.com/focus.frog" target="_blank" rel="noopener noreferrer" className={styles.instagramButton}>
                                     <FiInstagram /> Siga-nos
+                                </a>
+                                <a href="https://focusfrog.netlify.app/" target="_blank" rel="noopener noreferrer" className={styles.instagramButton}>
+                                    <FiGlobe /> Nosso site
                                 </a>
                             </div>
 

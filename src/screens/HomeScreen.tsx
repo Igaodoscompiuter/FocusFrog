@@ -64,7 +64,7 @@ const getGreeting = () => {
 export const HomeScreen: React.FC = () => {
     const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
-    const { activeTaskId, sessionStatus, startPomodoro } = usePomodoro(); 
+    const { activeTaskId, activeTaskTitle, sessionStatus, startPomodoro } = usePomodoro(); 
     const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
@@ -123,6 +123,16 @@ export const HomeScreen: React.FC = () => {
             return;
         }
         if (!frogTask || hasSubtasks) return;
+        // [CORREÇÃO] startPomodoro() sempre chama stopAndReset() primeiro, sem
+        // avisar nada — se já existisse foco rodando em OUTRA tarefa, o botão
+        // "Comer o Sapo" matava essa sessão em silêncio. O TaskCard (tela de
+        // Tarefas) já tinha essa trava correta; aqui na Home faltava.
+        if (sessionStatus !== 'idle' && activeTaskId !== frogTask.id) {
+            const troca = window.confirm(
+                `Você já tem um foco em andamento${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''}. Trocar para "${frogTask.title}" agora? O foco atual será interrompido.`
+            );
+            if (!troca) return;
+        }
         if (frogTask.pomodoroEstimate > 0) {
             startPomodoro({ 
                 mode: 'classic', 

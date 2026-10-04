@@ -1,21 +1,33 @@
 /* ZEN LAKE SCREEN ... */
 
 .lakeScreen {
-    /* [CORREÇÃO] height:100vh/100dvh forçava a ALTURA DA TELA INTEIRA, mas essa
-       tela já vive dentro do .screen-content (que por sua vez já reserva espaço
-       pra área segura + barra de navegação). Somando as duas alturas sobrava
-       espaço vazio rolável embaixo. min-height:100% preenche o espaço que o
-       pai já calculou certo, sem duplicar. */
+    /* [AJUSTE] justify-content:center deixava toda a sobra de espaço
+       concentrada embaixo em vez de distribuída — trocado por flex-start
+       com um respiro fixo do topo, mais previsível. O espaço que sobra
+       agora vira lugar pra frase de incentivo (.encouragementQuote) em vez
+       de ficar vazio sem função nenhuma. */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
     min-height: 100%;
     padding: var(--sp-lg);
+    padding-top: var(--sp-xl);
     gap: var(--sp-xl);
     background-color: var(--background-color);
     transition: background-color 0.5s ease;
+}
+
+.encouragementQuote {
+    margin-top: auto;
+    margin-bottom: var(--sp-lg);
+    padding: 0 var(--sp-lg);
+    text-align: center;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    max-width: 320px;
 }
 
 .lakeScreen.focus { background: radial-gradient(ellipse at bottom, var(--surface-secondary-color) 0%, var(--background-color) 70%); }

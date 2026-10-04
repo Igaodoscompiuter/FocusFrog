@@ -37,13 +37,13 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
-            updateWidget(context, appWidgetManager, appWidgetId, true);
+            updateWidget(context, appWidgetManager, appWidgetId);
         }
     }
 
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, android.os.Bundle newOptions) {
-        updateWidget(context, appWidgetManager, appWidgetId, true);
+        updateWidget(context, appWidgetManager, appWidgetId);
     }
 
     @Override
@@ -60,17 +60,17 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
             }
             AppWidgetManager mgr = AppWidgetManager.getInstance(context);
             int[] ids = mgr.getAppWidgetIds(new ComponentName(context, ChecklistWidgetProvider.class));
-            // [CORREÇÃO] Marcar um item só precisa recarregar os DADOS do
-            // GridView (notifyAppWidgetViewDataChanged) e atualizar o texto
-            // do cabeçalho — NÃO precisa reconstruir o widget inteiro.
-            // Chamar updateWidget(fullRebuild=true) aqui também chamava
-            // setRemoteAdapter() de novo a cada toque, o que faz o Android
-            // DESCONECTAR E RECONECTAR o GridView do zero (não só atualizar
-            // os dados) — é exatamente isso que causava o pisca-pisca e o
-            // "reajuste" visual a cada marcação.
+            // [HISTÓRICO] Cheguei a tentar pular setRemoteAdapter() nas
+            // atualizações leves (só marcar item) pra evitar um pisca-pisca
+            // visual. Causou um bug bem pior: updateAppWidget() SUBSTITUI a
+            // árvore de views inteira a cada chamada, e sem chamar
+            // setRemoteAdapter() de novo nessa árvore nova, o GridView ficava
+            // sem NENHUMA conexão com os dados — a lista inteira sumia até o
+            // próximo resize. Revertido: agora sempre reconecta o adapter,
+            // priorizando não quebrar sobre o pisca-pisca cosmético.
             mgr.notifyAppWidgetViewDataChanged(ids, R.id.widget_grid_view);
             for (int id : ids) {
-                updateWidget(context, mgr, id, false);
+                updateWidget(context, mgr, id);
             }
         }
     }
@@ -82,7 +82,7 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         int[] ids = mgr.getAppWidgetIds(new ComponentName(context, ChecklistWidgetProvider.class));
         mgr.notifyAppWidgetViewDataChanged(ids, R.id.widget_grid_view);
         for (int id : ids) {
-            updateWidget(context, mgr, id, false);
+            updateWidget(context, mgr, id);
         }
     }
 
@@ -118,9 +118,9 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId, boolean fullRebuild) {
+    private static void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         try {
-            updateWidgetInner(context, appWidgetManager, appWidgetId, fullRebuild);
+            updateWidgetInner(context, appWidgetManager, appWidgetId);
         } catch (Exception e) {
             // Rede de segurança: qualquer erro inesperado aqui antes derrubava
             // a adição do widget inteira ("Não foi possível adicionar widget").
@@ -131,7 +131,7 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static void updateWidgetInner(Context context, AppWidgetManager appWidgetManager, int appWidgetId, boolean fullRebuild) {
+    private static void updateWidgetInner(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_checklist);
 
         // --- Cabeçalho: progresso "X/Y" + estado vazio ---
@@ -152,29 +152,29 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_progress, total > 0 ? ("(" + done + "/" + total + ")") : "");
 
         // --- GridView: adapter de verdade (ChecklistWidgetService) ---
-        // [CORREÇÃO] setRemoteAdapter/setEmptyView/setPendingIntentTemplate só
-        // rodam na reconstrução completa (1ª vez, resize) — chamá-los de novo
-        // a cada toque força o Android a desconectar e reconectar o GridView
-        // do zero (não só atualizar dado), causando o pisca-pisca relatado.
-        // Pra uma marcação simples, só o notifyAppWidgetViewDataChanged (já
-        // disparado por quem chamou) + o texto do cabeçalho abaixo bastam.
-        if (fullRebuild) {
-            Intent svcIntent = new Intent(context, ChecklistWidgetService.class);
-            svcIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            svcIntent.setData(android.net.Uri.parse(svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
-            views.setRemoteAdapter(R.id.widget_grid_view, svcIntent);
-            views.setEmptyView(R.id.widget_grid_view, R.id.widget_empty_state);
+        // [CORREÇÃO — revertido] A tentativa anterior de só chamar
+        // setRemoteAdapter() na reconstrução completa (pra evitar o
+        // pisca-pisca) causou um bug BEM pior: updateAppWidget() SUBSTITUI a
+        // árvore de views inteira a cada chamada — sem chamar setRemoteAdapter
+        // de novo nessa árvore nova, o GridView ficava SEM NENHUMA conexão com
+        // os dados (lista inteira sumia), só voltando no próximo resize (que
+        // é o único outro caminho que passava por fullRebuild=true). Prioridade
+        // é não quebrar — chama sempre, incondicional.
+        Intent svcIntent = new Intent(context, ChecklistWidgetService.class);
+        svcIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        svcIntent.setData(android.net.Uri.parse(svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
+        views.setRemoteAdapter(R.id.widget_grid_view, svcIntent);
+        views.setEmptyView(R.id.widget_grid_view, R.id.widget_empty_state);
 
-            // Template de clique: cada célula do GridView só pode preencher um
-            // "fill-in" (feito na Factory) em cima deste modelo — GridView/ListView
-            // não aceita PendingIntent individual por célula, só esse padrão.
-            Intent toggleIntent = new Intent(context, ChecklistWidgetProvider.class);
-            toggleIntent.setAction(ACTION_TOGGLE);
-            PendingIntent togglePi = PendingIntent.getBroadcast(
-                context, appWidgetId, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE
-            );
-            views.setPendingIntentTemplate(R.id.widget_grid_view, togglePi);
-        }
+        // Template de clique: cada célula do GridView só pode preencher um
+        // "fill-in" (feito na Factory) em cima deste modelo — GridView/ListView
+        // não aceita PendingIntent individual por célula, só esse padrão.
+        Intent toggleIntent = new Intent(context, ChecklistWidgetProvider.class);
+        toggleIntent.setAction(ACTION_TOGGLE);
+        PendingIntent togglePi = PendingIntent.getBroadcast(
+            context, appWidgetId, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE
+        );
+        views.setPendingIntentTemplate(R.id.widget_grid_view, togglePi);
 
         // --- Botão de resetar tudo ---
         Intent resetIntent = new Intent(context, ChecklistWidgetProvider.class);
@@ -194,12 +194,6 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         }
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
-        // [CORREÇÃO] Só notifica aqui na reconstrução completa — numa marcação
-        // simples (fullRebuild=false) quem chamou já notificou antes de entrar
-        // aqui; notificar de novo seria um segundo refresh redundante, mais
-        // uma fonte de flicker em cima do que já foi corrigido acima.
-        if (fullRebuild) {
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_grid_view);
-        }
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_grid_view);
     }
 }

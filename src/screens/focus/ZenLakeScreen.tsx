@@ -6,6 +6,7 @@ import { Icon } from '../../components/Icon';
 import { icons } from '../../components/Icons';
 import { FocusFrogLifeCycle } from '../../components/FocusFrogLifeCycle';
 import { ProgressRing } from '../../components/ProgressRing';
+import { motivationalQuotes } from '../../utils/quotes';
 
 const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -14,6 +15,11 @@ const formatTime = (seconds: number) => {
 };
 
 export const ZenLakeScreen: React.FC = () => {
+    // [NOVO] Fica fixa durante toda a sessão (sorteada uma vez por montagem,
+    // não a cada re-render) — preenche o espaço vazio abaixo dos controles
+    // com algo útil, no mesmo tom das frases já usadas em Estatísticas.
+    const [quote] = React.useState(() => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
+
     // HOOK CENTRALIZADO PARA DADOS DA SESSÃO
     const {
         sessionStatus,
@@ -104,6 +110,15 @@ export const ZenLakeScreen: React.FC = () => {
                     )}
                 </motion.div>
             </div>
+
+            <motion.p
+                className={styles.encouragementQuote}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+            >
+                "{quote}"
+            </motion.p>
         </motion.main>
     );
 };

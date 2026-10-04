@@ -68,13 +68,14 @@
          ferramenta certa do Android pra exatamente esse problema, em vez de
          eu tentar recriar isso manualmente com linhas fixas que escondiam
          item ou cortavam na borda. -->
-    <!-- [CORREÇÃO] stretchMode="columnWidth" esticava a LARGURA de cada coluna
-         pra preencher o espaço sobrando — item curto tipo "Chaves" virava uma
-         coluna enorme com muito vão vazio antes da próxima. spacingWidthUniform
-         mantém cada item perto do tamanho natural e distribui a sobra como
-         espaçamento, não como largura de célula. columnWidth menor (110dp)
-         também deixa mais colunas caberem em widgets largos, sobrando menos
-         espaço pra redistribuir em primeiro lugar. -->
+    <!-- [CORREÇÃO — revertido de novo] spacingWidthUniform deixava a largura
+         sobrando JOGADA FORA num vão morto de um lado (óbvio demais com 1
+         coluna só — todo o conteúdo colado à esquerda, metade do widget
+         vazia). columnWidth volta a esticar cada CÉLULA pra preencher o
+         espaço de verdade — o texto fica com mais respiro à direita, mas
+         nunca sobra um vão morto sem function nenhuma. Entre os dois
+         problemas, espaço vazio sem uso nenhum é pior do que célula com
+         respiro a mais. -->
     <GridView
         android:id="@+id/widget_grid_view"
         android:layout_width="match_parent"
@@ -82,7 +83,7 @@
         android:layout_weight="1"
         android:numColumns="auto_fit"
         android:columnWidth="110dp"
-        android:stretchMode="spacingWidthUniform"
+        android:stretchMode="columnWidth"
         android:horizontalSpacing="4dp"
         android:verticalSpacing="0dp"
         android:gravity="start"
