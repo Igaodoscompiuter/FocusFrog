@@ -30,10 +30,9 @@
     height: 100%; 
 }
 
-.frogBody { 
-    animation: breathe-body 5s infinite ease-in-out;
-    transform-origin: 50% 60%;
-}
+/* respiração agora vem de .breath (exata do jogo); a antiga breathe-body foi
+   removida pra não haver duas animações brigando no mesmo elemento */
+.frogBody { }
 
 .frogMainBody { 
     fill: var(--frog-color-primary); 
@@ -70,3 +69,10 @@
     stroke-width: 2;
     stroke-linecap: round;
 }
+
+/* [PORTADO de lagoa-zen-index.html] vida dos sapos parados */
+.breath { animation: idleBreath 2.6s ease-in-out infinite; transform-box: view-box; transform-origin: 50px 86px; }
+@keyframes idleBreath { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.965); } }
+.eyeBlink { animation: eyeBlink 4.5s ease-in-out infinite; transform-box: view-box; transform-origin: 50px 45px; }
+@keyframes eyeBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+.frogShadow { fill: rgba(0, 0, 0, 0.4); filter: blur(2px); }

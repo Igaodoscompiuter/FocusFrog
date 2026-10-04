@@ -19,17 +19,21 @@ const rarityLabel: Record<string, string> = {
  * então aparece na hora, não importa onde o usuário esteja no app.
  */
 export const FrogRewardModal: React.FC = () => {
-    const { newlyAcquiredFrog, clearNewlyAcquiredFrog } = useUser();
+    const { newlyAcquiredFrog, clearNewlyAcquiredFrog, collectedFrogs } = useUser();
     if (!newlyAcquiredFrog) return null;
 
     const species = frogSpecies[newlyAcquiredFrog.speciesId];
+    // 1ª vez dessa espécie (a coleta já foi registrada, então conta = 1)
+    const isFirstOfSpecies = collectedFrogs.filter(id => id === newlyAcquiredFrog.speciesId).length <= 1;
     if (!species) return null;
 
     return (
         <div className={styles.overlay} onClick={clearNewlyAcquiredFrog}>
             <div className={styles.card} onClick={(e) => e.stopPropagation()}>
                 <div className={`${styles.glow} ${styles[species.rarity]}`} />
-                <p className={styles.eyebrow}>🐸 Novo sapo coletado!</p>
+                {isFirstOfSpecies
+                    ? <p className={styles.newBadge}>✨ NOVA ESPÉCIE DESCOBERTA!</p>
+                    : <p className={styles.eyebrow}>🐸 Novo sapo coletado!</p>}
                 <div className={styles.frogStage}>
                     <ZenFrog speciesId={species.id} stage="adult" size={130} clickable={false} />
                 </div>

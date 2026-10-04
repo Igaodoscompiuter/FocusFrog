@@ -22,3 +22,12 @@
     position: relative;
     animation: bob 6s ease-in-out infinite;
 }
+
+/* [PORTADO de lagoa-zen-index.html] nenúfar inclina quando um sapo pousa */
+.pad.reacting { animation: padTilt 0.9s ease-out; }
+@keyframes padTilt {
+    0%   { transform: rotate(-2deg) translateY(0) scale(1); }
+    25%  { transform: rotate(-9deg) translateY(3px) scale(0.97); }
+    55%  { transform: rotate(6deg) translateY(-2px) scale(1.02); }
+    100% { transform: rotate(-2deg) translateY(0) scale(1); }
+}

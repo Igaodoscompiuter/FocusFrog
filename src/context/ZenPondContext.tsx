@@ -14,13 +14,33 @@ export interface PondFrog extends FrogInput {
   location: 'pond' | 'storage';
   count: number; // quantas vezes essa espécie já se fundiu nesta — mostrado como "×N" na carta
   merging?: boolean;
+  /** Momento em que entrou na lagoa caindo (soltar do viveiro / sapo novo). */
+  enteredAt?: number;
+  /** Momento da última fusão em que este sapo absorveu outro (→ pulso). */
+  pulseAt?: number;
 }
 
-interface Ripple {
+export interface Ripple {
   id: number;
   top: string;
   left: string;
+  /** anel dourado da fusão (ring-gold do jogo) */
+  gold?: boolean;
+  /** atraso até o pouso — a ondulação nasce quando o sapo toca a água */
+  delayMs?: number;
 }
+
+/** Efeito de fusão: faíscas + texto flutuante "×N" no sapo que ficou. */
+export interface MergeEffect {
+  id: number;
+  top: number;
+  left: number;
+  text: string;
+}
+
+// tempo até tocar a água (fração de pouso × duração, iguais ao jogo/ZenFrog)
+const HOP_LAND_MS = Math.round(0.68 * 620);
+const DROP_LAND_MS = Math.round(0.55 * 780);
 
 const POND_BOUNDS = { top: 15, left: 15, right: 85, bottom: 85 };
 const FROG_COLLISION_RADIUS = 7;
@@ -71,12 +91,14 @@ const spawnFrog = (f: FrogInput, location: 'pond' | 'storage' = 'storage'): Pond
   moveAt: Date.now() + random(5000, 10000),
   location,
   count: 1,
+  enteredAt: location === 'pond' ? Date.now() : undefined,
 });
 
 interface ZenPondContextValue {
   pondFrogs: PondFrog[];
   storageFrogs: PondFrog[];
   ripples: Ripple[];
+  effects: MergeEffect[];
   maxPond: number;
   sendToStorage: (frogId: string) => void;
   releaseToPond: (frogId: string) => boolean;
@@ -160,6 +182,14 @@ const loadInitialState = (collected: FrogInput[]): ZenState => {
 export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs, children }) => {
   const [state, setState] = useState<ZenState>(() => loadInitialState(collectedFrogs));
   const [ripples, setRipples] = useState<Ripple[]>([]);
+  const [effects, setEffects] = useState<MergeEffect[]>([]);
+  const addRipples = useCallback((list: Ripple[]) => {
+    if (!list.length) return;
+    setRipples(r => [...r, ...list]);
+    const ids = new Set(list.map(x => x.id));
+    const longest = Math.max(...list.map(x => (x.delayMs || 0))) + 1900;
+    setTimeout(() => setRipples(r => r.filter(x => !ids.has(x.id))), longest);
+  }, []);
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -202,20 +232,25 @@ export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs
         const target = getSmartLeapPosition(frog, frogs, personality.jumpDistance, POND_BOUNDS);
         const blocked = frogs.some(o => o.id !== frog.id && o.speciesId !== frog.speciesId && getDistance(target, o) < FROG_COLLISION_RADIUS);
         if (blocked) return { ...frog, moveAt: now + random(2000, 4000) };
-        newRipples.push({ id: now + Math.random(), top: `${frog.top}%`, left: `${frog.left}%` });
+        newRipples.push({ id: now + Math.random(), top: `${target.top}%`, left: `${target.left}%`, delayMs: HOP_LAND_MS });
         return { ...frog, ...target, moveAt: now + random(personality.moveInterval.min, personality.moveInterval.max) };
       });
 
       const absorbed = new Set<string>();
+      const newEffects: MergeEffect[] = [];
       for (let i = 0; i < updated.length; i++) {
         for (let j = i + 1; j < updated.length; j++) {
           const a = updated[i], b = updated[j];
           if (absorbed.has(a.id) || absorbed.has(b.id)) continue;
           if (getDistance(a, b) >= FROG_INTERACTION_DISTANCE) continue;
           if (a.speciesId === b.speciesId) {
-            updated[i] = { ...a, scale: Math.min(a.scale * 1.1, 2.0), count: a.count + b.count };
+            const total = a.count + b.count;
+            updated[i] = { ...a, scale: Math.min(a.scale * 1.1, 2.0), count: total, pulseAt: now };
             updated[j] = { ...b, merging: true, left: a.left, top: a.top, scale: 0.15 };
             absorbed.add(b.id);
+            // efeitos chegam junto com o sapo absorvido (~560ms de deslize)
+            newEffects.push({ id: now + Math.random(), top: a.top, left: a.left, text: `×${total}` });
+            newRipples.push({ id: now + Math.random(), top: `${a.top}%`, left: `${a.left}%`, gold: true, delayMs: 560 });
           } else {
             const aBig = a.scale > b.scale;
             updated[i] = { ...a, scale: aBig ? Math.min(a.scale * 1.02, 2.0) : a.scale * 0.98 };
@@ -231,14 +266,19 @@ export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs
         applied = true;
         return { ...prev, pond: nextPond };
       });
-      if (applied && newRipples.length) {
-        setRipples(r => [...r, ...newRipples]);
-        const ids = new Set(newRipples.map(r => r.id));
-        setTimeout(() => setRipples(r => r.filter(x => !ids.has(x.id))), 1000);
+      if (applied) {
+        addRipples(newRipples);
+        if (newEffects.length) {
+          setTimeout(() => {
+            setEffects(e => [...e, ...newEffects]);
+            const ids = new Set(newEffects.map(x => x.id));
+            setTimeout(() => setEffects(e => e.filter(x => !ids.has(x.id))), 1000);
+          }, 560);
+        }
       }
     }, SIMULATION_TICK_RATE);
     return () => clearInterval(gameLoop);
-  }, []);
+  }, [addRipples]);
 
   const sendToStorage = useCallback((frogId: string) => {
     setState(prev => {
@@ -263,14 +303,24 @@ export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs
       return {
         ...prev,
         storage: prev.storage.filter(f => f.id !== frogId),
-        pond: [...prev.pond, { ...frog, ...spot, location: 'pond', moveAt: Date.now() + random(2500, 6000) }],
+        pond: [...prev.pond, { ...frog, ...spot, location: 'pond', enteredAt: Date.now(), moveAt: Date.now() + random(2500, 6000) }],
       };
     });
     return true;
   }, []);
 
+  // ondulação no pouso de quem entrou caindo (soltar do viveiro / sapo novo)
+  const seenDrops = useRef(new Set<string>());
+  useEffect(() => {
+    const now = Date.now();
+    const drops = state.pond.filter(f => f.enteredAt && now - f.enteredAt < 1500 && !seenDrops.current.has(f.id + f.enteredAt));
+    if (!drops.length) return;
+    drops.forEach(f => seenDrops.current.add(f.id + f.enteredAt));
+    addRipples(drops.map(f => ({ id: now + Math.random(), top: `${f.top}%`, left: `${f.left}%`, delayMs: DROP_LAND_MS })));
+  }, [state.pond, addRipples]);
+
   return (
-    <ZenPondContext.Provider value={{ pondFrogs: state.pond, storageFrogs: state.storage, ripples, maxPond: MAX_POND_FROGS, sendToStorage, releaseToPond }}>
+    <ZenPondContext.Provider value={{ pondFrogs: state.pond, storageFrogs: state.storage, ripples, effects, maxPond: MAX_POND_FROGS, sendToStorage, releaseToPond }}>
       {children}
     </ZenPondContext.Provider>
   );

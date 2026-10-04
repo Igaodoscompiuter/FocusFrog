@@ -29,16 +29,18 @@ const TINTS = ['#2f8f5b', '#3aa568', '#279874'];
 interface LilyPadProps {
     pad: LilyPadData;
     index: number;
+    /** um sapo acabou de pousar aqui → inclina (padTilt do jogo) */
+    reacting?: boolean;
 }
 
-export const LilyPad: React.FC<LilyPadProps> = ({ pad, index }) => {
+export const LilyPad: React.FC<LilyPadProps> = ({ pad, index, reacting = false }) => {
     const outline = OUTLINES[index % OUTLINES.length];
     const tint = TINTS[index % TINTS.length];
 
     return (
         <div className={styles.wrap} style={{ left: `${pad.x}%`, top: `${pad.y}%` }}>
             <div className={styles.shadow} style={{ width: pad.size * 0.9, height: pad.size * 0.45 }} />
-            <div className={styles.pad} style={{ width: pad.size, height: pad.size, animationDelay: `${index * 0.7}s` }}>
+            <div className={`${styles.pad} ${reacting ? styles.reacting : ''}`} style={{ width: pad.size, height: pad.size, animationDelay: reacting ? '0s' : `${index * 0.7}s` }}>
                 <svg width={pad.size} height={pad.size} viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
                     {/* corte em V apontando pra fora, estilo nenúfar de verdade */}
                     <path d={outline} fill={tint} stroke="#00000022" strokeWidth={1} />

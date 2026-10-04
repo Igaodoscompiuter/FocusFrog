@@ -82,11 +82,18 @@
 .ripple {
   position: absolute;
   z-index: 3;
+  /* [CORREÇÃO] sem tamanho, era um ponto de 3px que crescia até ~21px —
+     quase invisível. 10px igual o jogo (spawnRipple) */
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.4);
-  animation: ripple-effect 1.8s ease-out forwards;
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple-effect 1.8s ease-out both; /* both: espera o atraso do pouso já escondida */
   pointer-events: none;
 }
+/* anel dourado da fusão */
+.ringGold { width: 12px; height: 12px; border-color: rgba(251, 191, 36, 0.85); border-width: 2px; }
 
 .ambientRipple {
   position: absolute;
@@ -100,6 +107,11 @@
 .frogWrapper {
   position: absolute;
   z-index: 4;
+  /* [CORREÇÃO] caixa de tamanho zero: o sapo (centralizado por flex) fica
+     CENTRADO no ponto top/left — antes o ponto era o canto superior
+     esquerdo, então ondulações e efeitos nasciam fora do sapo */
+  width: 0;
+  height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,4 +125,37 @@
   background-color: transparent;
   border: none;
   z-index: -1;
+}
+
+/* [PORTADO de lagoa-zen-index.html] brilho de raridade sob o sapo */
+.rarityGlow {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 60px; height: 60px; border-radius: 50%; z-index: -1; pointer-events: none;
+}
+.rarityGlow.rare { background: radial-gradient(closest-side, rgba(79,195,247,0.45), transparent 72%); animation: glowPulse 2.4s ease-in-out infinite; }
+.rarityGlow.epic { background: radial-gradient(closest-side, rgba(251,191,36,0.55), transparent 72%); animation: glowPulse 1.8s ease-in-out infinite; }
+@keyframes glowPulse {
+  0%, 100% { opacity: .55; transform: translate(-50%, -50%) scale(0.9); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* faíscas e texto flutuante da fusão */
+.spark {
+  position: absolute; z-index: 6; width: 5px; height: 5px; border-radius: 50%;
+  background: #FBBF24; box-shadow: 0 0 6px 1px #FBBF24;
+  transform: translate(-50%, -50%); animation: sparkOut .65s ease-out forwards; pointer-events: none;
+}
+@keyframes sparkOut {
+  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  to   { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2); opacity: 0; }
+}
+.floatText {
+  position: absolute; z-index: 7; transform: translate(-50%, -50%);
+  font-size: 14px; font-weight: 800; color: #FBBF24; text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  animation: floatUp 1s ease-out forwards; pointer-events: none;
+}
+@keyframes floatUp {
+  from { opacity: 0; transform: translate(-50%, -30%) scale(.7); }
+  20%  { opacity: 1; transform: translate(-50%, -60%) scale(1.15); }
+  to   { opacity: 0; transform: translate(-50%, -160%) scale(1); }
 }

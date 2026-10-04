@@ -96,3 +96,13 @@
 .button {
   width: 100%;
 }
+
+/* [PORTADO de lagoa-zen-index.html] selo .card-new pra espécie inédita */
+.newBadge {
+  display: inline-block; margin: 0 auto var(--sp-sm);
+  font-size: 13px; font-weight: 800; color: #1b1405;
+  background: linear-gradient(90deg, #FFD65A, #FFE9A6);
+  border-radius: 999px; padding: 6px 12px;
+  animation: badgeGlow 1.4s ease-in-out infinite;
+}
+@keyframes badgeGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
