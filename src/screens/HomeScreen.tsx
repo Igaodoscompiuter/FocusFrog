@@ -5,6 +5,7 @@ import { useUI } from '../context/UIContext';
 import { usePomodoro } from '../context/PomodoroContext';
 import { useUser } from '../context/UserContext';
 import { TaskModal } from '../components/modals/TaskModal';
+import { useTour } from '../components/tour/TourContext';
 import { MorningReviewModal } from '../components/modals/MorningReviewModal';
 import { QuickCompleteModal } from '../components/modals/QuickCompleteModal';
 import { Icon } from '../components/Icon';
@@ -68,6 +69,13 @@ export const HomeScreen: React.FC = () => {
     const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
+    const { step: tourStep } = useTour();
+    // tutorial: já deixa uma tarefa comum e rápida escrita (a pessoa pode trocar)
+    useEffect(() => {
+        if (tourStep?.id === 'create') setBrainDumpText(t => t || 'Beber um copo de água 💧');
+    }, [tourStep?.id]);
+    // tutorial: o 1º foco dura só 5s, pra pessoa ver o sapo nascer
+    const tutorialFocus = tourStep?.id === 'start';
     const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
     const [selectedFrogId, setSelectedFrogId] = useState<string | null>(null);
 
@@ -132,6 +140,11 @@ export const HomeScreen: React.FC = () => {
                 `Você já tem um foco em andamento${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''}. Trocar para "${frogTask.title}" agora? O foco atual será interrompido.`
             );
             if (!troca) return;
+        }
+        if (tutorialFocus) {
+            startPomodoro({ mode: 'quick', taskId: frogTask.id, taskTitle: frogTask.title, cycles: 1, focusMinutes: 5 / 60 });
+            handleNavigate('focus');
+            return;
         }
         if (frogTask.pomodoroEstimate > 0) {
             startPomodoro({ 

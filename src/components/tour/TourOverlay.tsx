@@ -18,6 +18,7 @@ export const TourOverlay: React.FC = () => {
   const [rect, setRect] = useState<Rect | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [hop, setHop] = useState(0);
+  const [hidden, setHidden] = useState(false);
 
   // acompanha o elemento alvo (posição muda com rolagem/teclado/layout)
   useEffect(() => {
@@ -25,6 +26,7 @@ export const TourOverlay: React.FC = () => {
     let scrolled = false;
     const tick = () => {
       setModalOpen(!!document.querySelector('.g-modal-overlay'));
+      setHidden(!!document.querySelector('[data-tour-hide]')); // aviso de sapo ganho na frente
       if (!step.target) { setRect(null); return; }
       const el = document.querySelector(step.target) as HTMLElement | null;
       if (!el) { setRect(null); return; }
@@ -38,7 +40,7 @@ export const TourOverlay: React.FC = () => {
     return () => clearInterval(id);
   }, [active, step]);
 
-  if (!active || !step) return null;
+  if (!active || !step || hidden) return null;
 
   const pad = 8;
   const hole = rect && !modalOpen ? { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 } : null;

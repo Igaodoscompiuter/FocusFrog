@@ -28,7 +28,7 @@ export const FrogRewardModal: React.FC = () => {
     if (!species) return null;
 
     return (
-        <div className={styles.overlay} onClick={clearNewlyAcquiredFrog}>
+        <div className={styles.overlay} data-tour-hide onClick={clearNewlyAcquiredFrog}>
             <div className={styles.card} onClick={(e) => e.stopPropagation()}>
                 <div className={`${styles.glow} ${styles[species.rarity]}`} />
                 {isFirstOfSpecies

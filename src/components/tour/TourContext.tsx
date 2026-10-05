@@ -23,8 +23,9 @@ export const TOUR_STEPS: TourStep[] = [
   { id: 'welcome', title: 'Oi! Que bom te ver por aqui 🐸', text: 'Eu sou o sapinho do FocusFrog. Em 3 passos rapidinhos eu te mostro como sair do "não sei por onde começar" pro foco de verdade.', button: 'Bora!' },
   { id: 'create', target: '#tutorial-step1-form', title: 'Passo 1 · Tira da cabeça', text: 'Escreve aqui uma coisa que você precisa fazer hoje e toca no +. Pode ser pequena!' },
   { id: 'frog', target: '#frog-card', title: 'Passo 2 · Escolhe seu Sapo do Dia', text: 'O Sapo do Dia é a tarefa que mais importa hoje. Toca aqui (no ✎) e escolhe a tarefa que você acabou de criar.' },
-  { id: 'start', target: '#eat-the-frog-button', title: 'Passo 3 · Come o sapo!', text: 'Tudo pronto. Toca em "Comer o Sapo" pra começar seu primeiro foco.' },
-  { id: 'focusing', title: 'Isso! Você começou 🎉', text: 'Enquanto o cronômetro roda, um sapinho cresce com você. Termine o foco e ele vai morar no seu Jardim Zen, em Estatísticas.', button: 'Entendi!' },
+  { id: 'start', target: '#eat-the-frog-button', title: 'Passo 3 · Come o sapo!', text: 'Toca em "Comer o Sapo". Esse primeiro foco dura só 5 segundinhos, pra você ver o sapo nascer.' },
+  { id: 'focusing', target: '[class*="timerContainer"]', title: 'Olha ele crescendo 👀', text: 'Enquanto o cronômetro roda, um sapinho cresce com você. Esse é rapidinho, só pra mostrar.' },
+  { id: 'done', title: 'Pronto, você pegou o jeito! 🎉', text: 'Cada foco concluído traz um sapo novo pro seu Jardim Zen, em Estatísticas. Os próximos focos são de verdade: 25 minutos. Bora?', button: 'Bora!' },
 ];
 
 interface TourState { done: boolean; step: number }
@@ -74,6 +75,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (step?.id === 'create' && tasks.length > baseTasks.current) next();
     else if (step?.id === 'frog' && frogTaskId && frogTaskId !== FOCUS_FROG_MARKETING_TASK_ID && tasks.some(t => t.id === frogTaskId && t.status !== 'done')) next();
     else if (step?.id === 'start' && sessionStatus !== 'idle') next();
+    else if (step?.id === 'focusing' && sessionStatus === 'idle') next();
   }, [active, step?.id, tasks, frogTaskId, sessionStatus, next]);
 
   // passos da Home: garante que a pessoa está na Home

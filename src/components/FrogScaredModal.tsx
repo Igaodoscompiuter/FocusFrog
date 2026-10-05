@@ -17,7 +17,7 @@ export const FrogScaredModal: React.FC = () => {
     const species = frogSpecies[scaredOutcome.speciesId];
 
     return (
-        <div className={styles.overlay} onClick={clearScaredOutcome}>
+        <div className={styles.overlay} data-tour-hide onClick={clearScaredOutcome}>
             <div className={styles.card} onClick={(e) => e.stopPropagation()}>
                 <p className={styles.eyebrow}>💨 O sapinho fugiu</p>
                 <div className={styles.frogStage} style={{ filter: 'grayscale(0.85)', opacity: 0.55 }}>
