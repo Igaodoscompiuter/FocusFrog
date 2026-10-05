@@ -67,7 +67,22 @@ public class WidgetBridgePlugin extends Plugin {
         String title = call.getString("title", "FocusFrog");
         String body = call.getString("body", "");
         long endsAt = call.getLong("endsAt", 0L);
-        PomodoroForegroundService.start(getContext(), title, body, endsAt);
+        String phase = call.getString("phase", "focus");
+        PomodoroForegroundService.start(getContext(), title, body, endsAt, phase);
+        call.resolve(new JSObject());
+    }
+
+    /** total de distração (ms) acumulado na sessão de foco atual */
+    @PluginMethod
+    public void getFocusDistraction(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("distractedMs", FocusDistractionMonitor.getDistractedMs(getContext()));
+        call.resolve(r);
+    }
+
+    @PluginMethod
+    public void resetFocusDistraction(PluginCall call) {
+        FocusDistractionMonitor.reset(getContext());
         call.resolve(new JSObject());
     }
 

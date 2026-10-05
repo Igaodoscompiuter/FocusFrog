@@ -11,7 +11,9 @@ const NOTIF_ID_PHASE_END = 9001;   // "Hora da pausa" / "De volta ao foco"
  *  (setUsesChronometer) e de garantia real de não-descartável (setOngoing),
  *  que o plugin anterior não entregava de forma confiável. */
 interface WidgetBridgePluginIface {
-  startFocusService(opts: { title: string; body: string; endsAt: number }): Promise<void>;
+  startFocusService(opts: { title: string; body: string; endsAt: number; phase: 'focus' | 'break' }): Promise<void>;
+  getFocusDistraction(): Promise<{ distractedMs: number }>;
+  resetFocusDistraction(): Promise<void>;
   stopFocusService(): Promise<void>;
   checkExactAlarmPermission(): Promise<{ granted: boolean }>;
   openExactAlarmSettings(): Promise<void>;
@@ -99,7 +101,7 @@ export async function startOrUpdateFocusForegroundService(taskTitle: string, pha
     const title = phase === 'focus' ? `🐸 Em foco: ${taskTitle}` : '☕ Pausa';
     const body = phase === 'focus' ? 'Toque para voltar ao app' : 'Hora de respirar um pouco';
     try {
-        await NativeBridge.startFocusService({ title, body, endsAt });
+        await NativeBridge.startFocusService({ title, body, endsAt, phase });
         foregroundServiceRunning = true;
     } catch (e) {
         console.warn('[notifications] falha ao iniciar serviço em primeiro plano:', e);
@@ -283,4 +285,20 @@ export async function syncRoutineNotifications(routines: ScheduledRoutine[]) {
     } catch (e) {
         console.warn('[notifications] falha ao sincronizar notificações de rotina:', e);
     }
+}
+
+// =============================================
+// Foco limpo: distração medida no lado nativo (FocusDistractionMonitor)
+// =============================================
+/** Tempo (ms) com a tela ligada em OUTRO app durante o foco desta sessão.
+ *  No PWA/web não há como distinguir tela desligada de outro app → 0. */
+export async function getFocusDistractionMs(): Promise<number> {
+    // fora do APK não há medição; valor simulado só pra testes (dev)
+    if (!Capacitor.isNativePlatform()) return Number(localStorage.getItem('focusfrog_dev_distraction_ms') || 0);
+    try { return (await NativeBridge.getFocusDistraction()).distractedMs || 0; } catch { return 0; }
+}
+
+export async function resetFocusDistraction() {
+    if (!Capacitor.isNativePlatform()) return;
+    try { await NativeBridge.resetFocusDistraction(); } catch { /* nada */ }
 }

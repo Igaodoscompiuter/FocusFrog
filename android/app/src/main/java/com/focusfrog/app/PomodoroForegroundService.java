@@ -31,11 +31,13 @@ public class PomodoroForegroundService extends Service {
     public static final String EXTRA_TITLE = "title";
     public static final String EXTRA_BODY = "body";
     public static final String EXTRA_ENDS_AT = "ends_at"; // epoch millis
+    public static final String EXTRA_PHASE = "phase"; // "focus" | "break" (só o foco conta distração)
     public static final String ACTION_STOP = "com.focusfrog.app.POMODORO_SERVICE_STOP";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_STOP.equals(intent.getAction())) {
+            FocusDistractionMonitor.stop();
             stopForeground(true);
             stopSelf();
             return START_NOT_STICKY;
@@ -44,6 +46,9 @@ public class PomodoroForegroundService extends Service {
         String title = intent != null ? intent.getStringExtra(EXTRA_TITLE) : "FocusFrog";
         String body = intent != null ? intent.getStringExtra(EXTRA_BODY) : "";
         long endsAt = intent != null ? intent.getLongExtra(EXTRA_ENDS_AT, 0) : 0;
+        String phase = intent != null && intent.getStringExtra(EXTRA_PHASE) != null ? intent.getStringExtra(EXTRA_PHASE) : "focus";
+        FocusDistractionMonitor.setPhase(phase);
+        FocusDistractionMonitor.start(this);
 
         ensureChannel();
         Notification notification = buildNotification(title, body, endsAt);
@@ -98,8 +103,9 @@ public class PomodoroForegroundService extends Service {
         }
     }
 
-    public static void start(Context context, String title, String body, long endsAt) {
+    public static void start(Context context, String title, String body, long endsAt, String phase) {
         Intent intent = new Intent(context, PomodoroForegroundService.class);
+        intent.putExtra(EXTRA_PHASE, phase);
         intent.putExtra(EXTRA_TITLE, title);
         intent.putExtra(EXTRA_BODY, body);
         intent.putExtra(EXTRA_ENDS_AT, endsAt);

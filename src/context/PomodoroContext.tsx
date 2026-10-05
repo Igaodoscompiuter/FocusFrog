@@ -7,7 +7,7 @@ import { useUI } from './UIContext';
 import { useUser } from './UserContext';
 import { uiEffects } from '../sounds';
 import { postMessageToSW } from '../sw-helpers';
-import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications } from '../notifications';
+import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
 
 export type PomodoroMode = 'quick' | 'classic';
@@ -36,6 +36,9 @@ interface LastCompletedFocus {
 }
 
 interface PomodoroContextType {
+    /** sessão terminou mas as distrações passaram do limite → sem sapo */
+    scaredOutcome: ScaredOutcome | null;
+    clearScaredOutcome: () => void;
     pomodorosCompleted: number;
     activeTaskId: string | null;
     activeTaskTitle: string | null;
@@ -89,9 +92,15 @@ const getRandomFrog = (): keyof typeof frogSpecies => {
  * Antes o aviso de pausa dizia "Hora da pausa" no FIM da pausa, e retomar
  * de uma pausa não reagendava nada no celular.
  */
+/** Sapo só pra foco limpo: até 10% do tempo total de foco em outros apps. */
+export const MAX_DISTRACTION_RATIO = 0.10;
+
+/** Resultado de uma sessão em que as distrações passaram do limite. */
+export interface ScaredOutcome { speciesId: string; distractedMs: number; focusMs: number; }
+
 function scheduleEndAlert(phase: 'focus' | 'break', endsAt: number, isFinalFocus: boolean, taskTitle: string | null, breakSec: number, focusSec: number) {
     if (phase === 'focus' && isFinalFocus) {
-        scheduleSessionDoneNotification('✅ Foco concluído!', taskTitle ? `Você terminou seu foco em "${taskTitle}". Seu sapo está esperando!` : 'Você terminou seu bloco de foco. Bom trabalho!', endsAt);
+        scheduleSessionDoneNotification('✅ Foco concluído!', taskTitle ? `Você terminou seu foco em "${taskTitle}". Toque pra ver como foi 🐸` : 'Você terminou seu bloco de foco. Toque pra ver como foi 🐸', endsAt);
     } else if (phase === 'focus') {
         schedulePhaseEndNotification('☕ Hora da pausa', `Bom trabalho! Descanse ${Math.round(breakSec / 60)} min.`, endsAt);
     } else {
@@ -130,6 +139,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const heartbeatTick = useRef(0);
+    const [scaredOutcome, setScaredOutcome] = useState<ScaredOutcome | null>(null);
+    const clearScaredOutcome = useCallback(() => setScaredOutcome(null), []);
 
     const clearLastCompletedFocus = useCallback(() => setLastCompletedFocus(null), []);
 
@@ -201,8 +212,19 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
             // --- Lógica de Conclusão de Ciclo de Foco ---
             if (mode === 'quick' || currentCycle >= totalCycles) {
+                // [NOVO] Foco limpo: o sapo só vem se a distração (tela ligada em
+                // outro app, medida no lado nativo) ficou até 10% do tempo de foco.
+                // O tempo e a conclusão da tarefa contam de qualquer jeito.
                 if (activeTaskId && sessionFrog && !sessionFrog.isCollected) {
-                    addFrogToCollection(sessionFrog.speciesId);
+                    const speciesId = sessionFrog.speciesId;
+                    const focusMs = (mode === 'quick' ? 1 : totalCycles) * focusDuration * 1000;
+                    getFocusDistractionMs().then(distractedMs => {
+                        if (distractedMs <= focusMs * MAX_DISTRACTION_RATIO) {
+                            addFrogToCollection(speciesId);
+                        } else {
+                            setScaredOutcome({ speciesId, distractedMs, focusMs });
+                        }
+                    });
                 }
 
                 if (activeTaskId) {
@@ -320,6 +342,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
         const endsAt = Date.now() + newFocusDuration * 1000;
         setSessionEndsAt(endsAt);
+        resetFocusDistraction();
         scheduleEndAlert('focus', endsAt, newTotalCycles <= 1, settings.taskTitle, newBreakDuration, newFocusDuration);
         startOrUpdateFocusForegroundService(settings.taskTitle, 'focus', endsAt);
     }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
@@ -351,6 +374,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         pomodorosCompleted,
         activeTaskId,
         activeTaskTitle,
+        scaredOutcome,
+        clearScaredOutcome,
         mode,
         sessionStatus,
         isPaused,
