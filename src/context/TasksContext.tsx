@@ -27,6 +27,8 @@ interface TasksContextType {
     handleCompleteTask: (taskId: string, method: CompletionMethod, subtaskId?: string) => void;
     handleToggleSubtask: (taskId: string, subtaskId: string) => void;
     handleSetFrog: (id: string | null) => void;
+    /** restaura o Card Especial FocusFrog (se excluído/concluído) e define como Sapo do Dia */
+    ensureMarketingFrog: () => void;
     handleUnsetFrog: () => void;
     handleSaveTag: (tag: Partial<Tag>) => void;
     handleDeleteTag: (tagId: number) => void;
@@ -467,6 +469,16 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, [triageQueue, tasks, handleUpdateTaskQuadrant, endTriage, addNotification]);
 
+    const ensureMarketingFrog = useCallback(() => {
+        setTasks(prev => {
+            const current = prev.find(t => t.id === FOCUS_FROG_MARKETING_TASK_ID);
+            if (current && current.status !== 'done') return prev;
+            const fresh = { ...focusFrogMarketingTask, subtasks: focusFrogMarketingTask.subtasks?.map(st => ({ ...st, completed: false })) };
+            return [fresh, ...prev.filter(t => t.id !== FOCUS_FROG_MARKETING_TASK_ID)];
+        });
+        setFrogTaskId(FOCUS_FROG_MARKETING_TASK_ID);
+    }, [setTasks, setFrogTaskId]);
+
     const needsMorningPlan = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
         return !tasks.find(t => t.id === frogTaskId && t.dueDate === today);
@@ -486,6 +498,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleCompleteTask,
         handleToggleSubtask,
         handleSetFrog,
+        ensureMarketingFrog,
         handleUnsetFrog,
         handleSaveTag,
         handleDeleteTag,
