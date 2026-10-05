@@ -4,7 +4,7 @@ import { postMessageToSW } from './sw-helpers';
 
 // IDs fixos (um por "slot") — agendar de novo com o mesmo ID substitui a anterior,
 // em vez de empilhar notificações repetidas.
-const NOTIF_ID_PHASE_END = 9001;   // "Sua pausa começou" / "De volta ao foco"
+const NOTIF_ID_PHASE_END = 9001;   // "Hora da pausa" / "De volta ao foco"
 
 /** Serviço em primeiro plano próprio (PomodoroForegroundService.java) — não usa
  *  mais plugin de terceiros, porque precisava de cronômetro nativo ao vivo
@@ -115,15 +115,47 @@ export async function stopFocusForegroundService() {
     foregroundServiceRunning = false;
 }
 
-/** Cancela o aviso de troca de fase e encerra o serviço em primeiro plano. */
+// [CORREÇÃO] "Foco concluído" tem número PRÓPRIO. Antes usava o 9001 (o mesmo
+// da troca de fase) e o encerramento da sessão cancelava o 9001 na linha
+// seguinte — o aviso nascia e era apagado no mesmo instante.
+const NOTIF_ID_SESSION_DONE = 9004;
+
+/** Agenda (já no início do último bloco) o aviso de conclusão da sessão —
+ *  dispara pelo AlarmManager mesmo com o app congelado/fechado. */
+export async function scheduleSessionDoneNotification(title: string, body: string, atTimestamp: number) {
+    if (Capacitor.isNativePlatform()) {
+        await ensureNativePermission();
+        await ensureExactAlarmPermission();
+        try {
+            await LocalNotifications.schedule({
+                notifications: [{ id: NOTIF_ID_SESSION_DONE, title, body, schedule: { at: new Date(atTimestamp), allowWhileIdle: true } }],
+            });
+        } catch (e) {
+            console.warn('[notifications] falha ao agendar aviso de conclusão:', e);
+        }
+    } else {
+        postMessageToSW({ type: 'SCHEDULE_NOTIFICATION', payload: { title, body, timestamp: atTimestamp } });
+    }
+}
+
+/** Interrompeu (parar/pausar): cancela os dois avisos e o serviço. */
 export async function cancelPomodoroNotifications() {
     if (Capacitor.isNativePlatform()) {
         try {
-            await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_PHASE_END }] });
+            await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_PHASE_END }, { id: NOTIF_ID_SESSION_DONE }] });
         } catch { /* nada a fazer */ }
         await stopFocusForegroundService();
     } else {
         postMessageToSW({ type: 'CANCEL_NOTIFICATION' });
+    }
+}
+
+/** Terminou naturalmente: encerra o serviço mas PRESERVA o "Foco concluído"
+ *  (que já foi agendado pro horário exato do fim). */
+export async function finishPomodoroNotifications() {
+    if (Capacitor.isNativePlatform()) {
+        try { await LocalNotifications.cancel({ notifications: [{ id: NOTIF_ID_PHASE_END }] }); } catch { /* nada */ }
+        await stopFocusForegroundService();
     }
 }
 

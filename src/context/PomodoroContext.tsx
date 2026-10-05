@@ -7,7 +7,7 @@ import { useUI } from './UIContext';
 import { useUser } from './UserContext';
 import { uiEffects } from '../sounds';
 import { postMessageToSW } from '../sw-helpers';
-import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications } from '../notifications';
+import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
 
 export type PomodoroMode = 'quick' | 'classic';
@@ -79,6 +79,26 @@ const getRandomFrog = (): keyof typeof frogSpecies => {
     return speciesKeys[randomIndex] as keyof typeof frogSpecies;
 };
 
+/**
+ * [CORREÇÃO] Aviso do FIM de cada fase, agendado já no INÍCIO dela (dispara
+ * pelo AlarmManager mesmo com o app congelado). O texto descreve o que
+ * acontece naquele momento:
+ *   fim de um foco intermediário → "Hora da pausa"
+ *   fim de uma pausa             → "De volta ao foco"
+ *   fim do ÚLTIMO foco           → "Foco concluído" (número próprio, 9004)
+ * Antes o aviso de pausa dizia "Hora da pausa" no FIM da pausa, e retomar
+ * de uma pausa não reagendava nada no celular.
+ */
+function scheduleEndAlert(phase: 'focus' | 'break', endsAt: number, isFinalFocus: boolean, taskTitle: string | null, breakSec: number, focusSec: number) {
+    if (phase === 'focus' && isFinalFocus) {
+        scheduleSessionDoneNotification('✅ Foco concluído!', taskTitle ? `Você terminou seu foco em "${taskTitle}". Seu sapo está esperando!` : 'Você terminou seu bloco de foco. Bom trabalho!', endsAt);
+    } else if (phase === 'focus') {
+        schedulePhaseEndNotification('☕ Hora da pausa', `Bom trabalho! Descanse ${Math.round(breakSec / 60)} min.`, endsAt);
+    } else {
+        schedulePhaseEndNotification('🐸 De volta ao foco!', `Hora do próximo bloco de ${Math.round(focusSec / 60)} min.`, endsAt);
+    }
+}
+
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { playEffect } = useUI();
     const { addFrogToCollection } = useUser();
@@ -113,7 +133,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const clearLastCompletedFocus = useCallback(() => setLastCompletedFocus(null), []);
 
-    const stopAndReset = useCallback(() => {
+    const stopAndReset = useCallback((opts?: { finished?: boolean }) => {
         if (timerRef.current) {
             clearInterval(timerRef.current);
         }
@@ -129,7 +149,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setCycleProgress(0);
         setSessionFrog(null);
         setSessionEndsAt(null);
-        cancelPomodoroNotifications();
+        // terminou naturalmente → preserva o "Foco concluído" já agendado
+        if (opts?.finished) finishPomodoroNotifications(); else cancelPomodoroNotifications();
     }, [focusDuration, setActiveTaskId, setActiveTaskTitle, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setCurrentCycle, setTotalCycles]);
 
     const completeTask = useCallback(() => {
@@ -189,13 +210,9 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 }
 
                 if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
-                // [CORREÇÃO] Faltava justamente essa notificação — ao concluir de vez
-                // (não ir pra pausa), o código só limpava o estado e CANCELAVA a
-                // notificação do serviço em primeiro plano (correto, a sessão acabou),
-                // mas nunca avisava a conclusão em si. Com o app em segundo plano,
-                // o usuário não ficava sabendo que tinha terminado.
-                schedulePhaseEndNotification('✅ Foco concluído!', `Você terminou seu bloco de foco${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''}.`, Date.now());
-                stopAndReset();
+                // O "Foco concluído" já foi agendado no INÍCIO deste bloco pro
+                // horário exato do fim — aqui só encerra preservando ele.
+                stopAndReset({ finished: true });
 
             } else {
                 if (uiEffects.breakStart) playEffect(uiEffects.breakStart);
@@ -207,7 +224,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 // aqui (começo da pausa) quanto era confundida com "foco terminado"
                 // pelo usuário — o título agora deixa claro que é uma MUDANÇA de
                 // estado (foco -> pausa), não o fim de tudo.
-                schedulePhaseEndNotification('☕ Hora da pausa', `Seu foco virou uma pausa de ${breakDuration / 60} min.`, endsAt);
+                scheduleEndAlert('break', endsAt, false, activeTaskTitle, breakDuration, focusDuration);
                 startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'break', endsAt);
             }
         } else if (sessionStatus === 'break') {
@@ -218,7 +235,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             setTimeRemaining(focusDuration);
             const endsAt = Date.now() + focusDuration * 1000;
             setSessionEndsAt(endsAt);
-            schedulePhaseEndNotification('🐸 De volta ao foco!', `Seu bloco de ${focusDuration / 60} min começou.`, endsAt);
+            scheduleEndAlert('focus', endsAt, currentCycle + 1 >= totalCycles, activeTaskTitle, breakDuration, focusDuration);
             startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'focus', endsAt);
         }
 
@@ -303,7 +320,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
         const endsAt = Date.now() + newFocusDuration * 1000;
         setSessionEndsAt(endsAt);
-        schedulePhaseEndNotification('Foco Terminado!', `A tarefa "${settings.taskTitle}" espera por você.`, endsAt);
+        scheduleEndAlert('focus', endsAt, newTotalCycles <= 1, settings.taskTitle, newBreakDuration, newFocusDuration);
         startOrUpdateFocusForegroundService(settings.taskTitle, 'focus', endsAt);
     }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
 
@@ -323,19 +340,12 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             const endsAt = Date.now() + timeRemaining * 1000;
             setSessionEndsAt(endsAt);
             startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', sessionStatus === 'focus' ? 'focus' : 'break', endsAt);
-            const notificationBody = sessionStatus === 'focus' 
-                ? `Foco em "${activeTaskTitle}" termina em breve.`
-                : 'Sua pausa está quase no fim.';
-            postMessageToSW({
-                type: 'SCHEDULE_NOTIFICATION',
-                payload: {
-                    title: sessionStatus === 'focus' ? 'Sessão de Foco Quase Completa' : 'Pausa Quase Completa',
-                    body: notificationBody,
-                    timestamp: Date.now() + timeRemaining * 1000,
-                },
-            });
+            // [CORREÇÃO] antes só reagendava pelo service worker (PWA) — no
+            // celular, depois de uma pausa a sessão terminava sem aviso nenhum
+            scheduleEndAlert(sessionStatus === 'focus' ? 'focus' : 'break', endsAt,
+                mode === 'quick' || currentCycle >= totalCycles, activeTaskTitle, breakDuration, focusDuration);
         }
-    }, [sessionStatus, timeRemaining, activeTaskTitle]);
+    }, [sessionStatus, timeRemaining, activeTaskTitle, mode, currentCycle, totalCycles, breakDuration, focusDuration]);
 
     const value: PomodoroContextType = {
         pomodorosCompleted,

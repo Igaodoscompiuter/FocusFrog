@@ -7,6 +7,7 @@ import { icons } from '../../components/Icons';
 import { FocusFrogLifeCycle } from '../../components/FocusFrogLifeCycle';
 import { ProgressRing } from '../../components/ProgressRing';
 import { motivationalQuotes } from '../../utils/quotes';
+import { ZenFrog } from '../../components/zen/ZenFrog';
 
 const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -65,7 +66,10 @@ export const ZenLakeScreen: React.FC = () => {
                         <div className={styles.breakMessage}>Pausa para recarregar.</div>
                     )}
                 </div>
+            </div>
 
+            {/* palco central: cronômetro + controles centrados no espaço que sobra */}
+            <div className={styles.stage}>
                 <div className={styles.timerContainer}>
                     {/* O anel usa o progresso do CICLO ATUAL */}
                     <ProgressRing progress={cycleProgress} />
@@ -79,7 +83,6 @@ export const ZenLakeScreen: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
             <div className={styles.controlsZone}>
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
@@ -111,14 +114,20 @@ export const ZenLakeScreen: React.FC = () => {
                 </motion.div>
             </div>
 
-            <motion.p
-                className={styles.encouragementQuote}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+            </div>
+
+            {/* sapinho da sessão falando a frase de incentivo */}
+            <motion.div
+                className={styles.frogTip}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
             >
-                "{quote}"
-            </motion.p>
+                <div className={styles.frogTipAvatar}>
+                    <ZenFrog speciesId={sessionFrog?.speciesId || 'JUNGLE'} stage="adult" size={58} clickable={false} />
+                </div>
+                <p className={styles.frogTipBubble}>{quote}</p>
+            </motion.div>
         </motion.main>
     );
 };
