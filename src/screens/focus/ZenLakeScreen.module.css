@@ -147,3 +147,9 @@
     border-bottom: 1px solid var(--border-color);
     transform: rotate(45deg);
 }
+
+.frogTipAvatar { cursor: pointer; }
+.frogTipName {
+    display: block; font-style: normal; font-weight: 700; font-size: 0.75rem;
+    color: var(--accent-color); margin-bottom: 2px;
+}

@@ -182,3 +182,20 @@
 }
 .actionBtn:active { transform: scale(0.97); }
 .actionBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* mascote */
+.mascotLink, .mascotChip {
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  align-self: flex-start; border-radius: 999px; padding: 4px 10px;
+}
+.mascotLink { background: transparent; color: #9db8ac; border: 1px dashed #24352f; }
+.mascotChip { background: rgba(251, 191, 36, 0.15); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.45); }
+.mascotForm { display: flex; gap: 6px; }
+.mascotInput {
+  flex: 1; min-width: 0; font: inherit; font-size: 13px; color: #eef5f1;
+  background: rgba(255,255,255,0.06); border: 1px solid #24352f; border-radius: 10px; padding: 6px 10px;
+}
+.mascotSave {
+  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+  background: #FBBF24; color: #1b1405; border: none; border-radius: 10px; padding: 6px 12px;
+}

@@ -204,7 +204,7 @@ export const HomeScreen: React.FC = () => {
                     </button>
                 </form>
 
-                <div className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
+                <div id="frog-card" className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
                     <div className={styles.frogCardHeader}>
                         <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
                         {frogTask && (

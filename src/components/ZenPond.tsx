@@ -7,6 +7,7 @@ import { KoiFish } from './zen/KoiFish';
 import { Fireflies } from './zen/Fireflies';
 import { useZenPond, PondFrog } from '../context/ZenPondContext';
 import { frogSpecies } from '../utils/frogSpecies';
+import { useMascot } from '../hooks/useMascot';
 
 interface ZenPondProps {
   children?: React.ReactNode;
@@ -27,6 +28,7 @@ const SPARK_ANGLES = Array.from({ length: 8 }, (_, i) => (i / 8) * Math.PI * 2);
  */
 export const ZenPond: React.FC<ZenPondProps> = ({ children }) => {
   const { pondFrogs, ripples, effects } = useZenPond();
+  const [mascot] = useMascot();
   const waterRef = useRef<HTMLDivElement>(null);
 
   // Keyframes de posição estáveis por sapo: só mudam quando ele muda de lugar
@@ -108,6 +110,7 @@ export const ZenPond: React.FC<ZenPondProps> = ({ children }) => {
                   : { top: HOP_MOVE, left: HOP_MOVE, scale: { type: 'spring', stiffness: 260, damping: 14 }, opacity: { duration: 0.2 } }}
               >
                 {(rarity === 'rare' || rarity === 'epic') && <div className={`${styles.rarityGlow} ${styles[rarity]}`} />}
+                {mascot?.frogId === frog.id && !frog.merging && <div className={styles.mascotTag}>⭐ {mascot.name}</div>}
                 <div className={styles.collisionBarrier} />
                 <ZenFrog
                   speciesId={frog.speciesId}

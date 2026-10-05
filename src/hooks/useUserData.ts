@@ -18,7 +18,8 @@ const USER_DATA_KEYS = [
     'focusfrog_ui_settings',
     'focusfrog_collectedFrogs',
     'focusfrog_pomodorosCompleted',
-    'focusfrog_zenState' // lagoa + viveiro (entra no backup também)
+    'focusfrog_zenState', // lagoa + viveiro (entra no backup também)
+    'focusfrog_mascot'
 ];
 
 const BACKUP_VERSION = '2.2.0';

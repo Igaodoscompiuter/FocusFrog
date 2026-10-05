@@ -104,3 +104,19 @@
     text-decoration: line-through;
     color: var(--text-secondary-color);
 }
+
+/* [NOVO] grade responsiva: 2 colunas no celular (cada coluna com no mínimo
+   130px), mais colunas em telas largas, 1 coluna em telas muito estreitas.
+   No modo de edição volta pra lista (tem botão de remover em cada item). */
+.checklist:not(.editingList) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 2px var(--sp-sm);
+}
+.checklist:not(.editingList) .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+.checklist:not(.editingList) .itemContent { min-width: 0; }

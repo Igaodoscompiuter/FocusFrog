@@ -8,6 +8,7 @@ import { FocusFrogLifeCycle } from '../../components/FocusFrogLifeCycle';
 import { ProgressRing } from '../../components/ProgressRing';
 import { motivationalQuotes } from '../../utils/quotes';
 import { ZenFrog } from '../../components/zen/ZenFrog';
+import { useMascot } from '../../hooks/useMascot';
 
 const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -20,6 +21,16 @@ export const ZenLakeScreen: React.FC = () => {
     // não a cada re-render) — preenche o espaço vazio abaixo dos controles
     // com algo útil, no mesmo tom das frases já usadas em Estatísticas.
     const [quote] = React.useState(() => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
+    const [mascot] = useMascot();
+    // O mascote dá um pulinho de vez em quando (8–16s) e quando é tocado:
+    // o ZenFrog pula sempre que a "posição" recebida muda.
+    const [hopTick, setHopTick] = React.useState(0);
+    React.useEffect(() => {
+        let t: ReturnType<typeof setTimeout>;
+        const schedule = () => { t = setTimeout(() => { setHopTick(h => h + 1); schedule(); }, 8000 + Math.random() * 8000); };
+        schedule();
+        return () => clearTimeout(t);
+    }, []);
 
     // HOOK CENTRALIZADO PARA DADOS DA SESSÃO
     const {
@@ -123,10 +134,13 @@ export const ZenLakeScreen: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
             >
-                <div className={styles.frogTipAvatar}>
-                    <ZenFrog speciesId={sessionFrog?.speciesId || 'JUNGLE'} stage="adult" size={58} clickable={false} />
+                <div className={styles.frogTipAvatar} onClick={() => setHopTick(h => h + 1)}>
+                    <ZenFrog speciesId={mascot?.speciesId || sessionFrog?.speciesId || 'JUNGLE'} stage="adult" size={58} clickable={false} top={0} left={hopTick} />
                 </div>
-                <p className={styles.frogTipBubble}>{quote}</p>
+                <p className={styles.frogTipBubble}>
+                    {mascot && <span className={styles.frogTipName}>{mascot.name}</span>}
+                    {quote}
+                </p>
             </motion.div>
         </motion.main>
     );

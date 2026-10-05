@@ -96,7 +96,7 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
                     </div>
                 </div>
 
-                <ul className={styles.checklist}>
+                <ul className={`${styles.checklist} ${isEditing ? styles.editingList : ""}`}>
                     {items.map(item => (
                         <li 
                             key={item.id} 

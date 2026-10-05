@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { frogSpecies } from '../../utils/frogSpecies';
 import { frogLore } from '../../config/frogLore';
 import { useZenPond } from '../../context/ZenPondContext';
 import { ZenFrog } from './ZenFrog';
+import { useMascot } from '../../hooks/useMascot';
 import styles from './FrogCard.module.css';
 
 const rarityLabel: Record<string, string> = {
@@ -38,7 +39,19 @@ interface FrogCardProps {
 export const FrogCard: React.FC<FrogCardProps> = ({ speciesId, frogId, onClose }) => {
     const species = frogSpecies[speciesId];
     const zenPond = useZenPond();
+    const [mascot, setMascot] = useMascot();
+    const [naming, setNaming] = useState(false);
+    const [nameDraft, setNameDraft] = useState('');
     if (!species) return null;
+
+    const isMascot = !!mascot && (frogId ? mascot.frogId === frogId : (!mascot.frogId && mascot.speciesId === species.id));
+    const startNaming = () => { setNameDraft(isMascot ? mascot!.name : species.name.replace(/^Sapo\s+(da|do|de)?\s*/i, '')); setNaming(true); };
+    const saveMascot = () => {
+        const name = nameDraft.trim().slice(0, 16);
+        if (!name) return;
+        setMascot({ speciesId: species.id, name, frogId });
+        setNaming(false);
+    };
 
     const lore = frogLore[species.id] || frogLore.DEFAULT;
     const rarityKey = species.rarity;
@@ -72,6 +85,26 @@ export const FrogCard: React.FC<FrogCardProps> = ({ speciesId, frogId, onClose }
                         </h3>
                         <span className={`${styles.badge} ${styles[rarityKey]}`}>{rarityLabel[rarityKey]}</span>
                     </div>
+
+                    {/* mascote: escolher, mostrar e renomear */}
+                    {naming ? (
+                        <div className={styles.mascotForm}>
+                            <input
+                                className={styles.mascotInput}
+                                value={nameDraft}
+                                maxLength={16}
+                                autoFocus
+                                placeholder="Nome do mascote"
+                                onChange={e => setNameDraft(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') saveMascot(); }}
+                            />
+                            <button className={styles.mascotSave} onClick={saveMascot}>Salvar</button>
+                        </div>
+                    ) : isMascot ? (
+                        <button className={styles.mascotChip} onClick={startNaming}>⭐ {mascot!.name} · seu mascote ✎</button>
+                    ) : (
+                        <button className={styles.mascotLink} onClick={startNaming}>⭐ Escolher como mascote</button>
+                    )}
 
                     <div className={`${styles.frogStage} ${styles[rarityKey]}`}>
                         <div className={styles.portraitGlow} />

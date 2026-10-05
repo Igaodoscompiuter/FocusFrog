@@ -11,6 +11,8 @@ import { useUI } from '../context/UIContext';
 import type { Screen } from '../types';
 import { NotificationContainer } from './NotificationContainer';
 import { FrogRewardModal } from './FrogRewardModal';
+import { TourProvider } from './tour/TourContext';
+import { TourOverlay } from './tour/TourOverlay';
 import UpdatePrompt from './UpdatePrompt';
 import { Capacitor } from '@capacitor/core';
 
@@ -32,6 +34,7 @@ export const AppLayout: React.FC = () => {
     const ActiveScreenComponent = screenMap[activeScreen];
 
     return (
+        <TourProvider>
         <div className={`app-container screen-${activeScreen} ${isImmersiveMode ? 'immersive-mode' : ''}`}>
             <div className="screen-content">
                 {ActiveScreenComponent ? <ActiveScreenComponent /> : <div>Ecrã não encontrado</div>}
@@ -44,6 +47,8 @@ export const AppLayout: React.FC = () => {
             <FrogRewardModal />
             {/* aviso de nova versão é só do PWA — no APK quem atualiza é a instalação */}
             {!Capacitor.isNativePlatform() && <UpdatePrompt />}
+            <TourOverlay />
         </div>
+        </TourProvider>
     );
 };

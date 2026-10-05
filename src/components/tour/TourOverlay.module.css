@@ -1,0 +1,42 @@
+.root { position: fixed; inset: 0; z-index: 1500; pointer-events: none; }
+.dim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
+/* buraco iluminado: a sombra gigante escurece todo o resto da tela */
+.hole {
+  position: fixed; border-radius: 18px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  transition: top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+}
+.ring {
+  position: absolute; inset: -4px; border-radius: 20px;
+  border: 2px solid #FBBF24; animation: ring 1.6s ease-in-out infinite;
+}
+@keyframes ring { 0%, 100% { opacity: .9; transform: scale(1); } 50% { opacity: .35; transform: scale(1.03); } }
+
+.bubbleWrap {
+  position: fixed; left: 12px; right: 12px; max-width: 460px; margin: 0 auto;
+  display: flex; align-items: flex-end; gap: 8px; pointer-events: auto;
+}
+.avatar { flex-shrink: 0; cursor: pointer; }
+.bubble {
+  position: relative; flex: 1; padding: 14px 14px 10px;
+  background: var(--surface-color); border: 1px solid var(--border-color);
+  border-radius: 18px 18px 18px 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  margin-bottom: 14px;
+}
+.bubble::before {
+  content: ''; position: absolute; left: -7px; bottom: 12px; width: 12px; height: 12px;
+  background: var(--surface-color); border-left: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
+  transform: rotate(45deg);
+}
+.progress { display: flex; gap: 4px; margin-bottom: 8px; }
+.dot, .dotOn { width: 18px; height: 4px; border-radius: 2px; background: var(--border-color); }
+.dotOn { background: var(--accent-color); }
+.title { display: block; font-size: 0.95rem; color: var(--text-color); margin-bottom: 4px; }
+.text { margin: 0; font-size: 0.88rem; line-height: 1.45; color: var(--text-secondary-color); }
+.actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.skip { font: inherit; font-size: 0.78rem; background: none; border: none; color: var(--text-secondary-color); cursor: pointer; padding: 4px 0; }
+.primary {
+  font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+  background: var(--accent-color); color: #1b1405; border: none; border-radius: 999px; padding: 7px 16px;
+}
+.waiting { font-size: 0.78rem; color: var(--accent-color); font-weight: 600; }
