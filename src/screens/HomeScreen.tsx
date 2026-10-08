@@ -69,7 +69,7 @@ export const HomeScreen: React.FC = () => {
     const { userName } = useUser();
     const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
     const [brainDumpText, setBrainDumpText] = useState('');
-    const { step: tourStep } = useTour();
+    const { step: tourStep, tourTaskId } = useTour();
     // tutorial: já deixa uma tarefa comum e rápida escrita (a pessoa pode trocar)
     useEffect(() => {
         if (tourStep?.id === 'create') setBrainDumpText(t => t || 'Beber um copo de água 💧');
@@ -112,8 +112,9 @@ export const HomeScreen: React.FC = () => {
     };
 
     const handleConfirmFrog = () => {
-        if (selectedFrogId) {
-            handleSetFrog(selectedFrogId);
+        const chosen = selectedFrogId ?? (tourStep?.id === 'frog' ? tourTaskId : null);
+        if (chosen) {
+            handleSetFrog(chosen);
             addNotification('Sapo do Dia definido', '🐸', 'success');
             setIsMorningReviewOpen(false);
             setSelectedFrogId(null);
@@ -186,8 +187,10 @@ export const HomeScreen: React.FC = () => {
             <MorningReviewModal 
                 isOpen={isMorningReviewOpen} 
                 onClose={() => setIsMorningReviewOpen(false)}
-                tasks={eligibleFrogTasks}       
-                selectedTask={selectedFrogId}   
+                tasks={tourStep?.id === 'frog' && tourTaskId
+                    ? [...eligibleFrogTasks.filter(t => t.id === tourTaskId), ...eligibleFrogTasks.filter(t => t.id !== tourTaskId)]
+                    : eligibleFrogTasks}
+                selectedTask={selectedFrogId ?? (tourStep?.id === 'frog' ? tourTaskId : null)}   
                 onSelectTask={setSelectedFrogId}  
                 onConfirm={handleConfirmFrog}   
                 onNavigateToTasks={handleNavigateToTasks}

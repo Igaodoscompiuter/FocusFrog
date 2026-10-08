@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { todayISO, toISODate } from '../utils/dates';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
@@ -35,8 +36,8 @@ interface TasksContextType {
     handleDuplicateTask: (taskId: string) => void;
     handlePostponeTask: (taskId: string, days: number) => void;
     needsMorningPlan: boolean;
-    handleCreateTemplateFromTask: (task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>) => void;
-    handleCreateTemplate: (task: Partial<Omit<Task, 'id'>>) => TaskTemplate;
+    handleCreateTemplateFromTask: (task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>, category?: string) => void;
+    handleCreateTemplate: (task: Partial<Omit<Task, 'id'>>, category?: string) => TaskTemplate;
     handleDeleteTemplate: (templateId: number) => void;
     handleAddRoutine: (routine: Routine) => void;
     handleSaveRoutine: (routine: Routine) => void;
@@ -353,14 +354,15 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             if (task.id === taskId) {
                 const currentDate = task.dueDate ? new Date(task.dueDate + 'T00:00:00') : new Date();
                 currentDate.setDate(currentDate.getDate() + days);
-                return { ...task, dueDate: currentDate.toISOString().split('T')[0] };
+                return { ...task, dueDate: toISODate(currentDate) };
             }
             return task;
         }));
         addNotification(`Tarefa adiada por ${days} dia(s)`, '🗓️', 'info');
     }, [setTasks, addNotification]);
 
-    const handleCreateTemplate = useCallback((taskData: Partial<Omit<Task, 'id'>>) => {
+    // [CORREÇÃO] categoria era fixa em 'Personalizado' — agora vem de quem chama
+    const handleCreateTemplate = useCallback((taskData: Partial<Omit<Task, 'id'>>, category: string = 'Personalizado') => {
         const newTemplate: TaskTemplate = {
             id: generateNumericId(),
             title: taskData.title || 'Nova Tarefa',
@@ -369,7 +371,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             pomodoroEstimate: taskData.pomodoroEstimate,
             customDuration: taskData.customDuration,
             energyNeeded: taskData.energyNeeded,
-            category: 'Personalizado',
+            category,
             subtasks: taskData.subtasks?.map(st => ({ text: st.text })),
             isDefault: false,
         };
@@ -377,9 +379,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return newTemplate;
     }, [setTaskTemplates, generateNumericId]);
 
-    const handleCreateTemplateFromTask = useCallback((task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>) => {
-        const newTemplate = handleCreateTemplate(task);
-        addNotification(`Modelo "${newTemplate.title}" salvo na sua biblioteca.`, '📚', 'success');
+    const handleCreateTemplateFromTask = useCallback((task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>, category?: string) => {
+        const newTemplate = handleCreateTemplate(task, category);
+        addNotification(`Modelo "${newTemplate.title}" salvo em ${newTemplate.category}.`, '📚', 'success');
     }, [handleCreateTemplate, addNotification]);
 
     const handleDeleteTemplate = useCallback((templateId: number) => {
@@ -480,7 +482,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, [setTasks, setFrogTaskId]);
 
     const needsMorningPlan = useMemo(() => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = todayISO();
         return !tasks.find(t => t.id === frogTaskId && t.dueDate === today);
     }, [tasks, frogTaskId]);
 

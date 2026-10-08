@@ -7,8 +7,8 @@ android {
         applicationId "com.focusfrog.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.3.0"
+        versionCode 3
+        versionName "1.4.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +16,22 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Chave DEFINITIVA (fora do git). Sem ela, cada ambiente gerava uma chave
+    // de teste nova e o Android recusava atualizar por cima (pedia desinstalar).
+    def ksFile = rootProject.file('keystore.properties')
+    signingConfigs {
+        if (ksFile.exists()) {
+            def ks = new Properties(); ks.load(new FileInputStream(ksFile))
+            focusfrog {
+                storeFile file(ks['storeFile']); storePassword ks['storePassword']
+                keyAlias ks['keyAlias']; keyPassword ks['keyPassword']
+            }
+        }
+    }
     buildTypes {
+        debug { if (ksFile.exists()) signingConfig signingConfigs.focusfrog }
         release {
+            if (ksFile.exists()) signingConfig signingConfigs.focusfrog
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

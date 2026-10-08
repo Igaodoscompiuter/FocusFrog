@@ -159,7 +159,7 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                 <span className={styles.controlLabel}>Quadrante</span>
                 <div className={styles.segmentedControl}>
                     <button className={`${styles.segment} ${taskQuadrant === 'do' ? styles.active : ''}`} onClick={() => setTaskQuadrant('do')}>Foco Imediato</button>
-                    <button className={`${styles.segment} ${taskQuadrant === 'schedule' ? styles.active : ''}`} onClick={() => setTaskQuadrant('schedule')}>Tarefas do Dia</button>
+                    <button className={`${styles.segment} ${taskQuadrant === 'schedule' ? styles.active : ''}`} onClick={() => setTaskQuadrant('schedule')}>Planejar</button>
                 </div>
             </div>
 

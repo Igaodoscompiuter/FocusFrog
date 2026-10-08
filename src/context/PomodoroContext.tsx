@@ -7,7 +7,7 @@ import { useUI } from './UIContext';
 import { useUser } from './UserContext';
 import { uiEffects } from '../sounds';
 import { postMessageToSW } from '../sw-helpers';
-import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction } from '../notifications';
+import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction, isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
 
 export type PomodoroMode = 'quick' | 'classic';
@@ -218,7 +218,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 if (activeTaskId && sessionFrog && !sessionFrog.isCollected) {
                     const speciesId = sessionFrog.speciesId;
                     const focusMs = (mode === 'quick' ? 1 : totalCycles) * focusDuration * 1000;
-                    getFocusDistractionMs().then(distractedMs => {
+                    const guard = isDistractionGuardOn(); // desligado: sapo garantido
+                    (guard ? getFocusDistractionMs() : Promise.resolve(0)).then(distractedMs => {
                         if (distractedMs <= focusMs * MAX_DISTRACTION_RATIO) {
                             addFrogToCollection(speciesId);
                         } else {
@@ -343,6 +344,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         const endsAt = Date.now() + newFocusDuration * 1000;
         setSessionEndsAt(endsAt);
         resetFocusDistraction();
+        setDistractionGuard(isDistractionGuardOn()); // mantém o lado nativo sincronizado
         scheduleEndAlert('focus', endsAt, newTotalCycles <= 1, settings.taskTitle, newBreakDuration, newFocusDuration);
         startOrUpdateFocusForegroundService(settings.taskTitle, 'focus', endsAt);
     }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);

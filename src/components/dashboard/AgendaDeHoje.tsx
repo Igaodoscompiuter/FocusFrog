@@ -1,4 +1,6 @@
 
+import { todayISO, carriedLabel } from '../../utils/dates';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 import React, { useMemo } from 'react';
 import { useTasks } from '../../context/TasksContext';
 import { Icon } from '../Icon';
@@ -7,44 +9,44 @@ import { TaskCard } from '../tasks/TaskCard';
 import styles from './AgendaDeHoje.module.css';
 import type { Task } from '../../types';
 
-const getLocalTodayString = () => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-};
 
-export const AgendaDeHoje: React.FC = () => { // A prop onEditTask foi removida
+export const AgendaDeHoje: React.FC = () => {
     const { tasks, tags } = useTasks();
+    const [open, setOpen] = useLocalStorage<boolean>('focusfrog_agendaOpen', false);
 
-    const todayString = getLocalTodayString();
-    const tasksDeHoje = useMemo(() => {
-        return tasks.filter(task => task.dueDate === todayString && task.status !== 'done');
-    }, [tasks, todayString]);
+    const todayString = todayISO();
+    // [CORREÇÃO] Antes só entrava data EXATAMENTE igual a hoje — tarefa de
+    // ontem não concluída sumia da Agenda sem aviso. Agora vem junto pra hoje
+    // (as de dias anteriores primeiro), com uma etiqueta discreta.
+    const tasksDeHoje = useMemo(() => tasks
+        .filter(task => task.dueDate && task.dueDate <= todayString && task.status !== 'done')
+        .sort((a, b) => (a.dueDate! < b.dueDate! ? -1 : a.dueDate! > b.dueDate! ? 1 : 0)),
+    [tasks, todayString]);
+    const carried = tasksDeHoje.filter(t => carriedLabel(t.dueDate)).length;
 
     return (
         <div className={styles.card}>
-            <div className={styles.header}>
+            <button className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
                 <h3><Icon path={icons.calendar} /> Agenda de Hoje</h3>
-            </div>
-            {tasksDeHoje.length > 0 ? (
+                <span className={styles.summary}>
+                    {tasksDeHoje.length === 0 ? 'livre' : `${tasksDeHoje.length} tarefa${tasksDeHoje.length > 1 ? 's' : ''}${carried ? ` · ${carried} de antes` : ''}`}
+                    <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>›</span>
+                </span>
+            </button>
+            {open && (tasksDeHoje.length > 0 ? (
                 <div className={styles.taskList}>
                     {tasksDeHoje.map(task => (
-                        <TaskCard 
-                            key={task.id} 
-                            task={task} 
-                            tags={tags}
-                            quadrant={task.quadrant} // Adicionado para consistência
-                            // A prop onEdit foi removida daqui
-                        />
+                        <div key={task.id}>
+                            {carriedLabel(task.dueDate) && <span className={styles.carried}>{carriedLabel(task.dueDate)}</span>}
+                            <TaskCard task={task} tags={tags} quadrant={task.quadrant} />
+                        </div>
                     ))}
                 </div>
             ) : (
                 <div className={styles.emptyState}>
-                    <p>Nenhuma tarefa agendada para hoje. Aproveite o dia ou adicione novas tarefas!</p>
+                    <p>Nenhuma tarefa pra hoje. Aproveite o dia ou adicione novas tarefas!</p>
                 </div>
-            )}
+            ))}
         </div>
     );
 };

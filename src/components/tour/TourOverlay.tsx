@@ -40,7 +40,9 @@ export const TourOverlay: React.FC = () => {
     return () => clearInterval(id);
   }, [active, step]);
 
-  if (!active || !step || hidden) return null;
+  // modal aberto (ex.: seletor do Sapo): o balão não pode ficar por cima
+  // interceptando toques — o próprio modal já é autoexplicativo
+  if (!active || !step || hidden || modalOpen) return null;
 
   const pad = 8;
   const hole = rect && !modalOpen ? { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 } : null;

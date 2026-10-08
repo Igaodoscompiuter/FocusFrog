@@ -26,6 +26,7 @@ import androidx.core.app.NotificationCompat;
 public final class FocusDistractionMonitor {
     private static final String PREFS = "focusfrog_focus";
     private static final String KEY_MS = "distracted_ms";
+    private static final String KEY_GUARD = "guard_enabled"; // Configurações → "Proteger o foco"
     private static final long TICK_MS = 5_000, NUDGE_AFTER_MS = 30_000, NUDGE_GAP_MS = 120_000;
     private static final int NUDGE_ID = 9005;
     private static final String NUDGE_CHANNEL = "focus_nudge";
@@ -61,7 +62,7 @@ public final class FocusDistractionMonitor {
     }
 
     private static void tick(Context c) {
-        if (!"focus".equals(phase)) { continuousMs = 0; return; }
+        if (!"focus".equals(phase) || !prefs(c).getBoolean(KEY_GUARD, true)) { continuousMs = 0; return; }
         PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         KeyguardManager km = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
         boolean usingPhone = pm != null && pm.isInteractive() && (km == null || !km.isKeyguardLocked());
@@ -78,6 +79,8 @@ public final class FocusDistractionMonitor {
             continuousMs = 0;
         }
     }
+
+    public static void setGuardEnabled(Context c, boolean enabled) { prefs(c).edit().putBoolean(KEY_GUARD, enabled).apply(); if (!enabled) clearNudge(c); }
 
     public static long getDistractedMs(Context c) { return prefs(c).getLong(KEY_MS, 0); }
 

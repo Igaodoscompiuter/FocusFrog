@@ -90,3 +90,7 @@ android/app/release/
 *.apk
 *.aab
 android/local.properties
+
+# chave de assinatura: NUNCA no git
+*.jks
+keystore.properties

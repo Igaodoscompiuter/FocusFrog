@@ -81,6 +81,12 @@ public class WidgetBridgePlugin extends Plugin {
     }
 
     @PluginMethod
+    public void setDistractionGuard(PluginCall call) {
+        FocusDistractionMonitor.setGuardEnabled(getContext(), Boolean.TRUE.equals(call.getBoolean("enabled", true)));
+        call.resolve(new JSObject());
+    }
+
+    @PluginMethod
     public void resetFocusDistraction(PluginCall call) {
         FocusDistractionMonitor.reset(getContext());
         call.resolve(new JSObject());

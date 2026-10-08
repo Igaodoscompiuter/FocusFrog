@@ -25,7 +25,7 @@ export const TriageModal: React.FC<TriageModalProps> = ({ task, onClose, onTriag
 
   const triageOptions: { id: Quadrant; title: string; subtitle: string; icon: keyof typeof icons; }[] = [
     { id: "do", title: "Foco Imediato", subtitle: "Urgente & Importante", icon: 'zap' },
-    { id: "schedule", title: "Tarefas do Dia", subtitle: "Importante, não urgente", icon: 'calendar' },
+    { id: "schedule", title: "Planejar", subtitle: "Importante, não urgente", icon: 'calendar' },
     { id: "someday", title: "Ideias & Projetos", subtitle: "Não urgente & não importante", icon: 'bookOpen' },
   ];
 

@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import { ChecklistModal } from '../modals/ChecklistModal';
@@ -22,6 +23,9 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    // recolhido por padrão na Home (decisão de produto): progresso no título
+    const [open, setOpen] = useLocalStorage<boolean>('focusfrog_checklistOpen', false);
+    const doneCount = items.filter(i => i.completed).length;
     const { addNotification } = useUI();
 
     const handlePinWidget = async () => {
@@ -58,8 +62,11 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
             
             <div className={styles.card}>
                 <div className={styles.header}>
-                    <h3><Icon path={icons.briefcase} /> Já pegou?</h3>
-                    <div className={styles.buttonGroup}>
+                    <button className={styles.titleToggle} onClick={() => setOpen(!open)} aria-expanded={open}>
+                        <h3><Icon path={icons.briefcase} /> Já pegou?</h3>
+                        <span className={styles.summary}>{doneCount}/{items.length}<span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>›</span></span>
+                    </button>
+                    {open && <div className={styles.buttonGroup}>
                         {Capacitor.isNativePlatform() && !isEditing && (
                             <button
                                 className="btn btn-icon btn-secondary btn-small"
@@ -93,10 +100,10 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
                         >
                             {isEditing ? <Icon path={icons.check} /> : <Icon path={icons.pencil} />}
                         </button>
-                    </div>
+                    </div>}
                 </div>
 
-                <ul className={`${styles.checklist} ${isEditing ? styles.editingList : ""}`}>
+                {open && <ul className={`${styles.checklist} ${isEditing ? styles.editingList : ""}`}>
                     {items.map(item => (
                         <li 
                             key={item.id} 
@@ -118,7 +125,7 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
                             )}
                         </li>
                     ))}
-                </ul>
+                </ul>}
             </div>
         </>
     );

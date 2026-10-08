@@ -1,19 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { useUI } from '../context/UIContext';
 import { useTour } from '../components/tour/TourContext';
+import { isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { useUserData } from '../hooks/useUserData';
 import { useAuth } from '../hooks/useAuth';
 import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 import UpdatePrompt from '../components/UpdatePrompt';
-import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiHelpCircle } from 'react-icons/fi';
+import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiHelpCircle, FiShield } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 
 // Chave Pix (telefone) do apoio ao projeto
 const PIX_KEY = '41988094386';
-const PIX_KEY_DISPLAY = '(41) 98809-4386';
 
 // --- COMPONENTES DE NAVEGAÇÃO E CABEÇALHO ---
 const SettingsNavRow: React.FC<{icon: React.ElementType, title: string, description: string, onClick?: () => void}> = ({ icon: Icon, title, description, onClick }) => (
@@ -130,6 +130,8 @@ export const RewardsScreen: React.FC = () => {
     } = useUI();
     const { exportData, importDataFromFile, resetData } = useUserData();
     const { restart: restartTour } = useTour();
+    const [guardOn, setGuardOn] = useState(isDistractionGuardOn);
+    const toggleGuard = (v: boolean) => { setGuardOn(v); setDistractionGuard(v); };
     const { isLoading } = useAuth(); // Removido user, signIn, signOut pois não são mais usados diretamente aqui
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
@@ -250,19 +252,15 @@ export const RewardsScreen: React.FC = () => {
                                 <button className={styles.coffeeButton} onClick={handleCoffeeClick}>
                                     <FiCoffee /> Apoie com um café
                                 </button>
-                                <button className={styles.pixButton} onClick={handlePixClick}>
-                                    <span className={styles.pixIcon}>◆</span>
-                                    <span className={styles.pixText}>
-                                        <strong>Apoiar via Pix</strong>
-                                        <small>{PIX_KEY_DISPLAY} · toque para copiar</small>
-                                    </span>
-                                </button>
                                 <a href="https://www.instagram.com/focus.frog" target="_blank" rel="noopener noreferrer" className={styles.instagramButton}>
                                     <FiInstagram /> Siga-nos
                                 </a>
+                                <button className={styles.pixButton} onClick={handlePixClick}>
+                                    <span className={styles.pixIcon}>◆</span> Apoiar via Pix
+                                </button>
                             </div>
 
-                            <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v1.3.0 • Feito com 💚🐸</div>
+                            <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v1.4.0 • Feito com 💚🐸</div>
                         </div>
                     </div>
                 );
@@ -274,6 +272,19 @@ export const RewardsScreen: React.FC = () => {
                         <SettingsNavRow icon={FiUser} title="Perfil e Sincronização" description={"Backup na nuvem (em breve)"} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />
+                        <div className={styles.guardRow}>
+                            <div className={styles.settingRow}>
+                                <label><FiShield /> Proteger o foco</label>
+                                <label className={styles.switch}>
+                                    <input type="checkbox" checked={guardOn} onChange={e => toggleGuard(e.target.checked)} />
+                                    <span className={styles.switchSlider}></span>
+                                </label>
+                            </div>
+                            <p className={styles.guardHint}>
+                                Te cutuca quando você sai pra outro app durante o foco, e o sapo só vem se o foco foi limpo.
+                                Desligue se as suas tarefas são feitas no celular.
+                            </p>
+                        </div>
                         <SettingsNavRow icon={FiHelpCircle} title="Refazer tutorial" description="O sapinho te mostra o app de novo." onClick={restartTour} />
                         <SettingsNavRow icon={FiInfo} title="Sobre" description="Nossa história e missão." onClick={() => setActiveSettingsScreen('about')} />
                     </div>

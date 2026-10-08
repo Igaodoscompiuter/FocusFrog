@@ -7,9 +7,9 @@ import { Icon } from '../Icon';
 import { icons } from '../Icons';
 import type { Task, Subtask, Quadrant, TimeOfDay, Tag, TaskTemplate } from '../../types';
 import { quadrants } from '../../constants';
+import { todayISO, addDaysISO } from '../../utils/dates';
 import styles from './TaskModal.module.css'; 
 import { useClickOutside } from '../../hooks/useClickOutside';
-import { CustomTagSelector } from './CustomTagSelector';
 import { TagEditorView } from './TagEditorView';
 
 interface TaskModalProps {
@@ -28,6 +28,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     const [newCategoryInput, setNewCategoryInput] = useState('');
 
     const [newSubtask, setNewSubtask] = useState('');
+    const [showMore, setShowMore] = useState(false);            // descrição + duração
+    const [savingTemplate, setSavingTemplate] = useState(false); // painel de categoria do modelo
+    const [pickingDate, setPickingDate] = useState(false);
     const [currentView, setCurrentView] = useState<'task' | 'tags'>('task');
     const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
@@ -43,24 +46,24 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
 
     useEffect(() => {
         const getInitialTaskState = (taskData: Partial<Task> | null): Partial<Task> => {
-            if (taskData && Object.keys(taskData).length > 0) {
+            // [CORREÇÃO] "Nova Tarefa" passa { quadrant: 'inbox' } — não vazio,
+            // então caía aqui como se fosse edição e ficava sem a data de hoje.
+            // Edição de verdade é só quando a tarefa já tem id (ou vem de modelo).
+            if (taskData && (taskData.id || taskData.templateId)) {
                 if (taskData.templateId) {
                     const template = taskTemplates.find(t => t.id === taskData.templateId);
                     if (template) setCategory(template.category);
                 }
                 return { ...taskData, subtasks: taskData.subtasks ? [...taskData.subtasks] : [], pomodoroEstimate: taskData.pomodoroEstimate !== undefined ? taskData.pomodoroEstimate : 1 };
             }
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
             setCategory('Personalizado');
-            return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, dueDate: `${yyyy}-${mm}-${dd}` };
+            return { title: '', description: '', quadrant: 'inbox', subtasks: [], status: 'todo', pomodoroEstimate: 1, dueDate: todayISO(), ...(taskData || {}) };
         };
 
         const initialState = getInitialTaskState(taskToEdit);
         setTask(initialState);
         setCurrentView('task');
+        setSavingTemplate(false); setShowMore(false); setPickingDate(false);
         setModalRoot(document.getElementById('modal-root')); 
     }, [taskToEdit, taskTemplates]);
 
@@ -81,11 +84,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
 
     const handleUpsertTask = () => {
         if (!task.title?.trim()) return alert('O título da tarefa é obrigatório.');
-        const taskToSave = { ...task };
-        if (!taskToSave.dueDate) {
-            const today = new Date();
-            taskToSave.dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        }
+        // [CORREÇÃO] não força mais a data de hoje: "Sem data" é uma escolha válida
+        const taskToSave = { ...task, dueDate: task.dueDate || undefined };
         if (taskToSave.id) handleUpdateTask(taskToSave as Task);
         else handleAddTask(taskToSave as Omit<Task, 'id' | 'status'>);
         onClose();
@@ -95,7 +95,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
         if (!task.title?.trim()) return alert('O título é obrigatório para salvar um modelo.');
         // Passa a própria tarefa (já no formato correto, com subtarefas completas):
         // handleCreateTemplateFromTask extrai só os campos relevantes para o modelo.
-        handleCreateTemplateFromTask(task);
+        if (!savingTemplate) { setSavingTemplate(true); return; } // 1º toque: escolher a categoria
+        // [CORREÇÃO] a categoria escolhida não era enviada — todo modelo caía em 'Personalizado'
+        handleCreateTemplateFromTask(task, category);
         onClose();
     };
     
@@ -120,12 +122,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
 
     if (!taskToEdit || !modalRoot) return null;
     
-    const timeOfDayOptions: { id: TimeOfDay | '', label: string }[] = [
-        { id: 'morning', label: 'Manhã' },
-        { id: 'afternoon', label: 'Tarde' },
-        { id: 'night', label: 'Noite' },
-        { id: '', label: 'Nenhum' },
-    ];
+    const today = todayISO(), tomorrow = addDaysISO(1);
+    const dateMode = !task.dueDate ? 'none' : task.dueDate === today ? 'today' : task.dueDate === tomorrow ? 'tomorrow' : 'custom';
+    const formatDate = (iso: string) => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+    const pomos = task.pomodoroEstimate || 1;
 
     const renderTaskForm = () => (
         <>
@@ -134,7 +134,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                 <button onClick={onClose} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button>
             </header>
             <main className="g-modal-body">
-                 <input
+                <input
                     type="text"
                     className={styles.titleInput}
                     placeholder="O que precisa ser feito?"
@@ -142,100 +142,115 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                     onChange={e => handleChange('title', e.target.value)}
                     autoFocus
                 />
-                <div className={styles.detailedFields}>
-                    <textarea
-                        className={styles.descriptionTextarea}
-                        placeholder="Descrição, links, notas..."
-                        value={task.description || ''}
-                        onChange={e => handleChange('description', e.target.value)}
-                    />
-                    <MatrixSelector task={task} setTask={setTask} />
-                    
-                    <div className={styles.formGroup}>
-                        <label className={styles.categoryTitle}>Categoria do Modelo</label>
-                        {isCreatingCategory ? (
-                            <div className={styles.subtaskAddGroup}>
-                                <input
-                                    type="text"
-                                    className="g-input"
-                                    placeholder="Nome da nova categoria"
-                                    value={newCategoryInput}
-                                    onChange={e => setNewCategoryInput(e.target.value)}
-                                    onKeyPress={e => e.key === 'Enter' && handleConfirmNewCategory()}
-                                    autoFocus
-                                />
-                                <button onClick={handleConfirmNewCategory} className="btn btn-primary btn-icon btn-sm"><Icon path={icons.check}/></button>
-                                <button onClick={() => setIsCreatingCategory(false)} className="btn btn-secondary btn-icon btn-sm"><Icon path={icons.close}/></button>
-                            </div>
-                        ) : (
-                            <div className={styles.categorySelector}>
-                                {availableCategories.map(cat => (
-                                    <div 
-                                        key={cat} 
-                                        className={`${styles.categoryCard} ${category === cat ? styles.selected : ''}`}
-                                        onClick={() => setCategory(cat)}
-                                    >
-                                        {cat}
-                                    </div>
-                                ))}
-                                <div 
-                                    className={`${styles.categoryCard} ${styles.add}`}
-                                    onClick={() => setIsCreatingCategory(true)}
-                                >
-                                    <Icon path={icons.plus} />
-                                    Criar Nova
-                                </div>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* [CORREÇÃO] Período (Manhã/Tarde/Noite) removido — confirmado que
-                        task.timeOfDay nunca era lido em lugar nenhum fora deste modal,
-                        só pesava no formulário sem servir pra nada. Data continua porque
-                        Agenda de Hoje depende dela pra filtrar as tarefas do dia. */}
-                    <div className={styles.formGroup}>
-                        <label><Icon path={icons.calendar} /> Data</label>
-                        <input type="date" className="g-input" value={task.dueDate || ''} onChange={e => handleChange('dueDate', e.target.value)} />
-                    </div>
-
-                     <div className={styles.formGroup}>
-                        <label><Icon path={icons.target} /> Tipo de Tarefa</label>
-                        <div className={styles.buttonSelector}>
-                            <button className={!isQuickTask ? styles.selected : ''} onClick={() => handleTaskTypeChange('focus')}>Foco (Timer)</button>
-                            <button className={isQuickTask ? styles.selected : ''} onClick={() => handleTaskTypeChange('quick')}>Rápida (Check)</button>
-                        </div>
-                    </div>
-
-                    {!isQuickTask && (
-                        <div className={styles.grid}>
-                            <div className={styles.formGroup}>
-                                <label><Icon path={icons.timer} /> Pomodoros (25min)</label>
-                                <input type="number" className="g-input" value={task.pomodoroEstimate || ''} onChange={e => handleChange('pomodoroEstimate', parseInt(e.target.value) || 1)} min="1" placeholder="1" />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label><Icon path={icons.clock} /> Duração Custom. (min)</label>
-                                <input type="number" className="g-input" value={task.customDuration || ''} onChange={e => handleChange('customDuration', e.target.value ? parseInt(e.target.value) : undefined)} min="1" placeholder="25" />
-                            </div>
-                        </div>
-                    )}
-                    
-                    <div className={styles.formGroup}>
-                        <label><Icon path={icons.checkSquare} /> Subtarefas</label>
+                {/* PASSOS — quebrar a tarefa em pedaços pequenos é o núcleo do app */}
+                <section className={styles.block}>
+                    <span className={styles.blockLabel}>Passos <small>(opcional)</small></span>
+                    {task.subtasks && task.subtasks.length > 0 && (
                         <ul className={styles.subtaskList}>
-                            {task.subtasks?.map(sub => (
+                            {task.subtasks.map(sub => (
                                 <li key={sub.id} className={styles.subtaskItem}>
-                                    <input type="checkbox" checked={sub.completed} readOnly className="task-complete-button"/>
-                                    <input type="text" value={sub.text} onChange={e => handleChange('subtasks', task.subtasks?.map(s => s.id === sub.id ? {...s, text: e.target.value} : s))} className={styles.subtaskInput}/>
-                                    <button onClick={() => handleRemoveSubtask(sub.id)} className="btn btn-tertiary btn-icon btn-sm"><Icon path={icons.trash}/></button>
+                                    <span className={styles.stepDot} />
+                                    <input type="text" value={sub.text} onChange={e => handleChange('subtasks', task.subtasks?.map(s => s.id === sub.id ? { ...s, text: e.target.value } : s))} className={styles.subtaskInput} />
+                                    <button onClick={() => handleRemoveSubtask(sub.id)} className="btn btn-tertiary btn-icon btn-sm" aria-label="Remover passo"><Icon path={icons.trash} /></button>
                                 </li>
                             ))}
                         </ul>
-                        <div className={styles.subtaskAddGroup}>
-                            <input type="text" placeholder="Adicionar subtarefa..." value={newSubtask} onChange={e => setNewSubtask(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAddSubtask()} />
-                            <button onClick={handleAddSubtask} className="btn btn-primary btn-icon btn-sm"><Icon path={icons.plus}/></button>
-                        </div>
+                    )}
+                    <div className={styles.subtaskAddGroup}>
+                        <input type="text" placeholder="Ex.: abrir o material" value={newSubtask} onChange={e => setNewSubtask(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAddSubtask()} />
+                        <button onClick={handleAddSubtask} className="btn btn-primary btn-icon btn-sm" aria-label="Adicionar passo"><Icon path={icons.plus} /></button>
                     </div>
-                </div>
+                </section>
+
+                {/* QUANDO — atalhos em vez de um calendário logo de cara */}
+                <section className={styles.block}>
+                    <span className={styles.blockLabel}>Quando</span>
+                    <div className={styles.chipRow}>
+                        <button className={`${styles.chip} ${dateMode === 'today' ? styles.chipOn : ''}`} onClick={() => { handleChange('dueDate', today); setPickingDate(false); }}>Hoje</button>
+                        <button className={`${styles.chip} ${dateMode === 'tomorrow' ? styles.chipOn : ''}`} onClick={() => { handleChange('dueDate', tomorrow); setPickingDate(false); }}>Amanhã</button>
+                        <button className={`${styles.chip} ${dateMode === 'none' ? styles.chipOn : ''}`} onClick={() => { handleChange('dueDate', undefined); setPickingDate(false); }}>Sem data</button>
+                        <button className={`${styles.chip} ${dateMode === 'custom' ? styles.chipOn : ''}`} onClick={() => setPickingDate(true)}>
+                            {dateMode === 'custom' ? formatDate(task.dueDate!) : 'Escolher…'}
+                        </button>
+                    </div>
+                    {pickingDate && (
+                        <input type="date" className="g-input" style={{ marginTop: 8 }} value={task.dueDate || ''} onChange={e => handleChange('dueDate', e.target.value || undefined)} autoFocus />
+                    )}
+                </section>
+
+                {/* TIPO + POMODOROS numa linha só */}
+                <section className={styles.block}>
+                    <span className={styles.blockLabel}>Tipo</span>
+                    <div className={styles.typeRow}>
+                        <div className={styles.segment}>
+                            <button className={!isQuickTask ? styles.segmentOn : ''} onClick={() => handleTaskTypeChange('focus')}>⏱ Foco</button>
+                            <button className={isQuickTask ? styles.segmentOn : ''} onClick={() => handleTaskTypeChange('quick')}>✓ Rápida</button>
+                        </div>
+                        {!isQuickTask && (
+                            <div className={styles.stepper} aria-label="Pomodoros">
+                                <button onClick={() => handleChange('pomodoroEstimate', Math.max(1, pomos - 1))} aria-label="Menos">−</button>
+                                <span>{pomos} × {task.customDuration || 25}min</span>
+                                <button onClick={() => handleChange('pomodoroEstimate', Math.min(8, pomos + 1))} aria-label="Mais">+</button>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* ONDE — os 4 destinos da matriz direto, sem as perguntas */}
+                <section className={styles.block}>
+                    <span className={styles.blockLabel}>Onde fica</span>
+                    <div className={styles.quadrantGrid}>
+                        {quadrants.map(q => (
+                            <button key={q.id} className={`${styles.quadrantChip} ${task.quadrant === q.id ? styles.chipOn : ''}`} onClick={() => handleChange('quadrant', q.id)}>
+                                <Icon path={icons[q.icon]} />
+                                <span><strong>{q.title}</strong><small>{q.subtitle}</small></span>
+                            </button>
+                        ))}
+                    </div>
+                </section>
+
+                <button className={styles.moreToggle} onClick={() => setShowMore(v => !v)}>
+                    {showMore ? '− Menos opções' : '+ Mais opções'} <small>(descrição, duração)</small>
+                </button>
+                {showMore && (
+                    <section className={styles.block}>
+                        <textarea
+                            className={styles.descriptionTextarea}
+                            placeholder="Descrição, links, notas..."
+                            value={task.description || ''}
+                            onChange={e => handleChange('description', e.target.value)}
+                        />
+                        {!isQuickTask && (
+                            <label className={styles.inlineField}>
+                                Duração de cada foco (min)
+                                <input type="number" className="g-input" value={task.customDuration || ''} onChange={e => handleChange('customDuration', e.target.value ? parseInt(e.target.value) : undefined)} min="1" placeholder="25" />
+                            </label>
+                        )}
+                    </section>
+                )}
+
+                {/* categoria só existe pra MODELOS — aparece ao tocar em "Salvar modelo" */}
+                {savingTemplate && (
+                    <section className={`${styles.block} ${styles.templatePanel}`}>
+                        <span className={styles.blockLabel}>Salvar na biblioteca em qual categoria?</span>
+                        {isCreatingCategory ? (
+                            <div className={styles.subtaskAddGroup}>
+                                <input type="text" className="g-input" placeholder="Nome da nova categoria" value={newCategoryInput}
+                                    onChange={e => setNewCategoryInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleConfirmNewCategory()} autoFocus />
+                                <button onClick={handleConfirmNewCategory} className="btn btn-primary btn-icon btn-sm"><Icon path={icons.check} /></button>
+                                <button onClick={() => setIsCreatingCategory(false)} className="btn btn-secondary btn-icon btn-sm"><Icon path={icons.close} /></button>
+                            </div>
+                        ) : (
+                            <div className={styles.chipRow}>
+                                {availableCategories.map(cat => (
+                                    <button key={cat} className={`${styles.chip} ${category === cat ? styles.chipOn : ''}`} onClick={() => setCategory(cat)}>{cat}</button>
+                                ))}
+                                <button className={`${styles.chip} ${styles.chipAdd}`} onClick={() => setIsCreatingCategory(true)}>+ Nova</button>
+                            </div>
+                        )}
+                    </section>
+                )}
             </main>
             <footer className={`g-modal-footer ${styles.footerWrap}`}>
                 {task.id && (
@@ -244,8 +259,17 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
                     </button>
                 )}
                 <div className={styles.footerActions}>
-                    <button className="btn btn-secondary" onClick={handleSaveAsTemplate}><Icon path={icons.bookOpen} /> Salvar modelo</button>
-                    <button className="btn btn-primary" onClick={handleUpsertTask}><Icon path={icons.plus} /> {task.id ? 'Atualizar' : 'Adicionar'}</button>
+                    {savingTemplate ? (
+                        <>
+                            <button className="btn btn-secondary" onClick={() => setSavingTemplate(false)}>Voltar</button>
+                            <button className="btn btn-primary" onClick={handleSaveAsTemplate}><Icon path={icons.bookOpen} /> Salvar em {category}</button>
+                        </>
+                    ) : (
+                        <>
+                            <button className="btn btn-secondary" onClick={handleSaveAsTemplate}><Icon path={icons.bookOpen} /> Salvar modelo</button>
+                            <button className="btn btn-primary" onClick={handleUpsertTask}><Icon path={icons.plus} /> {task.id ? 'Atualizar' : 'Adicionar'}</button>
+                        </>
+                    )}
                 </div>
             </footer>
         </>
@@ -261,62 +285,3 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskToEdit, onClose, tags 
     );
 };
 
-const MatrixSelector: React.FC<{ task: Partial<Task>, setTask: React.Dispatch<React.SetStateAction<Partial<Task>>> }> = ({ task, setTask }) => {
-    const [urgency, setUrgency] = useState<'urgent' | 'not-urgent' | null>(null);
-    const [importance, setImportance] = useState<'important' | 'not-important' | null>(null);
-    
-    const currentQuadrantInfo = quadrants.find(q => q.id === task.quadrant) || quadrants.find(q => q.id === 'inbox');
-
-    useEffect(() => {
-        const q = task.quadrant;
-        if (q === 'do') { setUrgency('urgent'); setImportance('important'); } 
-        else if (q === 'schedule') { setUrgency('not-urgent'); setImportance('important'); } 
-        else if (q === 'someday') { setUrgency('not-urgent'); setImportance('not-important'); } 
-        else { setUrgency(null); setImportance(null); }
-    }, [task.quadrant]);
-
-    const updateMatrix = (u: typeof urgency, i: typeof importance) => {
-        setUrgency(u); 
-        setImportance(i);
-        if (u && i) {
-             let newQ: Quadrant = 'inbox';
-             if (u === 'urgent' && i === 'important') newQ = 'do';
-             else if (u === 'not-urgent' && i === 'important') newQ = 'schedule';
-             else if (u === 'not-urgent' && i === 'not-important') newQ = 'someday';
-             else if (u === 'urgent' && i === 'not-important') newQ = 'do';
-
-             setTask(prev => ({ ...prev, quadrant: newQ }));
-        }
-    };
-
-    return (
-        <div className={styles.formGroup}>
-            <label><Icon path={icons.layoutGrid} /> Matriz de Prioridade</label>
-            <div className={styles.matrixSelectorContainer}>
-                <div className={styles.matrixRow}>
-                    <span className={styles.matrixLabel}>É urgente?</span>
-                    <div className={styles.matrixToggleGroup}>
-                        <button className={`${styles.matrixToggleBtn} ${urgency === 'not-urgent' ? styles.active : ''}`} onClick={() => updateMatrix('not-urgent', importance)}>Pode esperar</button>
-                        <button className={`${styles.matrixToggleBtn} ${urgency === 'urgent' ? styles.active : ''}`} onClick={() => updateMatrix('urgent', importance)}>É pra já!</button>
-                    </div>
-                </div>
-                <div className={styles.matrixRow}>
-                    <span className={styles.matrixLabel}>É importante?</span>
-                    <div className={styles.matrixToggleGroup}>
-                        <button className={`${styles.matrixToggleBtn} ${importance === 'not-important' ? styles.active : ''}`} onClick={() => updateMatrix(urgency, 'not-important')}>Baixo impacto</button>
-                        <button className={`${styles.matrixToggleBtn} ${importance === 'important' ? styles.active : ''}`} onClick={() => updateMatrix(urgency, 'important')}>Alto impacto</button>
-                    </div>
-                </div>
-                {currentQuadrantInfo &&
-                    <div className={`${styles.matrixResult} ${styles[`quadrant-${currentQuadrantInfo.id}`]}`}>
-                        <div className={styles.resultIcon}><Icon path={icons[currentQuadrantInfo.icon]} /></div>
-                        <div className={styles.resultText}>
-                            <span className={styles.resultTitle}>{currentQuadrantInfo.title}</span>
-                            <span className={styles.resultSubtitle}>{currentQuadrantInfo.subtitle}</span>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    );
-}

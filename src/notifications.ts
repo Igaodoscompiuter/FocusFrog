@@ -14,6 +14,7 @@ interface WidgetBridgePluginIface {
   startFocusService(opts: { title: string; body: string; endsAt: number; phase: 'focus' | 'break' }): Promise<void>;
   getFocusDistraction(): Promise<{ distractedMs: number }>;
   resetFocusDistraction(): Promise<void>;
+  setDistractionGuard(opts: { enabled: boolean }): Promise<void>;
   stopFocusService(): Promise<void>;
   checkExactAlarmPermission(): Promise<{ granted: boolean }>;
   openExactAlarmSettings(): Promise<void>;
@@ -301,4 +302,14 @@ export async function getFocusDistractionMs(): Promise<number> {
 export async function resetFocusDistraction() {
     if (!Capacitor.isNativePlatform()) return;
     try { await NativeBridge.resetFocusDistraction(); } catch { /* nada */ }
+}
+
+/** Configurações → "Proteger o foco" (padrão: ligado). Desligado = sem
+ *  cutucada e sapo garantido — pra quem faz a tarefa usando o celular. */
+export const DISTRACTION_GUARD_KEY = 'focusfrog_distraction_guard';
+export const isDistractionGuardOn = () => localStorage.getItem(DISTRACTION_GUARD_KEY) !== 'false';
+export async function setDistractionGuard(enabled: boolean) {
+    localStorage.setItem(DISTRACTION_GUARD_KEY, String(enabled));
+    if (!Capacitor.isNativePlatform()) return;
+    try { await NativeBridge.setDistractionGuard({ enabled }); } catch { /* nada */ }
 }
