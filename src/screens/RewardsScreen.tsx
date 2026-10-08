@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useUI } from '../context/UIContext';
 import { useTour } from '../components/tour/TourContext';
+import { getInstalledVersion } from '../utils/updateCheck';
+import { UPDATE_CHECK_EVENT } from '../components/UpdateAvailableModal';
+import { Capacitor } from '@capacitor/core';
 import { isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { useUserData } from '../hooks/useUserData';
 import { useAuth } from '../hooks/useAuth';
@@ -130,6 +133,16 @@ export const RewardsScreen: React.FC = () => {
     } = useUI();
     const { exportData, importDataFromFile, resetData } = useUserData();
     const { restart: restartTour } = useTour();
+    // versão real instalada (APK) — antes o texto era fixo e desatualizava
+    const [appVersion, setAppVersion] = useState(__APP_VERSION__);
+    const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'latest'>('idle');
+    useEffect(() => { getInstalledVersion().then(v => { if (v) setAppVersion(v.versionName); }); }, []);
+    useEffect(() => {
+        const onResult = (e: Event) => setUpdateStatus((e as CustomEvent).detail?.found ? 'idle' : 'latest');
+        window.addEventListener('focusfrog:update-result', onResult);
+        return () => window.removeEventListener('focusfrog:update-result', onResult);
+    }, []);
+    const handleCheckUpdate = () => { setUpdateStatus('checking'); window.dispatchEvent(new Event(UPDATE_CHECK_EVENT)); };
     const [guardOn, setGuardOn] = useState(isDistractionGuardOn);
     const toggleGuard = (v: boolean) => { setGuardOn(v); setDistractionGuard(v); };
     const { isLoading } = useAuth(); // Removido user, signIn, signOut pois não são mais usados diretamente aqui
@@ -260,7 +273,12 @@ export const RewardsScreen: React.FC = () => {
                                 </button>
                             </div>
 
-                            <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v1.4.0 • Feito com 💚🐸</div>
+                            {Capacitor.isNativePlatform() && (
+                                <button className={styles.updateButton} onClick={handleCheckUpdate} disabled={updateStatus === 'checking'}>
+                                    {updateStatus === 'checking' ? 'Verificando…' : updateStatus === 'latest' ? '✓ Você está na versão mais recente' : 'Verificar atualizações'}
+                                </button>
+                            )}
+                            <div className={styles.appVersion} onClick={handleVersionClick}>FocusFrog v{appVersion} • Feito com 💚🐸</div>
                         </div>
                     </div>
                 );
