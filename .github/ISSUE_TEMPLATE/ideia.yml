@@ -1,0 +1,14 @@
+name: 💡 Ideia
+description: Sugestão de melhoria
+labels: [ideia]
+body:
+  - type: textarea
+    attributes: { label: Qual problema isso resolve? }
+    validations: { required: true }
+  - type: textarea
+    attributes: { label: Como você imagina a solução? }
+  - type: checkboxes
+    attributes:
+      label: Direção do produto
+      options:
+        - label: Ajuda a escolher, começar, focar ou evoluir (o núcleo do FocusFrog)
