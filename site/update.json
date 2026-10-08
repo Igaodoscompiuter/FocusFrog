@@ -1,0 +1,17 @@
+{
+  "versionCode": 3,
+  "versionName": "1.4.0",
+  "apkUrl": "https://focusfrog.netlify.app/FocusFrog.apk",
+  "title": "FocusFrog 1.4.0",
+  "message": "Tutorial corrigido, nova tela de tarefa, Agenda de Hoje e proteção de foco.",
+  "notes": [
+    "Tutorial não trava mais com o Card Especial",
+    "Nova tela de criar e editar tarefa",
+    "Agenda de Hoje e checklist recolhíveis",
+    "Proteção de foco pode ser desligada nas Configurações",
+    "Aviso de nova versão dentro do app"
+  ],
+  "publishedAt": "2026-10-08",
+  "mandatory": false,
+  "sha256": "c87d831de84b02faacabbd8a7fc082ba19c3db33f70dfbcf87899c866d4058ff"
+}

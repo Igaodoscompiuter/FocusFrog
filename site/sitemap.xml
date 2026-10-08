@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://focusfrog.netlify.app/</loc>
+    <lastmod>2026-10-08</lastmod>
+    <image:image><image:loc>https://focusfrog.netlify.app/images/global/og-focusfrog-1200x630.jpg</image:loc></image:image>
+    <image:image><image:loc>https://focusfrog.netlify.app/images/global/app-home-sapo-do-dia-780.webp</image:loc></image:image>
+    <image:image><image:loc>https://focusfrog.netlify.app/images/global/app-tarefas-caixa-de-entrada-780.webp</image:loc></image:image>
+    <image:image><image:loc>https://focusfrog.netlify.app/images/global/app-timer-pomodoro-780.webp</image:loc></image:image>
+    <image:image><image:loc>https://focusfrog.netlify.app/images/global/app-lago-zen-780.webp</image:loc></image:image>
+  </url>
+</urlset>
