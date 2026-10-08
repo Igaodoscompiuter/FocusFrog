@@ -11,4 +11,14 @@ export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-anon-key',
+  {
+    auth: {
+      // PKCE: o login volta com um ?code= trocado pela sessão no app (seguro
+      // pra apps móveis, sem token exposto na URL)
+      flowType: 'pkce',
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true, // web/PWA
+    },
+  },
 );

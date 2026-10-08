@@ -1,0 +1,20 @@
+.account-card { max-width: 420px; gap: 1rem; }
+.account-buttons { width: 100%; display: flex; flex-direction: column; gap: 0.75rem; }
+.account-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  width: 100%; padding: 14px 16px; border-radius: 14px; cursor: pointer;
+  font: inherit; font-size: 1rem; font-weight: 600; border: 1px solid transparent;
+  transition: transform .15s ease, filter .15s ease;
+}
+.account-btn:active { transform: scale(0.98); }
+.account-btn:disabled { opacity: .6; cursor: default; }
+.account-google { background: #fff; color: #1f1f1f; border-color: #dadce0; }
+.account-facebook { background: #1877F2; color: #fff; }
+.account-waiting { margin: 0; font-size: 0.85rem; color: var(--accent-color); }
+.account-divider { width: 100%; display: flex; align-items: center; gap: 12px; color: var(--text-secondary-color); font-size: 0.85rem; }
+.account-divider::before, .account-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+.account-skip {
+  width: 100%; padding: 12px; border-radius: 14px; cursor: pointer; font: inherit; font-size: 0.95rem; font-weight: 600;
+  background: transparent; color: var(--text-color); border: 1px solid var(--border-color);
+}
+.account-note { margin: 0; font-size: 0.8rem; line-height: 1.4; color: var(--text-secondary-color); }
