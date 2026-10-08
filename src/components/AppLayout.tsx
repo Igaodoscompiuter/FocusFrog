@@ -12,6 +12,7 @@ import type { Screen } from '../types';
 import { NotificationContainer } from './NotificationContainer';
 import { FrogRewardModal } from './FrogRewardModal';
 import { FrogScaredModal } from './FrogScaredModal';
+import { UpdateAvailableModal } from './UpdateAvailableModal';
 import { TourProvider } from './tour/TourContext';
 import { TourOverlay } from './tour/TourOverlay';
 import UpdatePrompt from './UpdatePrompt';
@@ -47,6 +48,7 @@ export const AppLayout: React.FC = () => {
             <NotificationContainer />
             <FrogRewardModal />
             <FrogScaredModal />
+            <UpdateAvailableModal />
             {/* aviso de nova versão é só do PWA — no APK quem atualiza é a instalação */}
             {!Capacitor.isNativePlatform() && <UpdatePrompt />}
             <TourOverlay />
