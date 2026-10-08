@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obrigado pelo download · FocusFrog</title>
+<meta name="theme-color" content="#0a120e">
+<meta name="robots" content="noindex,follow">
+<link rel="icon" href="/images/global/favicon-64.png" sizes="64x64" type="image/png">
+<link rel="stylesheet" href="/assets/css/fonts.css?v=1.4.0">
+<link rel="stylesheet" href="/assets/css/pagina.css?v=1.4.0">
+
+</head>
+<body>
+<main class="ff-page">
+<section class="ff-box">
+<img class="ff-logo" src="/images/global/mascote-focusfrog-160.webp" alt="Mascote do FocusFrog">
+
+<h1>Download feito. 🐸</h1>
+<p>Obrigado por baixar o FocusFrog. Agora é só abrir o APK no seu Android e seguir as instruções de instalação.</p>
+<div class="ff-actions">
+  <a class="ff-btn ff-primary" href="focusfrog://open">Abrir o FocusFrog</a>
+  <a class="ff-btn ff-secondary" href="/">Voltar ao site</a>
+</div>
+<h2>Quer ajudar o FocusFrog a continuar?</h2>
+<p>Se o app estiver te ajudando, você pode apoiar o projeto por Pix. O mesmo Pix disponível no site foi colocado aqui para facilitar.</p>
+<div class="ff-actions">
+  <button class="ff-btn ff-primary" id="pixDonate" type="button">Copiar Pix</button>
+</div>
+<div id="pixStatus" class="ff-note" aria-live="polite">O código Pix será copiado para a área de transferência.</div>
+<textarea id="pixCode" readonly aria-label="Código Pix para doação" style="position:absolute;left:-9999px;top:-9999px;">00020126940014BR.GOV.BCB.PIX013642cf5c38-ccc4-452f-b55a-dd3fc32074f20232obrigado por apoiar o Focus Frog5204000053039865802BR5925Igor Sousa Rocha Aguiar V6009SAO PAULO62140510rDkAtQCzNL63048AC4</textarea>
+<div class="ff-socials">
+  <a href="https://www.instagram.com/focus.frog/" aria-label="Instagram do FocusFrog" target="_blank" rel="noopener noreferrer">Instagram</a>
+</div>
+<p class="ff-note">Acompanhe o FocusFrog no Instagram para novidades e atualizações do projeto.</p>
+
+</section>
+</main>
+
+<script>
+(() => {
+  const btn = document.getElementById('pixDonate');
+  const code = document.getElementById('pixCode');
+  const status = document.getElementById('pixStatus');
+  if (!btn || !code) return;
+  btn.addEventListener('click', async () => {
+    const value = code.value;
+    try {
+      await navigator.clipboard.writeText(value);
+      status.textContent = 'Pix copiado. Cole no aplicativo do seu banco. Obrigado por apoiar o FocusFrog! 🐸';
+    } catch (_) {
+      code.style.position = 'static';
+      code.style.left = 'auto';
+      code.style.top = 'auto';
+      code.style.width = '100%';
+      code.style.minHeight = '120px';
+      code.style.marginTop = '12px';
+      code.style.padding = '10px';
+      code.select();
+      status.textContent = 'Não consegui copiar automaticamente. Selecione e copie o código Pix acima.';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -5,6 +5,11 @@ e [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
 ### Adicionado
+- Conta opcional com Google ou Facebook e sincronização diária com a nuvem
+  (Configurações → Conta e Sincronização), com cópia de segurança de 7 dias.
+- Site oficial versionado em `site/`, com modal de download, SEO e
+  `update.json` lido pelo app.
+- Link `focusfrog://open` para o botão "Abrir o FocusFrog" do site.
 - Aviso de nova versão disponível no app (APK).
 - Licença proprietária, diretrizes de propriedade intelectual, guia de
   contribuição e política de segurança.

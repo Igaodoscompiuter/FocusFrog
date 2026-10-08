@@ -10,6 +10,8 @@ Escolha o seu **Sapo do Dia**, foque com o cronômetro e veja a sua **Lagoa Zen*
 
 [![Baixar para Android](https://img.shields.io/badge/Baixar_para_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://focusfrog.netlify.app)
 &nbsp;
+[![Site oficial](https://img.shields.io/badge/focusfrog.netlify.app-0A120E?style=for-the-badge&logo=netlify&logoColor=8BD150)](https://focusfrog.netlify.app)
+&nbsp;
 [![Instagram](https://img.shields.io/badge/@focus.frog-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/focus.frog)
 
 ![Versão](https://img.shields.io/badge/versão-1.4.0-4CAF50?style=flat-square)
@@ -57,12 +59,13 @@ de foco e organização, não um tratamento.)*
 | 🔁 **Rotinas e alarmes** | Transforme foco em hábito com lembretes no horário. |
 | 🎒 **Widget "Já pegou?"** | Checklist de saída de casa direto na tela inicial. |
 | 🔒 **Local-first** | Funciona sem conta e sem internet. Os dados ficam no seu celular. |
+| ☁️ **Conta opcional** | Entre com Google ou Facebook pra guardar tudo na nuvem e trocar de celular sem perder nada *(em breve, 1.5.0)*. |
 
 ## Baixar
 
 O FocusFrog está em teste aberto para Android. Baixe o APK mais recente em
-**[focusfrog.netlify.app](https://focusfrog.netlify.app)** — o próprio app
-avisa quando sai uma versão nova.
+**[focusfrog.netlify.app](https://focusfrog.netlify.app)**, o site oficial,
+com o passo a passo de instalação. O próprio app avisa quando sai uma versão nova.
 
 ---
 
@@ -110,6 +113,8 @@ android/app/src/main/java/com/focusfrog/app/
 ├── PomodoroForegroundService.java   cronômetro na notificação
 ├── FocusDistractionMonitor.java     foco limpo
 └── ChecklistWidget*.java            widget "Já pegou?"
+site/                 site oficial (focusfrog.netlify.app) — ver site/README.md
+supabase/migrations/  banco da sincronização opcional
 docs/                 propriedade intelectual, prints
 ```
 
@@ -131,6 +136,8 @@ arte do FocusFrog exige autorização por escrito. Veja [`LICENSE`](LICENSE) e
 <div align="center">
 <br />
 
-Feito com 💚 por **[Online Já Tech](https://onlinejacwb.com.br)** — sites e apps para pequenos negócios em Curitiba.
+Feito com 💚 por **Igor Viana** · site e app desenvolvidos com a **[Online Já Tech](https://onlinejacwb.com.br)** — sites e apps para pequenos negócios em Curitiba.
+
+[Site oficial](https://focusfrog.netlify.app) · [Instagram](https://www.instagram.com/focus.frog) · [Novidades](CHANGELOG.md)
 
 </div>
