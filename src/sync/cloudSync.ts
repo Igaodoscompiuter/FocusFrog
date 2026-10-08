@@ -89,7 +89,7 @@ export type LoginOutcome =
  */
 export async function handleLogin(userId: string, origin: 'onboarding' | 'settings'): Promise<LoginOutcome> {
   const row = await fetchCloud(userId);
-  if (row && row.data && Object.keys(row.data).length > 0) {
+  if (row && snapshotHasProgress(row.data)) {
     applyCloud(userId, row);
     return 'restored';
   }

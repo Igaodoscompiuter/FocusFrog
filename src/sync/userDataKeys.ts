@@ -24,35 +24,61 @@ export const USER_DATA_KEYS = [
   'focusfrog_zenState',
   'focusfrog_mascot',
   // preferências
-  'focusfrog_theme',
-  'focusfrog_sound',
   'focusfrog_sound_enabled',
   'focusfrog_haptics_enabled',
   'focusfrog_fontsize',
-  'focusfrog_ui_settings',
   'focusfrog_distraction_guard',
 ] as const;
 
-export type UserSnapshot = Record<string, string>;
+/**
+ * Formato dos dados (nuvem e arquivo de backup são o MESMO formato):
+ *
+ *   {
+ *     "schemaVersion": 3,
+ *     "focusfrog_tasks": [ ...tarefas... ],   ← JSON de verdade, não texto
+ *     "focusfrog_userName": "Ana",
+ *     ...
+ *   }
+ *
+ * Compatível com as linhas antigas da nuvem e com backups exportados antes
+ * (que já usavam valores JSON e chaves extras como backupVersion/exportedAt,
+ * que são ignoradas). Se algum valor do aparelho não for JSON válido, ele vai
+ * como texto e a chave entra em "__raw", pra voltar idêntico.
+ */
+export const SCHEMA_VERSION = 3;
 
-/** Foto atual dos dados da pessoa (valores crus do localStorage). */
+export type UserSnapshot = {
+  schemaVersion?: number;
+  __raw?: string[];
+  [key: string]: unknown;
+};
+
+/** Foto atual dos dados da pessoa. */
 export const collectSnapshot = (): UserSnapshot => {
-  const snap: UserSnapshot = {};
-  USER_DATA_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) snap[k] = v; });
+  const snap: UserSnapshot = { schemaVersion: SCHEMA_VERSION };
+  const raw: string[] = [];
+  USER_DATA_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v === null) return;
+    try { snap[k] = JSON.parse(v); } catch { snap[k] = v; raw.push(k); }
+  });
+  if (raw.length) snap.__raw = raw;
   return snap;
 };
 
 /** Substitui os dados da pessoa pelos da foto (o que não veio na foto é apagado). */
 export const applySnapshot = (snap: UserSnapshot) => {
+  const raw = new Set(Array.isArray(snap.__raw) ? snap.__raw : []);
   USER_DATA_KEYS.forEach(k => {
-    if (snap[k] !== undefined) localStorage.setItem(k, snap[k]);
-    else localStorage.removeItem(k);
+    const v = snap[k];
+    if (v === undefined || v === null) { localStorage.removeItem(k); return; }
+    localStorage.setItem(k, raw.has(k) && typeof v === 'string' ? v : JSON.stringify(v));
   });
 };
 
-/** Tem progresso de verdade? (pra decidir se vale a cópia de segurança) */
-export const snapshotHasProgress = (snap: UserSnapshot) =>
-  ['focusfrog_tasks', 'focusfrog_collectedFrogs', 'focusfrog_routines', 'focusfrog_userName'].some(k => {
-    const v = snap[k]; if (!v) return false;
-    try { const p = JSON.parse(v); return Array.isArray(p) ? p.length > 0 : !!p; } catch { return true; }
+/** Tem progresso de verdade? (decide se restaura a conta / se vale a cópia de segurança) */
+export const snapshotHasProgress = (snap: UserSnapshot | null | undefined) =>
+  !!snap && ['focusfrog_tasks', 'focusfrog_collectedFrogs', 'focusfrog_routines', 'focusfrog_userName'].some(k => {
+    const v = snap[k];
+    return Array.isArray(v) ? v.length > 0 : !!v;
   });
