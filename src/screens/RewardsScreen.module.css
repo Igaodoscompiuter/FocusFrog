@@ -22,6 +22,15 @@
 .profileScreen { padding: 1.5rem; text-align: center; }
 .authCard { background: var(--surface-secondary-color); border-radius: 12px; padding: 2rem; margin: 1rem auto; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 1rem; border: 1px solid var(--border-color); text-align: center; }
 .authIcon { color: var(--accent-color); }
+.authCard h3 { margin: 0; }
+.authCard p { margin: 0; }
+.accountMeta { font-size: 0.9rem; color: var(--text-secondary-color); word-break: break-all; }
+.accountSync { font-size: 0.9rem; color: var(--text-color); }
+.accountNote { font-size: 0.8rem; line-height: 1.4; color: var(--text-secondary-color); }
+.accountActions { width: 100%; display: flex; flex-direction: column; gap: 0.6rem; }
+.accountActions :global(.btn) { width: 100%; justify-content: center; display: flex; align-items: center; gap: 0.5rem; }
+.undoCard { max-width: 400px; margin: 0 auto; padding: 1rem; border-radius: 12px; border: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem; color: var(--text-secondary-color); }
+.undoCard p { margin: 0; }
 
 /* === Tela de Dados (COM O NOVO CARTÃO) === */
 .dataInfoCard {

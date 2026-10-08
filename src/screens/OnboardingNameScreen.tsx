@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
+import { PENDING_UPLOAD_KEY } from '../hooks/useAuth';
+import { pushLocal } from '../sync/cloudSync';
 import './OnboardingNameScreen.css';
 
 const LOGO_URL = '/icon-512.png';
@@ -12,6 +14,13 @@ export const OnboardingNameScreen: React.FC = () => {
   const handleNameSubmit = () => {
     if (name.trim()) {
       setUserName(name.trim());
+      // conta nova: só agora (com o nome salvo) a conta vai pra nuvem
+      const pending = localStorage.getItem(PENDING_UPLOAD_KEY);
+      if (pending) {
+        setTimeout(() => {
+          pushLocal(pending).then(() => localStorage.removeItem(PENDING_UPLOAD_KEY)).catch(() => { /* tenta na sincronização diária */ });
+        }, 400); // espera o nome ser gravado no aparelho
+      }
     }
   };
 

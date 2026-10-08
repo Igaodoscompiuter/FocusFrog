@@ -9,6 +9,7 @@ import { useAuth } from './hooks/useAuth';
 import { usePWAInstall } from './context/PWAInstallProvider';
 import { OnboardingNameScreen } from './screens/OnboardingNameScreen';
 import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
+import { OnboardingAccountScreen, ACCOUNT_CHOICE_KEY } from './screens/OnboardingAccountScreen';
 import { SplashScreen } from './screens/SplashScreen';
 import { AppLayout } from './components/AppLayout';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
@@ -17,7 +18,8 @@ import InstallPromptPopup from './components/InstallPromptPopup';
 
 function App() {
   const { userName, onboardingCompleted } = useUser();
-  const { isLoading } = useAuth();
+  const { isLoading, isConfigured } = useAuth();
+  const [accountChoice, setAccountChoice] = useState(() => localStorage.getItem(ACCOUNT_CHOICE_KEY));
   const { fontSize } = useUI();
   const { canInstall, triggerInstall } = usePWAInstall();
 
@@ -106,7 +108,12 @@ function App() {
   // --- LÓGICA DE RENDERIZAÇÃO CORRIGIDA ---
   let screenContent;
   if (!onboardingCompleted) {
-    if (!userName) {
+    if (!userName && !accountChoice && isConfigured) {
+      // 1ª abertura: entrar com conta (nova ou existente) ou seguir sem conta
+      screenContent = <OnboardingAccountScreen onContinueWithoutAccount={() => {
+        localStorage.setItem(ACCOUNT_CHOICE_KEY, 'local'); setAccountChoice('local');
+      }} />;
+    } else if (!userName) {
       screenContent = <OnboardingNameScreen />;
     } else {
       screenContent = <OnboardingWelcomeScreen />;

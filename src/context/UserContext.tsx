@@ -1,6 +1,5 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 
 export interface NewlyAcquiredFrogInfo {
@@ -39,7 +38,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [newlyAcquiredFrog, setNewlyAcquiredFrog] = useState<NewlyAcquiredFrogInfo | null>(null);
   const [currentFrogForSession, setCurrentFrogForSession] = useState<string | null>(null);
 
-  const { user: authUser } = useAuth();
 
   useEffect(() => {
     setCollectedFrogs(getCollectedFrogs());
@@ -77,12 +75,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setOnboardingCompleted(true);
   };
 
-  useEffect(() => {
-    if (authUser && !onboardingCompleted && !userName && authUser.user_metadata?.full_name) {
-      const firstName = authUser.user_metadata.full_name.split(' ')[0];
-      setUserName(firstName);
-    }
-  }, [authUser, onboardingCompleted, userName, setUserName]);
+  // (removido) o nome NÃO é preenchido com o da conta Google/Facebook:
+  // na conta nova a pessoa escolhe como quer ser chamada.
 
   const value = {
     userName,

@@ -1,28 +1,13 @@
+import { supabase } from '../supabaseClient';
+import type { User } from '@supabase/supabase-js';
 import { useCallback } from 'react';
 import { useUI } from '../context/UIContext';
-import { supabase } from '../supabaseClient';
-import { User } from '@supabase/supabase-js';
 import { frogSpecies } from '../utils/frogSpecies';
+import { USER_DATA_KEYS } from '../sync/userDataKeys';
 
-const USER_DATA_KEYS = [
-    'focusfrog_tasks',
-    'focusfrog_tags',
-    'focusfrog_frogTaskId',
-    'focusfrog_onboardingCompleted',
-    'focusfrog_routines',
-    'focusfrog_taskTemplates',
-    'focusfrog_leavingHomeItems',
-    'focusfrog_userName',
-    'focusfrog_theme',
-    'focusfrog_sound',
-    'focusfrog_ui_settings',
-    'focusfrog_collectedFrogs',
-    'focusfrog_pomodorosCompleted',
-    'focusfrog_zenState', // lagoa + viveiro (entra no backup também)
-    'focusfrog_mascot'
-];
+// lista única (backup + nuvem): ver src/sync/userDataKeys.ts
 
-const BACKUP_VERSION = '2.2.0';
+const BACKUP_VERSION = '3.0.0';
 
 const createBackupObjectFromLocalStorage = () => {
     const backup: { [key: string]: any } = { version: BACKUP_VERSION };
@@ -134,6 +119,7 @@ export const useUserData = () => {
         // reset (por isso sapos antigos reapareciam depois de "apagar os
         // dados"). Agora apaga toda chave do app, inclusive as que forem
         // criadas no futuro, sem depender de lembrar de atualizar a lista.
+        supabase.auth.signOut().catch(() => {});
         Object.keys(localStorage)
             .filter(key => key.startsWith('focusfrog_'))
             .forEach(key => localStorage.removeItem(key));
@@ -141,15 +127,11 @@ export const useUserData = () => {
         setTimeout(() => window.location.reload(), 1500);
     }, [addNotification]);
     
-    const syncLocalToSupabase = useCallback(async (user: User) => { /* Implementação omitida para brevidade */ }, []);
-    const downloadAndRestoreFromSupabase = useCallback(async (user: User) => { /* Implementação omitida para brevidade */ }, []);
 
     return {
         exportData,
         importDataFromFile,
         resetData,
-        downloadAndRestoreFromSupabase,
-        syncLocalToSupabase,
         addFrogToCollection,
         getCollectedFrogs,
     };

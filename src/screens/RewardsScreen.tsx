@@ -6,7 +6,10 @@ import { UPDATE_CHECK_EVENT } from '../components/UpdateAvailableModal';
 import { Capacitor } from '@capacitor/core';
 import { isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { useUserData } from '../hooks/useUserData';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, AuthProviderName } from '../hooks/useAuth';
+import { getLocalBackup, restoreLocalBackup } from '../sync/cloudSync';
+import { GoogleIcon, FacebookIcon } from './OnboardingAccountScreen';
+import './OnboardingAccountScreen.css';
 import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
@@ -56,15 +59,141 @@ const SegmentedControl: React.FC<{options: {label: string, value: FontSize}[], v
 
 // --- SUB-TELAS DE CONFIGURAÇÕES ---
 
+const PROVIDER_LABEL: Record<string, string> = { google: 'Google', facebook: 'Facebook' };
+
+const formatWhen = (ts: number | null) => {
+    if (!ts) return 'ainda não sincronizou';
+    const d = new Date(ts);
+    const today = new Date();
+    const sameDay = d.toDateString() === today.toDateString();
+    const hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return sameDay ? `hoje às ${hm}` : `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${hm}`;
+};
+
+const SYNC_MSG: Record<string, [string, string, 'success' | 'info' | 'error']> = {
+    pushed: ['Tudo salvo na nuvem.', '☁️', 'success'],
+    pulled: ['Dados atualizados de outro aparelho. Recarregando…', '🔄', 'success'],
+    offline: ['Sem internet agora. Tentamos de novo depois.', '📶', 'info'],
+    error: ['Não deu pra sincronizar agora. Tente mais tarde.', '❌', 'error'],
+    skipped: ['Nada pra sincronizar.', 'ℹ️', 'info'],
+};
+
 const ProfileScreen: React.FC<{onBack: () => void}> = ({ onBack }) => {
+    const { user, isConfigured, isSigningIn, lastSyncAt, signIn, signOut, syncNowManual } = useAuth();
+    const { addNotification } = useUI();
+    const [pendingProvider, setPendingProvider] = useState<AuthProviderName | null>(null);
+    const [confirmLogout, setConfirmLogout] = useState(false);
+    const [confirmUndo, setConfirmUndo] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const backup = getLocalBackup();
+
+    if (!isConfigured) {
+        return (
+            <div className={`${styles.tabContent} ${styles.profileScreen}`}>
+                <SubScreenHeader title="Conta e Sincronização" onBack={onBack} />
+                <div className={styles.authCard}>
+                    <span className={styles.authIcon}><FiCloudLightning size={40} /></span>
+                    <h3>Sincronização indisponível</h3>
+                    <p>Esta versão do app não tem a nuvem configurada. Seus dados continuam salvos neste celular.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const handleSync = async () => {
+        setSyncing(true);
+        const r = await syncNowManual();
+        setSyncing(false);
+        const [msg, icon, kind] = SYNC_MSG[r];
+        addNotification(msg, icon, kind);
+    };
+
+    const handleUndo = async () => {
+        setConfirmUndo(false);
+        if (await restoreLocalBackup()) {
+            addNotification('Dados anteriores do aparelho restaurados. Recarregando…', '↩️', 'success');
+            setTimeout(() => window.location.reload(), 800);
+        }
+    };
+
+    const provider = (user?.app_metadata?.provider as string) || '';
+    const name = (user?.user_metadata?.full_name || user?.user_metadata?.name) as string | undefined;
+
     return (
         <div className={`${styles.tabContent} ${styles.profileScreen}`}>
-            <SubScreenHeader title="Perfil e Sincronização" onBack={onBack} />
-            <div className={styles.authCard}>
-                <span className={styles.authIcon}><FiCloudLightning size={40} /></span>
-                <h3>Backup na Nuvem (Em Breve)</h3>
-                <p>Estamos trabalhando para permitir que você salve seu progresso na nuvem e o acesse de qualquer lugar. Fique de olho nas próximas atualizações!</p>
-            </div>
+            <SubScreenHeader title="Conta e Sincronização" onBack={onBack} />
+
+            {user ? (
+                <div className={styles.authCard}>
+                    <span className={styles.authIcon}><FiCheckCircle size={40} /></span>
+                    <h3>{name || 'Conectado'}</h3>
+                    <p className={styles.accountMeta}>
+                        {user.email}{provider && PROVIDER_LABEL[provider] ? ` · ${PROVIDER_LABEL[provider]}` : ''}
+                    </p>
+                    <p className={styles.accountSync}>Última sincronização: <strong>{formatWhen(lastSyncAt)}</strong></p>
+                    <p className={styles.accountNote}>O app sincroniza sozinho uma vez por dia ao abrir. Tarefas, rotinas, pontos e sapos ficam guardados na sua conta.</p>
+                    <div className={styles.accountActions}>
+                        <button className="btn btn-primary" onClick={handleSync} disabled={syncing}>
+                            <FiCloudLightning /> {syncing ? 'Sincronizando…' : 'Sincronizar agora'}
+                        </button>
+                        <button className="btn btn-secondary" onClick={() => setConfirmLogout(true)}>
+                            <FiLogOut /> Sair da conta
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className={styles.authCard}>
+                    <span className={styles.authIcon}><FiCloudLightning size={40} /></span>
+                    <h3>Guarde seu progresso na nuvem</h3>
+                    <p>Entre com uma conta pra não perder tarefas, rotinas, pontos e sapos se trocar de celular.</p>
+                    <div className={styles.accountActions}>
+                        <button className="account-btn account-google" onClick={() => setPendingProvider('google')} disabled={isSigningIn}>
+                            <GoogleIcon /> Entrar com Google
+                        </button>
+                        <button className="account-btn account-facebook" onClick={() => setPendingProvider('facebook')} disabled={isSigningIn}>
+                            <FacebookIcon /> Entrar com Facebook
+                        </button>
+                    </div>
+                    {isSigningIn && <p className={styles.accountSync}>Esperando o login no navegador…</p>}
+                    <p className={styles.accountNote}>Se a conta já tiver dados, eles substituem os deste celular. Uma cópia do que está aqui fica guardada por 7 dias.</p>
+                </div>
+            )}
+
+            {backup && (
+                <div className={styles.undoCard}>
+                    <p>Cópia dos dados anteriores deste celular, de {formatWhen(backup.savedAt)}.</p>
+                    <button className="btn btn-secondary" onClick={() => setConfirmUndo(true)}>Desfazer e voltar pra ela</button>
+                </div>
+            )}
+
+            {pendingProvider && (
+                <ConfirmationModal
+                    title={`Entrar com ${PROVIDER_LABEL[pendingProvider]}?`}
+                    message="Se essa conta já tiver dados salvos, eles vão substituir os deste celular (guardamos uma cópia por 7 dias, dá pra desfazer aqui). Se for uma conta nova, o que está neste celular sobe pra ela."
+                    confirmText="Entrar"
+                    onConfirm={() => { const p = pendingProvider; setPendingProvider(null); signIn(p, 'settings'); }}
+                    onCancel={() => setPendingProvider(null)}
+                />
+            )}
+            {confirmLogout && (
+                <ConfirmationModal
+                    title="Sair da conta?"
+                    message="Antes de sair, salvamos tudo na nuvem. Seus dados continuam neste celular e você pode entrar de novo quando quiser."
+                    confirmText="Sair"
+                    onConfirm={async () => { setConfirmLogout(false); await signOut(); addNotification('Você saiu da conta.', '👋', 'info'); }}
+                    onCancel={() => setConfirmLogout(false)}
+                />
+            )}
+            {confirmUndo && (
+                <ConfirmationModal
+                    title="Desfazer o login?"
+                    message="O celular volta pros dados que tinha antes de entrar na conta, e você sai da conta. A nuvem não é alterada."
+                    confirmText="Desfazer"
+                    variant="danger"
+                    onConfirm={handleUndo}
+                    onCancel={() => setConfirmUndo(false)}
+                />
+            )}
         </div>
     );
 };
@@ -145,7 +274,7 @@ export const RewardsScreen: React.FC = () => {
     const handleCheckUpdate = () => { setUpdateStatus('checking'); window.dispatchEvent(new Event(UPDATE_CHECK_EVENT)); };
     const [guardOn, setGuardOn] = useState(isDistractionGuardOn);
     const toggleGuard = (v: boolean) => { setGuardOn(v); setDistractionGuard(v); };
-    const { isLoading } = useAuth(); // Removido user, signIn, signOut pois não são mais usados diretamente aqui
+    const { user: authUser, isLoading } = useAuth();
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
     const [isResetModalVisible, setIsResetModalVisible] = useState(false);
@@ -287,7 +416,7 @@ export const RewardsScreen: React.FC = () => {
                 return (
                     <div className={styles.tabContent}>
                         <div className={styles.header}><h2>Configurações</h2></div>
-                        <SettingsNavRow icon={FiUser} title="Perfil e Sincronização" description={"Backup na nuvem (em breve)"} onClick={() => setActiveSettingsScreen('profile')} />
+                        <SettingsNavRow icon={FiUser} title="Conta e Sincronização" description={authUser ? `Conectado · ${authUser.email ?? 'conta'}` : 'Entrar com Google ou Facebook'} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />
                         <div className={styles.guardRow}>

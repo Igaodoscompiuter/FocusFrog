@@ -19,6 +19,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- volta do login (Google/Facebook): o navegador abre
+                 com.focusfrog.app://auth-callback?code=... e cai aqui -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.focusfrog.app" android:host="auth-callback" />
+            </intent-filter>
         </activity>
 
         <provider
