@@ -10,6 +10,8 @@ Escolha o seu **Sapo do Dia**, foque com o cronômetro e veja a sua **Lagoa Zen*
 
 [![Baixar para Android](https://img.shields.io/badge/Baixar_para_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://focusfrog.netlify.app)
 &nbsp;
+[![Site oficial](https://img.shields.io/badge/focusfrog.netlify.app-0A120E?style=for-the-badge&logo=netlify&logoColor=8BD150)](https://focusfrog.netlify.app)
+&nbsp;
 [![Instagram](https://img.shields.io/badge/@focus.frog-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/focus.frog)
 
 ![Versão](https://img.shields.io/badge/versão-1.4.0-4CAF50?style=flat-square)
@@ -61,8 +63,8 @@ de foco e organização, não um tratamento.)*
 ## Baixar
 
 O FocusFrog está em teste aberto para Android. Baixe o APK mais recente em
-**[focusfrog.netlify.app](https://focusfrog.netlify.app)** — o próprio app
-avisa quando sai uma versão nova.
+**[focusfrog.netlify.app](https://focusfrog.netlify.app)**, o site oficial,
+com o passo a passo de instalação. O próprio app avisa quando sai uma versão nova.
 
 ---
 
@@ -131,6 +133,8 @@ arte do FocusFrog exige autorização por escrito. Veja [`LICENSE`](LICENSE) e
 <div align="center">
 <br />
 
-Feito com 💚 por **[Online Já Tech](https://onlinejacwb.com.br)** — sites e apps para pequenos negócios em Curitiba.
+Feito com 💚 por **Igor Viana** · site e app desenvolvidos com a **[Online Já Tech](https://onlinejacwb.com.br)** — sites e apps para pequenos negócios em Curitiba.
+
+[Site oficial](https://focusfrog.netlify.app) · [Instagram](https://www.instagram.com/focus.frog) · [Novidades](CHANGELOG.md)
 
 </div>
