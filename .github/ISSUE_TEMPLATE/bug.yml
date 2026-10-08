@@ -1,0 +1,16 @@
+name: 🐞 Bug
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: textarea
+    attributes: { label: O que aconteceu, description: E o que você esperava. }
+    validations: { required: true }
+  - type: textarea
+    attributes: { label: Passos pra reproduzir, placeholder: "1. Abra...\n2. Toque em...\n3. Veja..." }
+    validations: { required: true }
+  - type: input
+    attributes: { label: Versão do app, placeholder: "Configurações → Sobre (ex.: v1.4.0)" }
+  - type: input
+    attributes: { label: Celular e versão do Android, placeholder: "ex.: Galaxy A54, Android 14" }
+  - type: textarea
+    attributes: { label: Prints ou vídeo }

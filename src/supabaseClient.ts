@@ -1,8 +1,14 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://afkfbhdcsqgzrqpixsaw.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFma2ZiaGRjc3FnenJxcGl4c2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NDYzNjksImV4cCI6MjA4MTQyMjM2OX0.53JAXiMZuBeAk1r5jiorOQOcCLOLHiZgGP7iI0BhGik';
+// Valores vêm do .env (veja .env.example). A anon key é pública por
+// definição — quem protege os dados é o Row Level Security no Supabase.
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-// Inicializa e exporta o cliente Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+/** false quando o build foi feito sem as variáveis: o app segue 100% local. */
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key',
+);

@@ -2,6 +2,14 @@
   "name": "focusfrog",
   "private": true,
   "version": "1.4.0",
+  "description": "App de foco e produtividade: escolha o Sapo do Dia, foque com o cronômetro e veja sua Lagoa Zen crescer.",
+  "license": "UNLICENSED",
+  "author": "Online Já Tech (https://onlinejacwb.com.br)",
+  "homepage": "https://focusfrog.netlify.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Igaodoscompiuter/FocusFrog.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

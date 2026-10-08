@@ -10,3 +10,5 @@ interface Window {
   gtag?: (...args: unknown[]) => void;
   dataLayer?: unknown[];
 }
+
+declare const __APP_VERSION__: string;

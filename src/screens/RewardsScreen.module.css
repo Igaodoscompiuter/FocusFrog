@@ -128,3 +128,6 @@ input:checked + .switchSlider:before { transform: translateX(22px); }
 .guardRow { margin-bottom: 0.75rem; }
 .guardRow .settingRow { margin-bottom: 0; }
 .guardHint { margin: 6px 4px 0; font-size: 0.8rem; line-height: 1.4; color: var(--text-secondary-color); }
+
+.updateButton { width: 100%; margin-top: 1rem; padding: 10px; border-radius: var(--border-radius-medium); cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 600; background: transparent; color: var(--text-secondary-color); border: 1px dashed var(--border-color); }
+.updateButton:disabled { opacity: .7; }
