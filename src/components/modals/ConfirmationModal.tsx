@@ -2,6 +2,7 @@ import React from 'react';
 import { Icon } from '../Icon';
 import { icons, IconName } from '../Icons';
 import styles from './ConfirmationModal.module.css';
+import { useBackHandler } from '../../hooks/useBackHandler';
 
 interface ConfirmationModalProps {
   title: string;
@@ -25,6 +26,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     icon
 }) => {
 
+  useBackHandler(onCancel);
   const confirmButtonClass = variant === 'danger' ? styles.btnDanger : 'btn-primary';
   const iconToShow = icon && icons[icon] ? icons[icon] : icons.info_2;
 

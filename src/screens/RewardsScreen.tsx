@@ -17,6 +17,7 @@ import UpdatePrompt from '../components/UpdatePrompt';
 import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiHelpCircle, FiShield } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 // Chave Pix (telefone) do apoio ao projeto
 const PIX_KEY = '41988094386';
@@ -277,6 +278,7 @@ export const RewardsScreen: React.FC = () => {
     const { user: authUser, isLoading } = useAuth();
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
+    useBackHandler(() => setActiveSettingsScreen('main'), activeSettingsScreen !== 'main');
     const [isResetModalVisible, setIsResetModalVisible] = useState(false);
     const [devTapCount, setDevTapCount] = useState(0);
     const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);

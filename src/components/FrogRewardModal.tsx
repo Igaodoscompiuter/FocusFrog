@@ -3,6 +3,7 @@ import { useUser } from '../context/UserContext';
 import { frogSpecies } from '../utils/frogSpecies';
 import { ZenFrog } from './zen/ZenFrog';
 import styles from './FrogRewardModal.module.css';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 const rarityLabel: Record<string, string> = {
     common: 'Comum',
@@ -20,6 +21,7 @@ const rarityLabel: Record<string, string> = {
  */
 export const FrogRewardModal: React.FC = () => {
     const { newlyAcquiredFrog, clearNewlyAcquiredFrog, collectedFrogs } = useUser();
+    useBackHandler(clearNewlyAcquiredFrog, !!newlyAcquiredFrog);
     if (!newlyAcquiredFrog) return null;
 
     const species = frogSpecies[newlyAcquiredFrog.speciesId];

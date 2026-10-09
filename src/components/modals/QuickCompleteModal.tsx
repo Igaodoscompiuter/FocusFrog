@@ -21,7 +21,7 @@ export const QuickCompleteModal: React.FC = () => {
         setQuickTaskForCompletion(null);
     };
 
-    const modalRef = useClickOutside(handleCancel);
+    const modalRef = useClickOutside(handleCancel, !!quickTaskForCompletion);
 
     const handleConfirm = () => {
         if (!quickTaskForCompletion) return;

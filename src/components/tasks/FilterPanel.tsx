@@ -21,7 +21,7 @@ const statusOptions: { id: 'frog', label: string }[] = [
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose, filters, onFilterChange }) => {
     const { tags } = useTasks();
-    const modalRef = useClickOutside(onClose);
+    const modalRef = useClickOutside(onClose, isOpen);
 
     const handleToggleFilter = (key: keyof TaskFilters, value: string | number) => {
         const newFilters = { ...filters };
