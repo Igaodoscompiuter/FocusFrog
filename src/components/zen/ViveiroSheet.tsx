@@ -4,6 +4,7 @@ import { useZenPond, PondFrog } from '../../context/ZenPondContext';
 import { ZenFrog } from './ZenFrog';
 import { FrogCard } from './FrogCard';
 import styles from './ViveiroSheet.module.css';
+import { useBackHandler } from '../../hooks/useBackHandler';
 
 const rarityRank: Record<string, number> = { epic: 0, rare: 1, common: 2 };
 export const RARITY_LABEL: Record<string, string> = { common: 'Comum', rare: 'Rara', epic: 'Épica' };
@@ -21,6 +22,7 @@ interface ViveiroSheetProps {
  * usuário) — a fusão continua só a natural, dentro da lagoa.
  */
 export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
+    useBackHandler(onClose);
     const { pondFrogs, storageFrogs, maxPond, sendToStorage, releaseToPond } = useZenPond();
     const [cardFrog, setCardFrog] = useState<PondFrog | null>(null);
 

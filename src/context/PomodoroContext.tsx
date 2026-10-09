@@ -41,6 +41,8 @@ interface PomodoroContextType {
     clearScaredOutcome: () => void;
     pomodorosCompleted: number;
     activeTaskId: string | null;
+    /** fim da fase atual (foco ou pausa), em ms — null parado */
+    sessionEndsAt: number | null;
     activeTaskTitle: string | null;
     mode: PomodoroMode | null;
     sessionStatus: PomodoroSessionStatus;
@@ -76,10 +78,23 @@ export const usePomodoro = () => {
     return context;
 };
 
-const getRandomFrog = (): keyof typeof frogSpecies => {
-    const speciesKeys = Object.keys(frogSpecies);
-    const randomIndex = Math.floor(Math.random() * speciesKeys.length);
-    return speciesKeys[randomIndex] as keyof typeof frogSpecies;
+/**
+ * Sorteio do sapo da sessão respeitando a raridade.
+ * [CORREÇÃO] Antes todas as espécies tinham a mesma chance: com 2 épicas em
+ * 6 espécies, 1 a cada 3 sapos era "épico" e a raridade não significava nada.
+ * Agora cada raridade tem uma chance total, dividida entre as suas espécies.
+ */
+export const RARITY_CHANCE: Record<string, number> = { common: 0.65, rare: 0.25, epic: 0.10 };
+export const getRandomFrog = (rand: () => number = Math.random): keyof typeof frogSpecies => {
+    const all = Object.values(frogSpecies);
+    const weights = all.map(s => {
+        const sameRarity = all.filter(o => o.rarity === s.rarity).length;
+        return (RARITY_CHANCE[s.rarity] ?? 0.1) / sameRarity;
+    });
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = rand() * total;
+    for (let i = 0; i < all.length; i++) { r -= weights[i]; if (r < 0) return all[i].id; }
+    return all[all.length - 1].id;
 };
 
 /**
@@ -375,6 +390,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const value: PomodoroContextType = {
         pomodorosCompleted,
         activeTaskId,
+        sessionEndsAt,
         activeTaskTitle,
         scaredOutcome,
         clearScaredOutcome,

@@ -3,6 +3,9 @@ import { useUser } from '../context/UserContext';
 import { frogSpecies } from '../utils/frogSpecies';
 import { ZenFrog } from './zen/ZenFrog';
 import styles from './FrogRewardModal.module.css';
+import { useBackHandler } from '../hooks/useBackHandler';
+import { shareFrog } from '../utils/shareFrog';
+import { useUI } from '../context/UIContext';
 
 const rarityLabel: Record<string, string> = {
     common: 'Comum',
@@ -20,6 +23,9 @@ const rarityLabel: Record<string, string> = {
  */
 export const FrogRewardModal: React.FC = () => {
     const { newlyAcquiredFrog, clearNewlyAcquiredFrog, collectedFrogs } = useUser();
+    const { addNotification } = useUI();
+    const [sharing, setSharing] = React.useState(false);
+    useBackHandler(clearNewlyAcquiredFrog, !!newlyAcquiredFrog);
     if (!newlyAcquiredFrog) return null;
 
     const species = frogSpecies[newlyAcquiredFrog.speciesId];
@@ -42,6 +48,18 @@ export const FrogRewardModal: React.FC = () => {
                 <p className={styles.description}>Seu foco rendeu — ele já está esperando por você no Jardim Zen.</p>
                 <button className={`btn btn-primary ${styles.button}`} onClick={clearNewlyAcquiredFrog}>
                     Oba!
+                </button>
+                <button
+                    className={`btn btn-secondary ${styles.button} ${styles.shareButton}`}
+                    disabled={sharing}
+                    onClick={async () => {
+                        setSharing(true);
+                        const r = await shareFrog(species.id, isFirstOfSpecies);
+                        setSharing(false);
+                        if (r === 'failed') addNotification('Não deu pra compartilhar agora.', '❌', 'error');
+                    }}
+                >
+                    {sharing ? 'Preparando…' : 'Compartilhar 📤'}
                 </button>
             </div>
         </div>

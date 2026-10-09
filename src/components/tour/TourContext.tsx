@@ -25,7 +25,7 @@ export const TOUR_STEPS: TourStep[] = [
   { id: 'frog', target: '#frog-card', title: 'Passo 2 · Escolhe seu Sapo do Dia', text: 'O Sapo do Dia é a tarefa que mais importa hoje. Toca aqui e escolhe a tarefa que você acabou de criar (ela já vem marcada).' },
   { id: 'start', target: '#eat-the-frog-button', title: 'Passo 3 · Come o sapo!', text: 'Toca em "Comer o Sapo". Esse primeiro foco dura só 5 segundinhos, pra você ver o sapo nascer.' },
   { id: 'focusing', target: '[class*="timerContainer"]', title: 'Olha ele crescendo 👀', text: 'Enquanto o cronômetro roda, um sapinho cresce com você. Esse é rapidinho, só pra mostrar.' },
-  { id: 'done', title: 'Pronto, você pegou o jeito! 🎉', text: 'Cada foco concluído traz um sapo novo pro seu Jardim Zen, em Estatísticas. Os próximos focos são de verdade: 25 minutos.', button: 'Continuar' },
+  { id: 'done', title: 'Pronto, você pegou o jeito! 🎉', text: 'Cada foco concluído traz um sapo novo pro seu Jardim Zen, na aba Jardim. Os próximos focos são de verdade: 25 minutos.', button: 'Continuar' },
   { id: 'gift', target: '#eat-the-frog-button', title: 'Um último presente 🐸', text: 'Deixei o Card Especial FocusFrog como seu Sapo do Dia. Toca aqui pra seguir a gente no Instagram: tem dica de foco e novidade toda semana!', button: 'Concluir' },
 ];
 

@@ -104,70 +104,18 @@ const upd=()=>bar.classList.toggle('on',heroOut&&!fimIn);
 new IntersectionObserver(e=>{heroOut=!e[0].isIntersecting&&e[0].boundingClientRect.top<0;upd()}).observe(hero);
 new IntersectionObserver(e=>{fimIn=e[0].isIntersecting;upd()},{threshold:.25}).observe(fim);
 
-/* ---- modal de download ---- */
+/* ---- modal de download ----
+   O navegador não abre o APK baixado nem avisa quando terminou. Então, ao
+   tocar em baixar, o download segue normal e o modal mostra como instalar;
+   "Já instalei" leva pra página de obrigado. */
 (() => {
   const modal = document.getElementById('downloadModal');
   if (!modal) return;
-  const title = document.getElementById('downloadModalTitle');
-  const text = document.getElementById('downloadModalText');
-  const close = document.getElementById('downloadClose');
-  const open = document.getElementById('downloadOpenApp');
-  let activeDownload = false;
-  let downloadTimer = null;
-
-  // O navegador não avisa quando o APK terminou de baixar: mostramos o modal
-  // no clique e, após um instante, oferecemos "Abrir o FocusFrog".
-  function showModal() {
-    modal.classList.add('open');
-    modal.classList.remove('done');
-    title.textContent = 'Preparando o download';
-    text.textContent = 'O FocusFrog será baixado para o seu Android.';
-    open.style.display = 'none';
-    activeDownload = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  function finishDownload() {
-    if (!activeDownload) return;
-    activeDownload = false;
-    clearTimeout(downloadTimer);
-    modal.classList.add('done');
-    title.textContent = 'Download iniciado';
-    text.textContent = 'Quando o arquivo terminar de baixar, abra o FocusFrog pela notificação de download. Se já estiver instalado, toque em “Abrir o FocusFrog”.';
-    open.style.display = 'inline-block';
-  }
-
-  function closeModal() {
-    modal.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  document.querySelectorAll('a[href$="FocusFrog.apk"], a[download][href*="FocusFrog.apk"]').forEach(link => {
-    link.addEventListener('click', () => {
-      showModal();
-      downloadTimer = setTimeout(finishDownload, 1800);
-    });
-  });
-
-  close.addEventListener('click', closeModal);
-  modal.addEventListener('click', e => {
-    if (e.target === modal) closeModal();
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-  });
-
-  open.addEventListener('click', () => {
-    // Deep link focusfrog://open (declarado no AndroidManifest do app).
-    // Sem o app instalado, segue para a página de obrigado.
-    const fallback = setTimeout(() => {
-      window.location.href = '/download-concluido.html';
-    }, 1200);
-    try {
-      window.location.href = 'focusfrog://open';
-    } catch (_) {
-      clearTimeout(fallback);
-      window.location.href = '/download-concluido.html';
-    }
-  });
+  const close = () => { modal.hidden = true; document.body.style.overflow = ''; };
+  document.querySelectorAll('[data-apk]').forEach(link => link.addEventListener('click', () => {
+    setTimeout(() => { modal.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('downloadDone').focus(); }, 400);
+  }));
+  document.getElementById('downloadClose').addEventListener('click', close);
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
 })();

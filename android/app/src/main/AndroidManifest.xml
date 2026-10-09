@@ -59,6 +59,20 @@
                 android:value="Mantém visível o cronômetro de uma sessão de foco (Pomodoro) em andamento, com notificação fixa mostrando o tempo restante, mesmo com o app em segundo plano." />
         </service>
 
+        <!-- Widget de tela inicial "Sapo do Dia" -->
+        <receiver
+            android:name=".FrogWidgetProvider"
+            android:exported="false"
+            android:label="Sapo do Dia">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.focusfrog.app.FROG_WIDGET_REST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/frog_widget_info" />
+        </receiver>
+
         <!-- Widget de tela inicial do checklist "Já pegou?" -->
         <receiver
             android:name=".ChecklistWidgetProvider"

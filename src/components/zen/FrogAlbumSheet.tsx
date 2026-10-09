@@ -5,6 +5,7 @@ import { FrogCard } from './FrogCard';
 import type { FrogInput } from '../../context/ZenPondContext';
 import styles from './ViveiroSheet.module.css';
 import { RARITY_LABEL, RARITY_COLOR } from './ViveiroSheet';
+import { useBackHandler } from '../../hooks/useBackHandler';
 
 const rarityRank: Record<string, number> = { epic: 0, rare: 1, common: 2 };
 const LOCKED_COLORS = { primary: '#0b1512', secondary: '#101c18', accent: '#0b1512' };
@@ -25,6 +26,7 @@ interface FrogAlbumSheetProps {
  * só N" pra continuar voltando, no mesmo espírito do protótipo.
  */
 export const FrogAlbumSheet: React.FC<FrogAlbumSheetProps> = ({ collectedFrogs, onClose }) => {
+    useBackHandler(onClose);
     const [cardSpeciesId, setCardSpeciesId] = useState<string | null>(null);
 
     const foundIds = new Set(collectedFrogs.map(f => f.speciesId));

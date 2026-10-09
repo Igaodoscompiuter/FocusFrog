@@ -17,6 +17,7 @@ import UpdatePrompt from '../components/UpdatePrompt';
 import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiHelpCircle, FiShield } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 // Chave Pix (telefone) do apoio ao projeto
 const PIX_KEY = '41988094386';
@@ -277,6 +278,7 @@ export const RewardsScreen: React.FC = () => {
     const { user: authUser, isLoading } = useAuth();
     
     const [activeSettingsScreen, setActiveSettingsScreen] = useState('main');
+    useBackHandler(() => setActiveSettingsScreen('main'), activeSettingsScreen !== 'main');
     const [isResetModalVisible, setIsResetModalVisible] = useState(false);
     const [devTapCount, setDevTapCount] = useState(0);
     const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -415,7 +417,7 @@ export const RewardsScreen: React.FC = () => {
             default:
                 return (
                     <div className={styles.tabContent}>
-                        <div className={styles.header}><h2>Configurações</h2></div>
+                        <div className={styles.header}><h2>Ajustes</h2></div>
                         <SettingsNavRow icon={FiUser} title="Conta e Sincronização" description={authUser ? `Conectado · ${authUser.email ?? 'conta'}` : 'Entrar com Google ou Facebook'} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />

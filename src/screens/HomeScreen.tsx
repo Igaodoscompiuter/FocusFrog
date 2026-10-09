@@ -1,4 +1,6 @@
 
+import { FOCUS_FROG_MARKETING_TASK_ID } from '../constants';
+import { OPEN_FROG_PICKER_EVENT } from '../components/FrogWidgetSync';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '../context/TasksContext';
 import { useUI } from '../context/UIContext';
@@ -15,6 +17,8 @@ import { LeavingHomeChecklist } from '../components/dashboard/LeavingHomeCheckli
 import { AgendaDeHoje } from '../components/dashboard/AgendaDeHoje';
 import styles from './HomeScreen.module.css';
 import { FaPencilAlt, FaTimes } from 'react-icons/fa';
+import { Capacitor } from '@capacitor/core';
+import { requestPinFrogWidget } from '../widgetBridge';
 
 // ... (greeting phrases and function remain the same)
 const morningPhrases = [
@@ -63,7 +67,7 @@ const getGreeting = () => {
 };
 
 export const HomeScreen: React.FC = () => {
-    const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
+    const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, handleCompleteTask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
     const { activeTaskId, activeTaskTitle, sessionStatus, startPomodoro } = usePomodoro(); 
     const { userName } = useUser();
@@ -77,6 +81,12 @@ export const HomeScreen: React.FC = () => {
     // tutorial: o 1º foco dura só 5s, pra pessoa ver o sapo nascer
     const tutorialFocus = tourStep?.id === 'start';
     const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
+    // widget "Sapo do Dia" → "Escolher sapo"/"Escolher outro" abre a escolha aqui
+    useEffect(() => {
+        const open = () => setIsMorningReviewOpen(true);
+        window.addEventListener(OPEN_FROG_PICKER_EVENT, open);
+        return () => window.removeEventListener(OPEN_FROG_PICKER_EVENT, open);
+    }, []);
     const [selectedFrogId, setSelectedFrogId] = useState<string | null>(null);
 
     const [greeting, setGreeting] = useState(() => getGreeting());
@@ -97,7 +107,7 @@ export const HomeScreen: React.FC = () => {
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
     const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
     const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
-    const isSpecialFrog = useMemo(() => frogTask?.title === "🐸 Card Especial FocusFrog N.1", [frogTask]);
+    const isSpecialFrog = frogTask?.id === FOCUS_FROG_MARKETING_TASK_ID;
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
         return frogTask.id === activeTaskId && sessionStatus !== 'idle';
@@ -129,6 +139,7 @@ export const HomeScreen: React.FC = () => {
     const handleEatFrog = () => {
         if (isSpecialFrog) {
             window.open('https://www.instagram.com/focus.frog/', '_blank');
+            handleCompleteTask(frogTask!.id, 'instagram');
             return;
         }
         if (!frogTask || hasSubtasks) return;
@@ -223,16 +234,29 @@ export const HomeScreen: React.FC = () => {
                 <div id="frog-card" className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
                     <div className={styles.frogCardHeader}>
                         <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
+                        <div className={styles.frogCardHeaderActions}>
+                            {Capacitor.isNativePlatform() && (
+                                <button className={`btn btn-secondary btn-small ${styles.iconButton}`} title="Widget na tela inicial" aria-label="Adicionar widget do Sapo do Dia"
+                                    onClick={async () => {
+                                        const { supported, reason } = await requestPinFrogWidget();
+                                        if (!supported) addNotification(reason === 'launcher_unsupported'
+                                            ? 'Sua tela inicial não aceita esse atalho: segure um espaço vazio dela e procure "FocusFrog" em Widgets.'
+                                            : 'Não deu pra abrir o atalho do widget agora.', 'ℹ️', 'info');
+                                    }}>
+                                    <Icon path={icons.layoutGrid} />
+                                </button>
+                            )}
                         {frogTask && (
-                            <div className={styles.frogCardHeaderActions}>
+                            <>
                                 <button className={`btn btn-secondary btn-small ${styles.iconButton}`} onClick={() => setIsMorningReviewOpen(true)}>
                                     <FaPencilAlt />
                                 </button>
                                 <button className={`btn btn-secondary btn-icon btn-small ${styles.iconButton}`} onClick={handleUnsetFrog} title="Remover Sapo">
                                     <FaTimes />
                                 </button>
-                            </div>
+                            </>
                         )}
+                        </div>
                     </div>
                     {frogTask ? (
                         <div>
