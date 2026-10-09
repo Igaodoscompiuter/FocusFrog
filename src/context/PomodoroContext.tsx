@@ -6,6 +6,8 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUI } from './UIContext';
 import { useUser } from './UserContext';
 import { uiEffects } from '../sounds';
+import { useTheme } from './ThemeContext';
+import { croakEffect } from '../store/soundCatalog';
 import { postMessageToSW } from '../sw-helpers';
 import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction, isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
@@ -125,6 +127,7 @@ function scheduleEndAlert(phase: 'focus' | 'break', endsAt: number, isFinalFocus
 
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { playEffect } = useUI();
+    const { activeEffectId } = useTheme();
     const { addFrogToCollection } = useUser();
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
@@ -183,9 +186,9 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (activeTaskId) {
             setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'button' });
         }
-        if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
+        playEffect(activeEffectId === 'croak' ? croakEffect : uiEffects.sessionComplete);
         stopAndReset();
-    }, [activeTaskId, stopAndReset, playEffect]);
+    }, [activeTaskId, stopAndReset, playEffect, activeEffectId]);
 
     // Efeito para calcular o progresso do ciclo e da sessão
     useEffect(() => {
@@ -247,7 +250,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                     setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'timer' });
                 }
 
-                if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
+                playEffect(activeEffectId === 'croak' ? croakEffect : uiEffects.sessionComplete);
                 // O "Foco concluído" já foi agendado no INÍCIO deste bloco pro
                 // horário exato do fim — aqui só encerra preservando ele.
                 stopAndReset({ finished: true });
@@ -279,7 +282,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         setTimeRemaining(0);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mode, sessionStatus, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, setSessionEndsAt]);
+    }, [mode, sessionStatus, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, setSessionEndsAt, activeEffectId]);
 
     // Efeito principal do temporizador
     useEffect(() => {

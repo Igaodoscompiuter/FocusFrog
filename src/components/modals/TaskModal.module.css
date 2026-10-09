@@ -105,7 +105,7 @@
     border-color: var(--accent-color);
     background-color: var(--accent-color);
     color: var(--text-color);
-    box-shadow: 0 4px 10px rgba(255, 200, 55, 0.4);
+    box-shadow: 0 4px 10px var(--accent-color-glow);
 }
 
 .categoryCard.add {
@@ -134,7 +134,7 @@
 .stepDot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); flex-shrink: 0; }
 .chipRow { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 8px 14px; border-radius: 999px; background: var(--surface-secondary-color); color: var(--text-color); border: 1px solid var(--border-color); }
-.chipOn { background: var(--accent-color) !important; color: #1b1405 !important; border-color: var(--accent-color) !important; }
+.chipOn { background: var(--accent-color) !important; color: var(--text-on-accent) !important; border-color: var(--accent-color) !important; }
 .chipAdd { border-style: dashed; color: var(--primary-color); background: transparent; }
 .typeRow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .segment { display: inline-flex; background: var(--surface-secondary-color); border: 1px solid var(--border-color); border-radius: 999px; padding: 3px; }
@@ -152,4 +152,4 @@
 .moreToggle { font: inherit; font-size: 0.85rem; font-weight: 600; margin-top: 18px; background: none; border: none; color: var(--primary-color); cursor: pointer; padding: 4px 0; text-align: left; }
 .moreToggle small { font-weight: 400; color: var(--text-secondary-color); }
 .inlineField { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: var(--text-secondary-color); }
-.templatePanel { padding: 12px; border-radius: 14px; border: 1px dashed var(--accent-color); background: rgba(251, 191, 36, 0.06); }
+.templatePanel { padding: 12px; border-radius: 14px; border: 1px dashed var(--accent-color); background: var(--accent-color-glow); }

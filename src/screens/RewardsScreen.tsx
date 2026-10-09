@@ -18,6 +18,7 @@ import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInf
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 import { useBackHandler } from '../hooks/useBackHandler';
+import { openStore } from './store/StoreScreen';
 
 // Chave Pix (telefone) do apoio ao projeto
 const PIX_KEY = '41988094386';
@@ -334,6 +335,7 @@ export const RewardsScreen: React.FC = () => {
                 return (
                     <div className={styles.tabContent}>
                         <SubScreenHeader title="Aparência" onBack={() => setActiveSettingsScreen('main')} />
+                        <SettingsNavRow icon={FiLayout} title="Temas e sons de foco" description="Na Loja do Sapo, com seus pontos de foco" onClick={openStore} />
                         <div className={styles.settingRow}>
                             <label><FiVolume2 /> Efeitos sonoros</label>
                             <label className={styles.switch}>

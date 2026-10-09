@@ -5,6 +5,10 @@ e [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
 ### Adicionado
+- Loja do Sapo (Jardim e Ajustes → Aparência): 7 temas novos, sons de fundo
+  durante o foco e o "Coaxo da vitória", tudo com pontos de foco.
+- Voltar do Android fecha o que está aberto; widget Sapo do Dia; compartilhar
+  sapo novo como imagem.
 - Conta opcional com Google ou Facebook e sincronização diária com a nuvem
   (Configurações → Conta e Sincronização), com cópia de segurança de 7 dias.
 - Site oficial versionado em `site/`, com modal de download, SEO e
@@ -13,6 +17,10 @@ e [SemVer](https://semver.org/lang/pt-BR/).
 - Aviso de nova versão disponível no app (APK).
 - Licença proprietária, diretrizes de propriedade intelectual, guia de
   contribuição e política de segurança.
+### Corrigido
+- Tamanho de fonte agora vale pro app todo.
+- Card Especial não aparece mais no começo do tutorial após resetar.
+- Sapos não somem mais da lagoa; raridade respeitada no sorteio.
 ### Removido
 - Sobras do Firebase e arquivos soltos sem uso.
 

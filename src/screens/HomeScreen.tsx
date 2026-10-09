@@ -1,5 +1,6 @@
 
 import { isSpecialFrogTask } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 import { OPEN_FROG_PICKER_EVENT } from '../components/FrogWidgetSync';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '../context/TasksContext';
@@ -67,6 +68,10 @@ const getGreeting = () => {
 };
 
 export const HomeScreen: React.FC = () => {
+    // temas da Loja pintam o topo com a cor do tema; Escuro e Claro mantêm
+    // o degradê que muda com a hora do dia
+    const { activeThemeId } = useTheme();
+    const usesTimeGradient = activeThemeId === 'dark-theme' || activeThemeId === 'light-theme';
     const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, handleCompleteTask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
     const { activeTaskId, activeTaskTitle, sessionStatus, startPomodoro } = usePomodoro(); 
@@ -209,7 +214,7 @@ export const HomeScreen: React.FC = () => {
             
             {/* A ESTRUTURA FOI SIMPLIFICADA. TUDO DENTRO DE UM ÚNICO WRAPPER. */}
             <div className={styles.contentWrapper}>
-                <div className={styles.dashboardHeader} style={{ background: greeting.gradient }}>
+                <div className={styles.dashboardHeader} style={{ background: usesTimeGradient ? greeting.gradient : 'linear-gradient(140deg, var(--primary-color) 0%, var(--primary-color-hover) 100%)' }}>
                     <div className={styles.greetingContent}>
                         <img src="/icon-192.png" alt="FocusFrog App Icon" className={styles.headerIcon} />
                         <div>

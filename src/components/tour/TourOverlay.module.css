@@ -8,7 +8,7 @@
 }
 .ring {
   position: absolute; inset: -4px; border-radius: 20px;
-  border: 2px solid #FBBF24; animation: ring 1.6s ease-in-out infinite;
+  border: 2px solid var(--accent-color); animation: ring 1.6s ease-in-out infinite;
 }
 @keyframes ring { 0%, 100% { opacity: .9; transform: scale(1); } 50% { opacity: .35; transform: scale(1.03); } }
 
@@ -37,6 +37,6 @@
 .skip { font: inherit; font-size: 0.78rem; background: none; border: none; color: var(--text-secondary-color); cursor: pointer; padding: 4px 0; }
 .primary {
   font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;
-  background: var(--accent-color); color: #1b1405; border: none; border-radius: 999px; padding: 7px 16px;
+  background: var(--accent-color); color: var(--text-on-accent); border: none; border-radius: 999px; padding: 7px 16px;
 }
 .waiting { font-size: 0.78rem; color: var(--accent-color); font-weight: 600; }

@@ -1,22 +1,31 @@
 
 import React, { useEffect, createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { themes, Theme } from '../themes';
-import { baseTokens } from '../designTokens'; // Importando os tokens base
 
 const THEME_STORAGE_KEY = 'focusfrog_theme_data_v2';
 
 interface ThemeData {
     activeThemeId: string;
+    /** som de fundo durante o foco (ver src/store/soundCatalog.ts) */
     activeSoundId: string;
+    /** som do fim do foco: 'default' ou 'croak' (Coaxo da vitória) */
+    activeEffectId: string;
     pontosFoco: number;
+    /** itens da Loja do Sapo já desbloqueados (ids de tema/som/efeito) */
     unlockedRewards: string[];
 }
+
+export type BuyResult = 'ok' | 'owned' | 'insufficient';
 
 interface ThemeContextType extends ThemeData {
     setActiveThemeId: (updater: string | ((prev: string) => string)) => void;
     setActiveSoundId: (updater: string | ((prev: string) => string)) => void;
     setPontosFoco: (updater: number | ((prev: number) => number)) => void;
     setUnlockedRewards: (updater: string[] | ((prev: string[]) => string[])) => void;
+    setActiveEffectId: (id: string) => void;
+    /** Compra com pontos: desconta e desbloqueia de uma vez só. */
+    buyItem: (id: string, price: number) => BuyResult;
+    isUnlocked: (id: string, price: number) => boolean;
     loadingTheme: boolean;
 }
 
@@ -33,6 +42,7 @@ export const useTheme = () => {
 const defaultThemeData: ThemeData = {
     activeThemeId: 'dark-theme',
     activeSoundId: 'none',
+    activeEffectId: 'default',
     pontosFoco: 0,
     unlockedRewards: ['dark-theme', 'none'],
 };
@@ -57,12 +67,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const theme: Theme = themes[themeData.activeThemeId] || themes['dark-theme'];
         const root = document.documentElement;
 
-        // 1. Aplica os tokens base primeiro
-        Object.entries(baseTokens).forEach(([key, value]) => {
-            root.style.setProperty(key, value);
-        });
-
-        // 2. Aplica as cores do tema ativo por cima
+        // medidas ficam em src/styles/tokens.css; aqui só as cores do tema
         Object.entries(theme.colors).forEach(([key, value]) => {
             root.style.setProperty(key, value);
         });
@@ -102,12 +107,32 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         updateField('unlockedRewards', updater);
     }, [updateField]);
     
+    const setActiveEffectId = useCallback((id: string) => updateField('activeEffectId', id), [updateField]);
+
+    const isUnlocked = useCallback((id: string, price: number) =>
+        price === 0 || themeData.unlockedRewards.includes(id), [themeData.unlockedRewards]);
+
+    const buyItem = useCallback((id: string, price: number): BuyResult => {
+        if (price === 0 || themeData.unlockedRewards.includes(id)) return 'owned';
+        if (themeData.pontosFoco < price) return 'insufficient';
+        setThemeData(prev => {
+            if (prev.unlockedRewards.includes(id) || prev.pontosFoco < price) return prev;
+            const next = { ...prev, pontosFoco: prev.pontosFoco - price, unlockedRewards: [...prev.unlockedRewards, id] };
+            try { localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(next)); } catch { /* segue em memória */ }
+            return next;
+        });
+        return 'ok';
+    }, [themeData.pontosFoco, themeData.unlockedRewards]);
+
     const value: ThemeContextType = {
         ...themeData,
         setActiveThemeId,
         setActiveSoundId,
         setPontosFoco,
         setUnlockedRewards,
+        setActiveEffectId,
+        buyItem,
+        isUnlocked,
         loadingTheme,
     };
 

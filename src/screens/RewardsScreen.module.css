@@ -69,13 +69,13 @@
 .dataActions .btn { width: 100%; padding: 12px; font-weight: bold; }
 
 .buttonDanger {
-    background-color: #E53935;
+    background-color: var(--danger-color);
     color: white;
-    border-color: #E53935;
+    border-color: var(--danger-color);
 }
 .buttonDanger:hover {
-    background-color: #C62828;
-    border-color: #C62828;
+    background-color: var(--danger-color-hover);
+    border-color: var(--danger-color-hover);
 }
 
 /* === TELA DE APARÊNCIA (ESTILOS RESTAURADOS) === */
