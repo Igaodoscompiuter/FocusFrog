@@ -12,17 +12,18 @@
 
 .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--sp-lg);
+    min-height: 32px;
 }
 
 .header h3 {
     display: flex;
     align-items: center;
     gap: var(--sp-sm);
-    font-size: 1rem;
+    margin: 0;
+    font-size: 1.05rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .buttonGroup {
@@ -126,3 +127,16 @@
 .summary { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font-size: 0.85rem; color: var(--text-secondary-color); white-space: nowrap; }
 .chevron { font-size: 1.3rem; line-height: 1; transition: transform .2s ease; display: inline-block; }
 .chevronOpen { transform: rotate(90deg); }
+
+/* ações do checklist: linha própria embaixo do título (antes ficavam na
+   mesma linha e passavam por cima do "0/3" em telas estreitas) */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 14px; }
+.toolButton {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 12px; border-radius: 999px;
+    background: var(--surface-secondary-color); color: var(--text-color);
+    border: 1px solid var(--border-color); font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+}
+.toolButton svg { width: 15px; height: 15px; }
+.toolPrimary { background: var(--accent-color); color: var(--accent-text-color, #fff); border-color: transparent; }
+.header + .checklist { margin-top: 12px; }

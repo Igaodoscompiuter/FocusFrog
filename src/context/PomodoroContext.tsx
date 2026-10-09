@@ -41,6 +41,8 @@ interface PomodoroContextType {
     clearScaredOutcome: () => void;
     pomodorosCompleted: number;
     activeTaskId: string | null;
+    /** fim da fase atual (foco ou pausa), em ms — null parado */
+    sessionEndsAt: number | null;
     activeTaskTitle: string | null;
     mode: PomodoroMode | null;
     sessionStatus: PomodoroSessionStatus;
@@ -388,6 +390,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const value: PomodoroContextType = {
         pomodorosCompleted,
         activeTaskId,
+        sessionEndsAt,
         activeTaskTitle,
         scaredOutcome,
         clearScaredOutcome,

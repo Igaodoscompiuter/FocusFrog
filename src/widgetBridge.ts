@@ -8,7 +8,8 @@ const WIDGET_PREFS_KEY = 'leavingHomeItems';
 /** Plugin nativo próprio (não vem de pacote npm) — só existe no Android. */
 interface WidgetBridgePlugin {
   refreshChecklistWidget(): Promise<void>;
-  requestPinWidget(): Promise<{ supported: boolean; requested?: boolean; reason?: string }>;
+  refreshFrogWidget(): Promise<void>;
+  requestPinWidget(opts?: { kind?: 'checklist' | 'frog' }): Promise<{ supported: boolean; requested?: boolean; reason?: string }>;
 }
 const WidgetBridge = registerPlugin<WidgetBridgePlugin>('WidgetBridge');
 
@@ -57,4 +58,35 @@ export async function readChecklistFromWidget(): Promise<ChecklistItem[] | null>
   } catch {
     return null;
   }
+}
+
+/** Estado do widget "Sapo do Dia" (lido pelo FrogWidgetProvider.java). */
+export interface FrogWidgetState {
+  state: 'active' | 'none' | 'done';
+  title?: string;
+  done?: number;
+  total?: number;
+  focusEndsAt?: number | null;
+  date: string; // AAAA-MM-DD de hoje
+}
+
+let lastFrogWidget = '';
+export async function syncFrogToWidget(st: FrogWidgetState) {
+  if (!Capacitor.isNativePlatform()) return;
+  const value = JSON.stringify(st);
+  if (value === lastFrogWidget) return;
+  lastFrogWidget = value;
+  try {
+    await Preferences.set({ key: 'frogWidget', value });
+    await WidgetBridge.refreshFrogWidget();
+  } catch {
+    // sem widget na tela: nada a fazer
+  }
+}
+
+/** Diálogo nativo de "adicionar widget" pro Sapo do Dia. */
+export async function requestPinFrogWidget(): Promise<{ supported: boolean; reason?: string }> {
+  if (!Capacitor.isNativePlatform()) return { supported: false, reason: 'web' };
+  try { return await WidgetBridge.requestPinWidget({ kind: 'frog' }); }
+  catch { return { supported: false, reason: 'error' }; }
 }

@@ -417,7 +417,7 @@ export const RewardsScreen: React.FC = () => {
             default:
                 return (
                     <div className={styles.tabContent}>
-                        <div className={styles.header}><h2>Configurações</h2></div>
+                        <div className={styles.header}><h2>Ajustes</h2></div>
                         <SettingsNavRow icon={FiUser} title="Conta e Sincronização" description={authUser ? `Conectado · ${authUser.email ?? 'conta'}` : 'Entrar com Google ou Facebook'} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />

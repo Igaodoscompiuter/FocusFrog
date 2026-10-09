@@ -18,6 +18,7 @@ import { TourOverlay } from './tour/TourOverlay';
 import UpdatePrompt from './UpdatePrompt';
 import { Capacitor } from '@capacitor/core';
 import { useAndroidBackButton } from '../hooks/useBackHandler';
+import { FrogWidgetSync } from './FrogWidgetSync';
 
 // Nota de arquitetura: o TasksProvider NÃO é montado aqui — ele já envolve toda a
 // árvore lá em cima, em index.tsx. Montá-lo de novo aqui criava um segundo estado de
@@ -58,6 +59,7 @@ export const AppLayout: React.FC = () => {
             <FrogRewardModal />
             <FrogScaredModal />
             <UpdateAvailableModal />
+            <FrogWidgetSync />
             {/* aviso de nova versão é só do PWA — no APK quem atualiza é a instalação */}
             {!Capacitor.isNativePlatform() && <UpdatePrompt />}
             <TourOverlay />

@@ -66,43 +66,43 @@ export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({
                         <h3><Icon path={icons.briefcase} /> Já pegou?</h3>
                         <span className={styles.summary}>{doneCount}/{items.length}<span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>›</span></span>
                     </button>
-                    {open && <div className={styles.buttonGroup}>
+                </div>
+
+                {open && <div className={styles.toolbar}>
                         {Capacitor.isNativePlatform() && !isEditing && (
                             <button
-                                className="btn btn-icon btn-secondary btn-small"
+                                className={styles.toolButton}
                                 onClick={handlePinWidget}
                                 title="Adicionar à tela inicial"
                             >
-                                <Icon path={icons.layoutGrid} />
+                                <Icon path={icons.layoutGrid} /> Widget
                             </button>
                         )}
                         {!isEditing ? (
                              <button 
-                                className="btn btn-icon btn-secondary btn-small"
+                                className={styles.toolButton}
                                 onClick={onResetItems}
                                 title="Desmarcar Todos"
                             >
-                               <Icon path={icons.rotateCw} />
+                               <Icon path={icons.rotateCw} /> Desmarcar
                             </button>
                         ) : (
                             <button 
-                                className="btn btn-icon btn-primary btn-small"
+                                className={`${styles.toolButton} ${styles.toolPrimary}`}
                                 onClick={() => setIsModalOpen(true)}
                                 title="Adicionar Item"
                             >
-                                <Icon path={icons.plus} />
+                                <Icon path={icons.plus} /> Item
                             </button>
                         )}
                         <button 
-                            className="btn btn-icon btn-secondary btn-small"
+                            className={styles.toolButton}
                             onClick={() => setIsEditing(!isEditing)}
                             title={isEditing ? 'Concluir Edição' : 'Editar Checklist'}
                         >
-                            {isEditing ? <Icon path={icons.check} /> : <Icon path={icons.pencil} />}
+                            {isEditing ? <><Icon path={icons.check} /> Pronto</> : <><Icon path={icons.pencil} /> Editar</>}
                         </button>
                     </div>}
-                </div>
-
                 {open && <ul className={`${styles.checklist} ${isEditing ? styles.editingList : ""}`}>
                     {items.map(item => (
                         <li 

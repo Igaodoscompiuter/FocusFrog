@@ -31,6 +31,12 @@ public class WidgetBridgePlugin extends Plugin {
         call.resolve(new JSObject());
     }
 
+    @PluginMethod
+    public void refreshFrogWidget(PluginCall call) {
+        FrogWidgetProvider.refreshAll(getContext());
+        call.resolve(new JSObject());
+    }
+
     /**
      * No Android 12+ (API 31+), SCHEDULE_EXACT_ALARM precisa ser LIGADA PELO
      * USUÁRIO numa tela própria do sistema — declarar a permissão no manifesto
@@ -129,7 +135,9 @@ public class WidgetBridgePlugin extends Plugin {
             return;
         }
 
-        ComponentName provider = new ComponentName(context, ChecklistWidgetProvider.class);
+        // kind = "frog" pede o widget do Sapo do Dia; padrão: checklist
+        Class<?> cls = "frog".equals(call.getString("kind")) ? FrogWidgetProvider.class : ChecklistWidgetProvider.class;
+        ComponentName provider = new ComponentName(context, cls);
 
         // Callback opcional dispensado aqui (o widget aparece na hora de qualquer
         // forma); se algum dia quisermos detectar "usuário cancelou o diálogo"
