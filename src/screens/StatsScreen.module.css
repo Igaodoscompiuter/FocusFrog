@@ -215,3 +215,11 @@
   font-weight: bold;
   font-size: 1.1rem;
 }
+
+/* botão da Loja do Sapo no topo do Jardim */
+.storeBtn {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 6px 0 14px;
+  border-radius: 999px; border: 1px solid var(--border-color); background: var(--surface-secondary-color);
+  color: var(--text-color); font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer;
+}
+.storeBtn span { padding: 4px 10px; border-radius: 999px; background: var(--accent-color); color: var(--text-on-accent); font-size: .75rem; }

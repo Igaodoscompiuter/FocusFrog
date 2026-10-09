@@ -42,12 +42,12 @@
 
 /* ESTA É A REGRA QUE FORÇA O VERMELHO */
 .btnDanger {
-    background-color: #E53935; /* Vermelho forte e inequívoco */
+    background-color: var(--danger-color); /* Vermelho forte e inequívoco */
     color: white;
-    border: 1px solid #E53935;
+    border: 1px solid var(--danger-color);
 }
 
 .btnDanger:hover {
-    background-color: #C62828; /* Vermelho mais escuro no hover */
-    border-color: #C62828;
+    background-color: var(--danger-color-hover); /* Vermelho mais escuro no hover */
+    border-color: var(--danger-color-hover);
 }

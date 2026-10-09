@@ -26,33 +26,7 @@ STYLE GUIDE
    FIX: Adicionada a seção :root para definir as variáveis de design
    que estavam faltando, incluindo as de border-radius.
 ================================================================= */
-:root {
-  --font-inter: 'Inter', sans-serif;
-  --font-poppins: 'Poppins', sans-serif;
-
-  --font-scale: 1; /* Para controle de densidade */
-
-  /* Espaçamento (sp) */
-  --sp-xs: 0.25rem;  /* 4px */
-  --sp-sm: 0.5rem;   /* 8px */
-  --sp-md: 0.75rem;  /* 12px */
-  --sp-lg: 1rem;     /* 16px */
-  --sp-xl: 1.5rem;   /* 24px */
-  --sp-2xl: 2rem;    /* 32px */
-
-  /* Raios de Borda */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  --border-radius-xl: 24px;  /* <<< A VARIÁVEL QUE FALTAVA */
-  --border-radius-full: 9999px;
-
-  /* Safe Area Insets (para notches de celular, etc.) */
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-}
+/* tokens: ver src/styles/tokens.css */
 
 
 /* =================================================================
@@ -241,7 +215,7 @@ a {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0px);
-  background: #FBBF24;
+  background: var(--accent-color);
   z-index: 10000;
   pointer-events: none;
 }
