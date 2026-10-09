@@ -1,5 +1,5 @@
 
-import { FOCUS_FROG_MARKETING_TASK_ID } from '../constants';
+import { isSpecialFrogTask } from '../constants';
 import { OPEN_FROG_PICKER_EVENT } from '../components/FrogWidgetSync';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '../context/TasksContext';
@@ -107,7 +107,7 @@ export const HomeScreen: React.FC = () => {
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
     const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
     const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
-    const isSpecialFrog = frogTask?.id === FOCUS_FROG_MARKETING_TASK_ID;
+    const isSpecialFrog = isSpecialFrogTask(frogTask);
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
         return frogTask.id === activeTaskId && sessionStatus !== 'idle';
