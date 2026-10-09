@@ -32,7 +32,10 @@ function App() {
   const [minTimePassed, setMinTimePassed] = useState(false);
 
   useEffect(() => {
+    // o tamanho vai no <html>: assim tudo que usa rem acompanha
+    // (antes ia só no <body> e quase nenhum texto mudava de tamanho)
     document.body.className = `font-size-${fontSize}`;
+    document.documentElement.dataset.fontSize = fontSize;
   }, [fontSize]);
 
   // [CORREÇÃO DE VERDADE] setOverlaysWebView()/setBackgroundColor() usam uma
