@@ -1,4 +1,5 @@
 
+import { FOCUS_FROG_MARKETING_TASK_ID } from '../constants';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '../context/TasksContext';
 import { useUI } from '../context/UIContext';
@@ -63,7 +64,7 @@ const getGreeting = () => {
 };
 
 export const HomeScreen: React.FC = () => {
-    const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
+    const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, handleCompleteTask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
     const { activeTaskId, activeTaskTitle, sessionStatus, startPomodoro } = usePomodoro(); 
     const { userName } = useUser();
@@ -97,7 +98,7 @@ export const HomeScreen: React.FC = () => {
     const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
     const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
     const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
-    const isSpecialFrog = useMemo(() => frogTask?.title === "🐸 Card Especial FocusFrog N.1", [frogTask]);
+    const isSpecialFrog = frogTask?.id === FOCUS_FROG_MARKETING_TASK_ID;
     const isFrogFocused = useMemo(() => {
         if (!frogTask) return false;
         return frogTask.id === activeTaskId && sessionStatus !== 'idle';
@@ -129,6 +130,7 @@ export const HomeScreen: React.FC = () => {
     const handleEatFrog = () => {
         if (isSpecialFrog) {
             window.open('https://www.instagram.com/focus.frog/', '_blank');
+            handleCompleteTask(frogTask!.id, 'instagram');
             return;
         }
         if (!frogTask || hasSubtasks) return;

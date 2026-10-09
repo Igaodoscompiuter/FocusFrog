@@ -12,7 +12,7 @@ import { initialRoutines, initialTaskTemplates, defaultTags, focusFrogMarketingT
 import { syncRoutineNotifications, scheduleFrogReminder, cancelFrogReminder } from '../notifications';
 import { syncChecklistToWidget, readChecklistFromWidget } from '../widgetBridge';
 
-type CompletionMethod = 'timer' | 'button' | 'subtask';
+type CompletionMethod = 'timer' | 'button' | 'subtask' | 'instagram';
 
 interface TasksContextType {
     tasks: Task[];
@@ -85,13 +85,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return Date.now() * 1000 + (idCounterRef.current % 1000);
     }, []);
 
-    // [NOVO] Instalação nova já nasce com o card especial FocusFrog como tarefa
-    // de verdade (antes só existia como template na Biblioteca, nunca aparecia
-    // sozinho) — estratégia de marketing combinada com frogTaskId abaixo.
-    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', [focusFrogMarketingTask]);
+    // Instalação nova começa vazia. O Card Especial FocusFrog só entra no fim
+    // do tutorial (passo "presente", ver ensureMarketingFrog), com o convite
+    // pra seguir no Instagram.
+    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', defaultTags);
-    // Sapo do Dia padrão = o card especial acima, só na 1ª instalação.
-    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', FOCUS_FROG_MARKETING_TASK_ID);
+    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', null);
     const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
 
     const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
@@ -199,6 +198,28 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleCompleteTask = useCallback((taskId: string, method: CompletionMethod, subtaskId?: string) => {
         const taskToComplete = tasks.find(t => t.id === taskId);
         if (!taskToComplete || taskToComplete.status === 'done') return;
+
+        // Card Especial: marcar os passos não conclui. Ele só conclui quando a
+        // pessoa toca em "Visitar o Instagram" (método 'instagram').
+        const isSpecialCard = taskId === FOCUS_FROG_MARKETING_TASK_ID;
+        if (isSpecialCard && method !== 'instagram') {
+            if (subtaskId) {
+                setTasks(prev => prev.map(t => t.id !== taskId ? t : {
+                    ...t, subtasks: t.subtasks?.map(st => st.id === subtaskId ? { ...st, completed: true } : st),
+                }));
+            } else {
+                addNotification('Esse sapo se conclui no botão "Visitar o Instagram"', '🐸', 'info');
+            }
+            return;
+        }
+        if (isSpecialCard) {
+            setTasks(prev => prev.map(t => t.id !== taskId ? t : {
+                ...t, subtasks: t.subtasks?.map(st => ({ ...st, completed: true })), status: 'done', completedAt: new Date().toISOString(),
+            }));
+            setPontosFoco(p => p + 50);
+            addNotification('Valeu por seguir o FocusFrog! +50 pontos', '🐸', 'victory');
+            return;
+        }
 
         if (taskId === activeTaskId) {
             stopCycle();

@@ -3,65 +3,103 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Obrigado pelo download · FocusFrog</title>
+<title>Obrigado por baixar · FocusFrog</title>
+<meta name="description" content="Obrigado por baixar o FocusFrog. Siga, compartilhe e ajude o sapo a crescer.">
 <meta name="theme-color" content="#0a120e">
 <meta name="robots" content="noindex,follow">
 <link rel="icon" href="/images/global/favicon-64.png" sizes="64x64" type="image/png">
 <link rel="stylesheet" href="/assets/css/fonts.css?v=1.4.0">
-<link rel="stylesheet" href="/assets/css/pagina.css?v=1.4.0">
-
+<link rel="stylesheet" href="/assets/css/pagina.css?v=1.4.1">
 </head>
 <body>
 <main class="ff-page">
-<section class="ff-box">
-<img class="ff-logo" src="/images/global/mascote-focusfrog-160.webp" alt="Mascote do FocusFrog">
+<section class="ff-box ty">
+  <img class="ff-logo" src="/images/global/mascote-focusfrog-160.webp" alt="Mascote do FocusFrog" width="72" height="72">
+  <h1>Bem-vindo à lagoa.</h1>
+  <p>O FocusFrog é grátis e feito por uma pessoa só. Ele cresce quando alguém conta pra outra pessoa.</p>
+  <a class="ty-open" href="focusfrog://open">Já instalou? Abrir o FocusFrog</a>
 
-<h1>Download feito. 🐸</h1>
-<p>Obrigado por baixar o FocusFrog. Agora é só abrir o APK no seu Android e seguir as instruções de instalação.</p>
-<div class="ff-actions">
-  <a class="ff-btn ff-primary" href="focusfrog://open">Abrir o FocusFrog</a>
-  <a class="ff-btn ff-secondary" href="/">Voltar ao site</a>
-</div>
-<h2>Quer ajudar o FocusFrog a continuar?</h2>
-<p>Se o app estiver te ajudando, você pode apoiar o projeto por Pix. O mesmo Pix disponível no site foi colocado aqui para facilitar.</p>
-<div class="ff-actions">
-  <button class="ff-btn ff-primary" id="pixDonate" type="button">Copiar Pix</button>
-</div>
-<div id="pixStatus" class="ff-note" aria-live="polite">O código Pix será copiado para a área de transferência.</div>
-<textarea id="pixCode" readonly aria-label="Código Pix para doação" style="position:absolute;left:-9999px;top:-9999px;">00020126940014BR.GOV.BCB.PIX013642cf5c38-ccc4-452f-b55a-dd3fc32074f20232obrigado por apoiar o Focus Frog5204000053039865802BR5925Igor Sousa Rocha Aguiar V6009SAO PAULO62140510rDkAtQCzNL63048AC4</textarea>
-<div class="ff-socials">
-  <a href="https://www.instagram.com/focus.frog/" aria-label="Instagram do FocusFrog" target="_blank" rel="noopener noreferrer">Instagram</a>
-</div>
-<p class="ff-note">Acompanhe o FocusFrog no Instagram para novidades e atualizações do projeto.</p>
+  <ol class="ty-list">
+    <li class="ty-item">
+      <div><h2>Siga o sapo</h2><p>Novidades, sapos novos e dicas de foco.</p></div>
+      <a class="ff-btn ff-primary" href="https://www.instagram.com/focus.frog/" target="_blank" rel="noopener noreferrer">Seguir @focus.frog</a>
+    </li>
 
+    <li class="ty-item">
+      <div><h2>Mande pra quem precisa</h2><p>Conhece alguém que vive adiando tudo? O link vai pronto.</p></div>
+      <div class="ty-row">
+        <button class="ff-btn ff-primary" id="share" type="button">Compartilhar</button>
+        <a class="ff-btn ff-secondary" id="wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/">WhatsApp</a>
+      </div>
+    </li>
+
+    <li class="ty-item">
+      <div><h2>Poste o seu Sapo do Dia</h2><p>Print do seu sapo nos Stories, marcando <b>@focus.frog</b>.</p></div>
+      <button class="ff-btn ff-secondary" id="caption" type="button">Copiar legenda</button>
+    </li>
+
+    <li class="ty-item">
+      <div><h2>Pague um café pro sapo</h2><p>Escolha um valor. O Pix Copia e Cola já vai com ele preenchido.</p></div>
+      <div class="ty-pix" role="group" aria-label="Valor do apoio">
+        <button class="ff-btn ff-secondary" data-v="2" type="button">R$ 2</button>
+        <button class="ff-btn ff-secondary" data-v="5" type="button">R$ 5</button>
+        <button class="ff-btn ff-secondary" data-v="10" type="button">R$ 10</button>
+        <button class="ff-btn ff-secondary" data-v="0" type="button">Outro valor</button>
+      </div>
+    </li>
+  </ol>
+
+  <p id="status" class="ty-status" role="status" aria-live="polite"></p>
+  <a class="ty-back" href="/">Voltar ao site</a>
 </section>
 </main>
 
 <script>
 (() => {
-  const btn = document.getElementById('pixDonate');
-  const code = document.getElementById('pixCode');
-  const status = document.getElementById('pixStatus');
-  if (!btn || !code) return;
-  btn.addEventListener('click', async () => {
-    const value = code.value;
-    try {
-      await navigator.clipboard.writeText(value);
-      status.textContent = 'Pix copiado. Cole no aplicativo do seu banco. Obrigado por apoiar o FocusFrog! 🐸';
-    } catch (_) {
-      code.style.position = 'static';
-      code.style.left = 'auto';
-      code.style.top = 'auto';
-      code.style.width = '100%';
-      code.style.minHeight = '120px';
-      code.style.marginTop = '12px';
-      code.style.padding = '10px';
-      code.select();
-      status.textContent = 'Não consegui copiar automaticamente. Selecione e copie o código Pix acima.';
+  const SITE = 'https://focusfrog.netlify.app/';
+  const SHARE_TEXT = 'Tô usando o FocusFrog: você escolhe uma tarefa por dia (o Sapo do Dia), foca e ganha sapos pra sua lagoa. Grátis pra Android:';
+  const CAPTION = 'Meu Sapo do Dia de hoje 🐸 Uma tarefa, foco e pronto. @focus.frog\n' + SITE;
+  // Pix "copia e cola" sem valor; os botões geram a versão com valor (campo 54 + CRC)
+  const PIX = '00020126940014BR.GOV.BCB.PIX013642cf5c38-ccc4-452f-b55a-dd3fc32074f20232obrigado por apoiar o Focus Frog5204000053039865802BR5925Igor Sousa Rocha Aguiar V6009SAO PAULO62140510rDkAtQCzNL63048AC4';
+
+  const status = document.getElementById('status');
+  const say = m => { status.textContent = m; };
+  const copy = async t => {
+    try { await navigator.clipboard.writeText(t); return true; }
+    catch (_) {
+      const a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(a); a.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (_) {}
+      a.remove(); return ok;
     }
+  };
+
+  // compartilhar
+  document.getElementById('wa').href = 'https://wa.me/?text=' + encodeURIComponent(SHARE_TEXT + ' ' + SITE);
+  document.getElementById('share').addEventListener('click', async () => {
+    if (navigator.share) { try { await navigator.share({ title: 'FocusFrog', text: SHARE_TEXT, url: SITE }); } catch (_) {} return; }
+    say(await copy(SHARE_TEXT + ' ' + SITE) ? 'Link copiado. Cole onde quiser.' : 'Não deu pra copiar. O link é ' + SITE);
   });
+  document.getElementById('caption').addEventListener('click', async () => {
+    say(await copy(CAPTION) ? 'Legenda copiada. Agora é só colar no post.' : 'Não deu pra copiar a legenda.');
+  });
+
+  // Pix com valor
+  const crc16 = s => { let c = 0xFFFF; for (let i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = c & 0x8000 ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; } return c.toString(16).toUpperCase().padStart(4, '0'); };
+  const parse = p => { const o = []; let i = 0; while (i < p.length) { const t = p.substr(i, 2), l = +p.substr(i + 2, 2); o.push([t, p.substr(i + 4, l)]); i += 4 + l; } return o; };
+  const pixWith = v => {
+    const f = parse(PIX).filter(([t]) => t !== '63' && t !== '54');
+    if (v) { f.push(['54', v.toFixed(2)]); f.sort((a, b) => (a[0] < b[0] ? -1 : 1)); }
+    const s = f.map(([t, x]) => t + String(x.length).padStart(2, '0') + x).join('') + '6304';
+    return s + crc16(s);
+  };
+  document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', async () => {
+    const v = Number(b.dataset.v);
+    const ok = await copy(pixWith(v));
+    say(ok ? (v ? `Pix de R$ ${v} copiado. No app do banco, escolha "Pix Copia e Cola" e cole. Obrigado! 🐸`
+                : 'Pix copiado. No app do banco, cole em "Pix Copia e Cola" e digite o valor. Obrigado! 🐸')
+           : 'Não deu pra copiar o Pix automaticamente.');
+  }));
 })();
 </script>
-
 </body>
 </html>
