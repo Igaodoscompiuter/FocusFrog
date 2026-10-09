@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { useTasks } from '../../context/TasksContext';
 import { usePomodoro } from '../../context/PomodoroContext';
 import { useUI } from '../../context/UIContext';
-import { FOCUS_FROG_MARKETING_TASK_ID } from '../../constants';
+import { isSpecialFrogTask } from '../../constants';
 
 export const TOUR_KEY = 'focusfrog_tour';
 
@@ -90,7 +90,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!active) return;
     const created = step?.id === 'create' ? tasks.find(t => !baseIds.current.has(t.id)) : undefined;
     if (created) { setState(s => ({ ...s, step: s.step + 1, taskId: created.id })); }
-    else if (step?.id === 'frog' && frogTaskId && frogTaskId !== FOCUS_FROG_MARKETING_TASK_ID && tasks.some(t => t.id === frogTaskId && t.status !== 'done')) next();
+    else if (step?.id === 'frog' && frogTaskId && !isSpecialFrogTask(tasks.find(t => t.id === frogTaskId)) && tasks.some(t => t.id === frogTaskId && t.status !== 'done')) next();
     else if (step?.id === 'start' && sessionStatus !== 'idle') next();
     else if (step?.id === 'focusing' && sessionStatus === 'idle') next();
   }, [active, step?.id, tasks, frogTaskId, sessionStatus, next]);
@@ -100,7 +100,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (active && step && ['create', 'frog', 'start', 'gift'].includes(step.id)) handleNavigate('dashboard');
     // passo 2: o Card Especial (padrão de instalação) sai do Sapo do Dia, pra
     // pessoa escolher a tarefa que acabou de criar sem nada no caminho
-    if (active && step?.id === 'frog' && frogTaskId === FOCUS_FROG_MARKETING_TASK_ID) handleSetFrog(null);
+    if (active && step?.id === 'frog' && isSpecialFrogTask(tasks.find(t => t.id === frogTaskId))) handleSetFrog(null);
     // fecho do tutorial: Card Especial vira o Sapo do Dia, com o botão dele à mostra
     if (active && step?.id === 'gift') ensureMarketingFrog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
