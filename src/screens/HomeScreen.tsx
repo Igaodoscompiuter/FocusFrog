@@ -68,10 +68,10 @@ const getGreeting = () => {
 };
 
 export const HomeScreen: React.FC = () => {
-    // temas da Loja pintam o topo com a cor do tema; Escuro e Claro mantêm
+    // os temas (inclusive o Claro, verde) pintam o topo com a cor do tema; só o Escuro mantém
     // o degradê que muda com a hora do dia
     const { activeThemeId } = useTheme();
-    const usesTimeGradient = activeThemeId === 'dark-theme' || activeThemeId === 'light-theme';
+    const usesTimeGradient = activeThemeId === 'dark-theme';
     const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, handleCompleteTask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
     const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
     const { activeTaskId, activeTaskTitle, sessionStatus, startPomodoro } = usePomodoro(); 
