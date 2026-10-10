@@ -49,7 +49,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const provider = (u.app_metadata?.provider as string) || 'unknown';
             if (outcome === 'new-account' || outcome === 'uploaded') trackUserCreation(provider); else trackLogin(provider);
             setLastSyncAt(getLastSyncAt());
-            if (outcome === 'restored') { reloadWithData(); return; }
+            if (outcome === 'restored') {
+                // se o backup não tiver nome, cai na tela do nome (não volta pro login)
+                localStorage.setItem('focusfrog_account_choice', 'cloud');
+                reloadWithData(); return;
+            }
             if (outcome === 'new-account') {
                 // conta nova vinda da 1ª abertura: o nome fica VAZIO na tela
                 // seguinte e a conta só sobe depois que a pessoa salvar o nome
