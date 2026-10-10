@@ -9,4 +9,8 @@
     <image:image><image:loc>https://focusfrog.netlify.app/images/global/app-timer-pomodoro-780.webp</image:loc></image:image>
     <image:image><image:loc>https://focusfrog.netlify.app/images/global/app-lago-zen-780.webp</image:loc></image:image>
   </url>
+  <url>
+    <loc>https://focusfrog.netlify.app/privacidade</loc>
+    <lastmod>2026-10-09</lastmod>
+  </url>
 </urlset>

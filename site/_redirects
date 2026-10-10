@@ -1,6 +1,7 @@
 # FocusFrog — rotas do site
 /download-concluido  /download-concluido.html  200
 /app                 /download-concluido.html  200
+/privacidade         /privacidade.html         200
 /download            /FocusFrog.apk            302
 
 # O app 1.4.0 consulta /version.json; o arquivo oficial é /update.json

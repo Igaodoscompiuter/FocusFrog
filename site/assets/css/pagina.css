@@ -31,3 +31,13 @@ h1,h2{font-weight:800;letter-spacing:-.02em}
 .ty-status{min-height:1.4em;margin:16px 0 0!important;text-align:center;color:#8bd150!important;font-weight:700}
 .ty-back{display:block;text-align:center;margin-top:18px;color:#829087;font-size:.9rem}
 @media (min-width:640px){.ty-item{grid-template-columns:1fr 240px;align-items:center}}
+
+/* ---- Política de privacidade ---- */
+.doc{text-align:left;max-width:760px;padding:36px 26px}
+.doc h1{font-size:clamp(1.8rem,6vw,2.6rem);margin:12px 0 4px}
+.doc h2{font-size:1.15rem;margin:28px 0 8px}
+.doc p,.doc li{color:#c9d3cb;line-height:1.65;margin:0 0 10px;max-width:none}
+.doc ul{padding-left:20px;margin:0 0 10px}
+.doc a{color:#8bd150}
+.doc-date{color:#829087!important;font-size:.9rem}
+.doc-back{color:#8bd150;text-decoration:none;font-weight:700;font-size:.95rem}
