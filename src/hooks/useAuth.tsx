@@ -5,6 +5,7 @@ import { Browser } from '@capacitor/browser';
 import { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { handleLogin, syncNow, clearSyncMeta, pushLocal, getLastSyncAt, SyncOutcome } from '../sync/cloudSync';
+import { trackLogin, trackUserCreation } from '../analytics';
 
 export type AuthProviderName = 'google' | 'facebook';
 export type LoginOrigin = 'onboarding' | 'settings';
@@ -45,6 +46,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem(ORIGIN_KEY);
         try {
             const outcome = await handleLogin(u.id, origin);
+            const provider = (u.app_metadata?.provider as string) || 'unknown';
+            if (outcome === 'new-account' || outcome === 'uploaded') trackUserCreation(provider); else trackLogin(provider);
             setLastSyncAt(getLastSyncAt());
             if (outcome === 'restored') { reloadWithData(); return; }
             if (outcome === 'new-account') {

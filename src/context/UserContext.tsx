@@ -1,6 +1,8 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useUserData } from '../hooks/useUserData';
+import { trackFrogCollected } from '../analytics';
+import { frogSpecies } from '../utils/frogSpecies';
 
 export interface NewlyAcquiredFrogInfo {
   speciesId: string;
@@ -52,6 +54,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     addFrogToCollectionInternal(speciesId);
+    trackFrogCollected(speciesId, frogSpecies[speciesId]?.rarity ?? 'unknown');
     setCollectedFrogs(getCollectedFrogs());
     setNewlyAcquiredFrog({ speciesId: speciesId });
   }, [addFrogToCollectionInternal, getCollectedFrogs]);
