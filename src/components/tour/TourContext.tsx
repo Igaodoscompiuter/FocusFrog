@@ -3,6 +3,7 @@ import { useTasks } from '../../context/TasksContext';
 import { usePomodoro } from '../../context/PomodoroContext';
 import { useUI } from '../../context/UIContext';
 import { isSpecialFrogTask } from '../../constants';
+import { trackTutorialComplete } from '../../analytics';
 
 export const TOUR_KEY = 'focusfrog_tour';
 
@@ -68,6 +69,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Ao concluir: a tarefa do tutorial vira um modelo de tarefa RÁPIDA na
   // biblioteca (categoria Saúde), uma vez só.
   const finish = useCallback(() => {
+    trackTutorialComplete();
     const t = tasks.find(x => x.id === state.taskId);
     const title = t?.title?.trim();
     if (title && !taskTemplates.some(tp => tp.title === title)) {

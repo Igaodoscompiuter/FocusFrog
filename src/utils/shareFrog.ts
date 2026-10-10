@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { frogSpecies } from './frogSpecies';
+import { trackShareFrog } from '../analytics';
 
 /**
  * Cartão pra compartilhar um sapo novo (formato Stories, 1080×1920):
@@ -95,6 +96,7 @@ export async function shareFrog(speciesId: string, isNew: boolean): Promise<'sha
     const fileName = `focusfrog-${speciesId.toLowerCase()}.png`;
     if (Capacitor.isNativePlatform()) {
       const saved = await Filesystem.writeFile({ path: fileName, data: await blobToBase64(blob), directory: Directory.Cache });
+      trackShareFrog(speciesId);
       await Share.share({ title: 'Meu sapo no FocusFrog', text, files: [saved.uri], dialogTitle: 'Compartilhar sapo' });
       return 'shared';
     }

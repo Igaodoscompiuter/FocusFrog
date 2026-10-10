@@ -6,6 +6,7 @@ import { SOUND_CATALOG, EFFECT_CATALOG, SoundItem, playLoop, previewEffect, croa
 import { ConfirmationModal } from '../../components/modals/ConfirmationModal';
 import { useBackHandler } from '../../hooks/useBackHandler';
 import styles from './StoreScreen.module.css';
+import { trackStoreUnlock } from '../../analytics';
 
 export const OPEN_STORE_EVENT = 'focusfrog:open-store';
 export const openStore = () => window.dispatchEvent(new Event(OPEN_STORE_EVENT));
@@ -63,6 +64,7 @@ export const StoreScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const confirmBuy = () => {
         if (!pending) return;
         const r = buyItem(pending.id, pending.price);
+        if (r === 'ok') trackStoreUnlock(pending.id, pending.price);
         if (r === 'ok' || r === 'owned') {
             if (pending.kind === 'theme') setActiveThemeId(pending.id);
             if (pending.kind === 'sound') setActiveSoundId(pending.id);

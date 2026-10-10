@@ -5,7 +5,7 @@
 const APP_VERSION = '1.4.0';                // versão do APK publicado (igual ao update.json)
 const APK_URL = '/FocusFrog.apk';            // APK na raiz do site (o app e o update.json apontam pra cá)
 const PIX_CODE = '00020126940014BR.GOV.BCB.PIX013642cf5c38-ccc4-452f-b55a-dd3fc32074f20232obrigado por apoiar o Focus Frog5204000053039865802BR5925Igor Sousa Rocha Aguiar V6009SAO PAULO62140510rDkAtQCzNL63048AC4'; // Pix "copia e cola" (código completo). Vazio = apoio por Pix oculto
-const GA_ID   = '';                         // ID de medição do GA4, ex.: 'G-XXXXXXXXXX'. Vazio = sem análise e sem aviso de cookies
+const GA_ID   = 'G-S5P71J2Y3Z';             // GA4 do FocusFrog (o mesmo do app). Vazio = sem análise e sem aviso de cookies
 /* =============================== */
 document.querySelectorAll('[data-apk]').forEach(a=>a.setAttribute('href',APK_URL));
 const toast=document.getElementById('toast');let tt;

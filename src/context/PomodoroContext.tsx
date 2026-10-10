@@ -11,6 +11,7 @@ import { croakEffect } from '../store/soundCatalog';
 import { postMessageToSW } from '../sw-helpers';
 import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction, isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
+import { trackFocusComplete } from '../analytics';
 
 export type PomodoroMode = 'quick' | 'classic';
 export type PomodoroSessionStatus = 'idle' | 'focus' | 'break';
@@ -249,6 +250,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 if (activeTaskId) {
                     setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'timer' });
                 }
+                trackFocusComplete(Math.round(((mode === 'quick' ? 1 : totalCycles) * focusDuration) / 60), false);
 
                 playEffect(activeEffectId === 'croak' ? croakEffect : uiEffects.sessionComplete);
                 // O "Foco concluído" já foi agendado no INÍCIO deste bloco pro
