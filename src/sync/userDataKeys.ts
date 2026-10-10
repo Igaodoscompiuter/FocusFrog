@@ -5,6 +5,7 @@
  * Fica DE FORA (é do aparelho, não da pessoa): sessão de foco em andamento,
  * tutorial, aviso de versão, modo dev, telas recolhidas/abertas.
  */
+import { isSpecialFrogTask } from '../constants';
 export const USER_DATA_KEYS = [
   // organização
   'focusfrog_tasks',
@@ -68,6 +69,11 @@ export const collectSnapshot = (): UserSnapshot => {
 
 /** Substitui os dados da pessoa pelos da foto (o que não veio na foto é apagado). */
 export const applySnapshot = (snap: UserSnapshot) => {
+  // backups antigos (v2) só têm a flag antiga de onboarding; com nome salvo,
+  // a pessoa já tinha passado da abertura — não volta pra tela de login
+  if (snap.focusfrog_onboardingCompleted == null && snap.focusfrog_onboarding_completed === true && hasName(snap)) {
+    snap = { ...snap, focusfrog_onboardingCompleted: true };
+  }
   const raw = new Set(Array.isArray(snap.__raw) ? snap.__raw : []);
   USER_DATA_KEYS.forEach(k => {
     const v = snap[k];
@@ -76,9 +82,20 @@ export const applySnapshot = (snap: UserSnapshot) => {
   });
 };
 
-/** Tem progresso de verdade? (decide se restaura a conta / se vale a cópia de segurança) */
-export const snapshotHasProgress = (snap: UserSnapshot | null | undefined) =>
-  !!snap && ['focusfrog_tasks', 'focusfrog_collectedFrogs', 'focusfrog_routines', 'focusfrog_userName'].some(k => {
+const hasName = (snap: UserSnapshot) =>
+  typeof snap.focusfrog_userName === 'string' && snap.focusfrog_userName.trim() !== '';
+
+/**
+ * Tem progresso de verdade? (decide se restaura a conta / se vale a cópia de segurança)
+ * O Card Especial sozinho não conta — era criado em toda instalação antiga.
+ */
+export const snapshotHasProgress = (snap: UserSnapshot | null | undefined) => {
+  if (!snap) return false;
+  const tasks = Array.isArray(snap.focusfrog_tasks) ? snap.focusfrog_tasks : [];
+  if (tasks.some((t: any) => !isSpecialFrogTask(t))) return true;
+  if (hasName(snap)) return true;
+  return ['focusfrog_collectedFrogs', 'focusfrog_routines'].some(k => {
     const v = snap[k];
     return Array.isArray(v) ? v.length > 0 : !!v;
   });
+};
