@@ -1,17 +1,17 @@
 {
-  "versionCode": 3,
-  "versionName": "1.4.0",
+  "versionCode": 14,
+  "versionName": "1.5.0",
   "apkUrl": "https://focusfrog.netlify.app/FocusFrog.apk",
-  "title": "FocusFrog 1.4.0",
-  "message": "Tutorial corrigido, nova tela de tarefa, Agenda de Hoje e proteção de foco.",
+  "title": "FocusFrog 1.5.0",
+  "message": "Conta com Google, Loja do Sapo com sons reais de natureza e sapos, e widget do Sapo do Dia.",
   "notes": [
-    "Tutorial não trava mais com o Card Especial",
-    "Nova tela de criar e editar tarefa",
-    "Agenda de Hoje e checklist recolhíveis",
-    "Proteção de foco pode ser desligada nas Configurações",
-    "Aviso de nova versão dentro do app"
+    "Entre com o Google e leve seus dados pra outro celular",
+    "Loja do Sapo: temas novos e 31 sons gravados de verdade",
+    "Sapos premium: coros de lagoa e o Sapo-parteiro",
+    "Escolha o som de início, pausa e fim do foco",
+    "Widget do Sapo do Dia e compartilhar sapo novo"
   ],
-  "publishedAt": "2026-10-08",
+  "publishedAt": "2026-10-11",
   "mandatory": false,
-  "sha256": "c87d831de84b02faacabbd8a7fc082ba19c3db33f70dfbcf87899c866d4058ff"
+  "sha256": "6c49b78897716ff475b69cb0d73cd8f09ac455d39072d8448e0fc4bf48c62a37"
 }

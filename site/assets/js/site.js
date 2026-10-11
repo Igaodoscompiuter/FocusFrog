@@ -2,7 +2,7 @@
  * Configuração no topo; o resto é comportamento da página. */
 
 /* ======= CONFIGURE AQUI ======= */
-const APP_VERSION = '1.4.0';                // versão do APK publicado (igual ao update.json)
+const APP_VERSION = '1.5.0';                // versão do APK publicado (igual ao update.json)
 const APK_URL = '/FocusFrog.apk';            // APK na raiz do site (o app e o update.json apontam pra cá)
 const PIX_CODE = '00020126940014BR.GOV.BCB.PIX013642cf5c38-ccc4-452f-b55a-dd3fc32074f20232obrigado por apoiar o Focus Frog5204000053039865802BR5925Igor Sousa Rocha Aguiar V6009SAO PAULO62140510rDkAtQCzNL63048AC4'; // Pix "copia e cola" (código completo). Vazio = apoio por Pix oculto
 const GA_ID   = 'G-S5P71J2Y3Z';             // GA4 do FocusFrog (o mesmo do app). Vazio = sem análise e sem aviso de cookies
@@ -99,10 +99,6 @@ const links=[...document.querySelectorAll('.topbar nav a')];
 const map={solucao:'#solucao',como:'#solucao',recursos:'#solucao',privacidade:'#solucao',jardim:'#jardim',faq:'#faq'};
 const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const h=map[e.target.id];links.forEach(a=>{const on=a.getAttribute('href')===h;a.classList.toggle('on',on);on?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current')})}}),{rootMargin:'-45% 0px -50% 0px'});
 Object.keys(map).forEach(id=>{const el=document.getElementById(id);if(el)spy.observe(el)});
-const bar=document.getElementById('bar'),hero=document.getElementById('heroCta'),fim=document.querySelector('.fim');let heroOut=false,fimIn=false;
-const upd=()=>bar.classList.toggle('on',heroOut&&!fimIn);
-new IntersectionObserver(e=>{heroOut=!e[0].isIntersecting&&e[0].boundingClientRect.top<0;upd()}).observe(hero);
-new IntersectionObserver(e=>{fimIn=e[0].isIntersecting;upd()},{threshold:.25}).observe(fim);
 
 /* ---- modal de download ----
    O navegador não abre o APK baixado nem avisa quando terminou. Então, ao
