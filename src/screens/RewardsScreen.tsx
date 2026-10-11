@@ -8,7 +8,7 @@ import { isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { useUserData } from '../hooks/useUserData';
 import { useAuth, AuthProviderName } from '../hooks/useAuth';
 import { getLocalBackup, restoreLocalBackup } from '../sync/cloudSync';
-import { GoogleIcon, FacebookIcon } from './OnboardingAccountScreen';
+import { GoogleIcon } from './OnboardingAccountScreen';
 import './OnboardingAccountScreen.css';
 import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
@@ -151,9 +151,6 @@ const ProfileScreen: React.FC<{onBack: () => void}> = ({ onBack }) => {
                     <div className={styles.accountActions}>
                         <button className="account-btn account-google" onClick={() => setPendingProvider('google')} disabled={isSigningIn}>
                             <GoogleIcon /> Entrar com Google
-                        </button>
-                        <button className="account-btn account-facebook" onClick={() => setPendingProvider('facebook')} disabled={isSigningIn}>
-                            <FacebookIcon /> Entrar com Facebook
                         </button>
                     </div>
                     {isSigningIn && <p className={styles.accountSync}>Esperando o login no navegador…</p>}
@@ -420,7 +417,7 @@ export const RewardsScreen: React.FC = () => {
                 return (
                     <div className={styles.tabContent}>
                         <div className={styles.header}><h2>Ajustes</h2></div>
-                        <SettingsNavRow icon={FiUser} title="Conta e Sincronização" description={authUser ? `Conectado · ${authUser.email ?? 'conta'}` : 'Entrar com Google ou Facebook'} onClick={() => setActiveSettingsScreen('profile')} />
+                        <SettingsNavRow icon={FiUser} title="Conta e Sincronização" description={authUser ? `Conectado · ${authUser.email ?? 'conta'}` : 'Entrar com Google'} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />
                         <div className={styles.guardRow}>
