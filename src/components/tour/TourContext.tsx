@@ -49,8 +49,20 @@ export const useTour = () => {
   return ctx;
 };
 
+const readList = (k: string): any[] => {
+  try { const v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+};
+/** Já tem uso real no aparelho? (tarefas além do Card Especial, sapos ou rotinas) */
+const alreadyUsesApp = () =>
+  readList('focusfrog_tasks').some(t => !isSpecialFrogTask(t))
+  || readList('focusfrog_collectedFrogs').length > 0
+  || readList('focusfrog_routines').some(r => !r?.isDefault)
+  || Number(localStorage.getItem('focusfrog_pomodorosCompleted')) > 0;
+
 const load = (): TourState => {
   try { const raw = localStorage.getItem(TOUR_KEY); if (raw) return JSON.parse(raw); } catch { /* */ }
+  // quem atualizou de uma versão sem tutorial e já usa o app não vê o tour
+  if (alreadyUsesApp()) return { done: true, step: 0 };
   return { done: false, step: 0 }; // 1ª abertura após o onboarding: começa o tour
 };
 

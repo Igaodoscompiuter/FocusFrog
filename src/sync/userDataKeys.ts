@@ -80,7 +80,12 @@ export const applySnapshot = (snap: UserSnapshot) => {
     if (v === undefined || v === null) { localStorage.removeItem(k); return; }
     localStorage.setItem(k, raw.has(k) && typeof v === 'string' ? v : JSON.stringify(v));
   });
+  // conta/backup com progresso = pessoa que já usa o app: não mostra o tutorial
+  if (snapshotHasProgress(snap)) localStorage.setItem(TOUR_KEY, JSON.stringify({ done: true, step: 0 }));
 };
+
+/** Mesmo valor de TOUR_KEY em components/tour (aqui sem importar React). */
+const TOUR_KEY = 'focusfrog_tour';
 
 const hasName = (snap: UserSnapshot) =>
   typeof snap.focusfrog_userName === 'string' && snap.focusfrog_userName.trim() !== '';
@@ -94,8 +99,8 @@ export const snapshotHasProgress = (snap: UserSnapshot | null | undefined) => {
   const tasks = Array.isArray(snap.focusfrog_tasks) ? snap.focusfrog_tasks : [];
   if (tasks.some((t: any) => !isSpecialFrogTask(t))) return true;
   if (hasName(snap)) return true;
-  return ['focusfrog_collectedFrogs', 'focusfrog_routines'].some(k => {
-    const v = snap[k];
-    return Array.isArray(v) ? v.length > 0 : !!v;
-  });
+  const list = (k: string): any[] => (Array.isArray(snap[k]) ? snap[k] : []);
+  return list('focusfrog_collectedFrogs').length > 0
+    || list('focusfrog_routines').some(r => !r?.isDefault) // as rotinas padrão vêm em toda instalação
+    || Number(snap.focusfrog_pomodorosCompleted) > 0;
 };
