@@ -7,7 +7,7 @@ import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { handleLogin, syncNow, clearSyncMeta, pushLocal, getLastSyncAt, SyncOutcome } from '../sync/cloudSync';
 import { trackLogin, trackUserCreation } from '../analytics';
 
-export type AuthProviderName = 'google' | 'facebook';
+export type AuthProviderName = 'google';
 export type LoginOrigin = 'onboarding' | 'settings';
 
 const ORIGIN_KEY = 'focusfrog_auth_origin';            // de onde o login partiu (sobrevive ao vaivém do navegador)
