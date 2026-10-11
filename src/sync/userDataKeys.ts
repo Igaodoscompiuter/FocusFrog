@@ -29,6 +29,7 @@ export const USER_DATA_KEYS = [
   'focusfrog_haptics_enabled',
   'focusfrog_fontsize',
   'focusfrog_distraction_guard',
+  'focusfrog_effects',
 ] as const;
 
 /**
