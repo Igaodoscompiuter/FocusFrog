@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useUI } from '../../context/UIContext';
 import { themes, THEME_CATALOG } from '../../themes';
-import { SOUND_CATALOG, EFFECT_CATALOG, SoundItem, playLoop, previewEffect, croakEffect } from '../../store/soundCatalog';
+import { SOUND_CATALOG, SOUND_GROUPS, EFFECT_EVENTS, EffectEvent, SoundItem, playLoop, playEffectFile, getEffectPrefs, setEffectPref } from '../../store/soundCatalog';
 import { ConfirmationModal } from '../../components/modals/ConfirmationModal';
 import { useBackHandler } from '../../hooks/useBackHandler';
 import styles from './StoreScreen.module.css';
@@ -38,6 +38,14 @@ export const StoreScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [selSound, setSelSound] = useState(activeSoundId);
     const [playing, setPlaying] = useState<string | null>(null);
     const [pending, setPending] = useState<Pending | null>(null);
+    const [fxPrefs, setFxPrefs] = useState(getEffectPrefs);
+    const chosenFx = (ev: EffectEvent) => ev === 'end'
+        ? (EFFECT_EVENTS[2].options.some(o => o.id === activeEffectId) ? activeEffectId : EFFECT_EVENTS[2].options[0].id)
+        : fxPrefs[ev];
+    const useFx = (ev: EffectEvent, id: string) => {
+        if (ev === 'end') setActiveEffectId(id);
+        else { setEffectPref(ev, id); setFxPrefs(getEffectPrefs()); }
+    };
     const stopRef = useRef<() => void>(() => {});
     useBackHandler(onClose);
 
@@ -154,48 +162,59 @@ export const StoreScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </>
                 ) : (
                     <>
-                        <p className={styles.hint}>Tocam junto com o cronômetro, em loop, enquanto você foca.</p>
-                        <ul className={styles.list}>
-                            {SOUND_CATALOG.map(s => {
-                                const tg = tag(s.id, s.price, s.id === activeSoundId, s.ready);
-                                return (
-                                    <li key={s.id} className={`${styles.row} ${selSound === s.id ? styles.selected : ''}`}>
-                                        <button className={`${styles.play} ${playing === s.id ? styles.playOn : ''}`} onClick={() => togglePreview(s)} disabled={!s.ready || s.id === 'none'} aria-label={`${playing === s.id ? 'Parar' : 'Ouvir'} prévia: ${s.name}`}>
-                                            <PlayIcon playing={playing === s.id} />
-                                        </button>
-                                        <button className={styles.rowMain} onClick={() => setSelSound(s.id)} aria-pressed={selSound === s.id}>
-                                            <span className={styles.itemName}>{s.name}</span>
-                                            <span className={styles.itemDesc}>{s.desc}</span>
-                                        </button>
-                                        <span className={`${styles.tag} ${tg.cls}`}>{tg.text}</span>
-                                    </li>
-                                );
-                            })}
-                        </ul>
+                        <p className={styles.hint}>Tocam em loop enquanto você foca. Toque ▶ pra ouvir uma prévia de 10 segundos.</p>
+                        {SOUND_GROUPS.map(g => (
+                            <section key={g.id} aria-label={g.title}>
+                                <h3 className={styles.section}>{g.title}{g.hint && <small className={styles.sectionHint}>{g.hint}</small>}</h3>
+                                <ul className={styles.list}>
+                                    {SOUND_CATALOG.filter(s => s.group === g.id).map(s => {
+                                        const tg = tag(s.id, s.price, s.id === activeSoundId, s.ready);
+                                        return (
+                                            <li key={s.id} className={`${styles.row} ${selSound === s.id ? styles.selected : ''}`}>
+                                                <button className={`${styles.play} ${playing === s.id ? styles.playOn : ''}`} onClick={() => togglePreview(s)} disabled={!s.ready || s.id === 'none'} aria-label={`${playing === s.id ? 'Parar' : 'Ouvir'} prévia: ${s.name}`}>
+                                                    <PlayIcon playing={playing === s.id} />
+                                                </button>
+                                                <button className={styles.rowMain} onClick={() => setSelSound(s.id)} aria-pressed={selSound === s.id}>
+                                                    <span className={styles.itemName}>{s.name}</span>
+                                                    <span className={styles.itemDesc}>{s.desc}</span>
+                                                </button>
+                                                <span className={`${styles.tag} ${g.id === 'sapos' && tg.cls === styles.tagPrice ? styles.tagEpic : tg.cls}`}>{tg.text}</span>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </section>
+                        ))}
 
-                        <h3 className={styles.section}>Som do fim do foco</h3>
-                        <ul className={styles.list}>
-                            {EFFECT_CATALOG.map(e => {
-                                const owned = isUnlocked(e.id, e.price);
-                                const inUse = activeEffectId === e.id;
-                                return (
-                                    <li key={e.id} className={styles.row}>
-                                        <button className={styles.play} onClick={() => previewEffect(croakEffect)} aria-label={`Ouvir prévia: ${e.name}`}>
-                                            <PlayIcon playing={false} />
-                                        </button>
-                                        <div className={styles.rowMain}>
-                                            <span className={styles.itemName}>{e.name}</span>
-                                            <span className={styles.itemDesc}>{e.desc}</span>
-                                        </div>
-                                        {owned ? (
-                                            <button className={styles.smallBtn} onClick={() => setActiveEffectId(inUse ? 'default' : e.id)}>{inUse ? 'Em uso' : 'Usar'}</button>
-                                        ) : (
-                                            <button className={styles.smallBtn} disabled={pontosFoco < e.price} onClick={() => setPending({ id: e.id, name: e.name, price: e.price, kind: 'effect' })}>{e.price} pontos</button>
-                                        )}
-                                    </li>
-                                );
-                            })}
-                        </ul>
+                        <h3 className={styles.section}>Avisos</h3>
+                        <p className={styles.hint}>Um som curto pra cada momento do foco.</p>
+                        {EFFECT_EVENTS.map(ev => (
+                            <section key={ev.id} aria-label={ev.title}>
+                                <h4 className={styles.subSection}>{ev.title} <small>{ev.desc}</small></h4>
+                                <ul className={styles.list}>
+                                    {ev.options.map(o => {
+                                        const owned = isUnlocked(o.id, o.price);
+                                        const inUse = chosenFx(ev.id) === o.id;
+                                        return (
+                                            <li key={o.id} className={`${styles.row} ${inUse ? styles.selected : ''}`}>
+                                                <button className={styles.play} onClick={() => { stopPreview(); playEffectFile(o.file); }} aria-label={`Ouvir prévia: ${o.name}`}>
+                                                    <PlayIcon playing={false} />
+                                                </button>
+                                                <div className={styles.rowMain}>
+                                                    <span className={styles.itemName}>{o.name}</span>
+                                                    {o.price > 0 && <span className={styles.itemDesc}>Premium · coaxo de um sapo de verdade</span>}
+                                                </div>
+                                                {owned ? (
+                                                    <button className={styles.smallBtn} disabled={inUse} onClick={() => useFx(ev.id, o.id)}>{inUse ? 'Em uso' : 'Usar'}</button>
+                                                ) : (
+                                                    <button className={styles.smallBtn} disabled={pontosFoco < o.price} onClick={() => setPending({ id: o.id, name: o.name, price: o.price, kind: 'effect' })}>{o.price} pontos</button>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </section>
+                        ))}
                     </>
                 )}
             </div>
