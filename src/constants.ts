@@ -129,6 +129,11 @@ export const initialRoutines: Routine[] = [
 // tela logo de cara.
 // ---------------------------------------------------------------
 export const FOCUS_FROG_MARKETING_TASK_ID = 'focusfrog-marketing-card-v1';
+/** Modelo da Biblioteca que gera o mesmo card (versões antigas criavam por ele). */
+export const FOCUS_FROG_MARKETING_TEMPLATE_ID = 50;
+/** É o Card Especial? (o criado pelo tutorial ou um antigo, criado pelo modelo) */
+export const isSpecialFrogTask = (t?: { id: string; templateId?: number } | null) =>
+    !!t && (t.id === FOCUS_FROG_MARKETING_TASK_ID || t.templateId === FOCUS_FROG_MARKETING_TEMPLATE_ID);
 
 export const focusFrogMarketingTask: Task = {
     id: FOCUS_FROG_MARKETING_TASK_ID,

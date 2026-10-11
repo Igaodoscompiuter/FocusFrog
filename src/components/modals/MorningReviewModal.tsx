@@ -25,7 +25,7 @@ export const MorningReviewModal: React.FC<MorningReviewModalProps> = ({
   onNavigateToTasks // <-- NOVA PROP
 }) => {
 
-  const modalRef = useClickOutside(onClose);
+  const modalRef = useClickOutside(onClose, isOpen);
   const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {

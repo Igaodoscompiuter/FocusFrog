@@ -4,12 +4,28 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/)
 e [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
+
+## [1.5.0] — 2026-10-11
 ### Adicionado
-- Aviso de nova versão disponível no app (APK).
-- Licença proprietária, diretrizes de propriedade intelectual, guia de
-  contribuição e política de segurança.
+- Conta opcional com Google e sincronização diária com a nuvem
+  (Ajustes → Conta e Sincronização), com cópia de segurança de 7 dias.
+- Loja do Sapo (Jardim e Ajustes → Aparência): 7 temas novos e 31 sons de
+  fundo gravados de verdade (natureza e sapos premium), com prévia.
+- Avisos de início, pausa e fim do foco escolhíveis, incluindo o
+  "Coaxo da vitória" com um sapo real.
+- Widget Sapo do Dia; compartilhar sapo novo como imagem.
+- Voltar do Android fecha o que está aberto.
+- Aviso de nova versão dentro do app; site oficial versionado em `site/`.
+### Alterado
+- Tema claro com verde mais claro e contraste melhor.
+- Tutorial não aparece pra quem já usa o app ou entra numa conta com dados.
+### Corrigido
+- Tamanho de fonte agora vale pro app todo.
+- Card Especial não aparece mais no começo do tutorial após resetar.
+- Sapos não somem mais da lagoa; raridade respeitada no sorteio.
+- Login com backup antigo não volta mais pra tela de login.
 ### Removido
-- Sobras do Firebase e arquivos soltos sem uso.
+- Login pelo Facebook, sons sintéticos e sobras do Firebase.
 
 ## [1.4.0] — 2026-10-08
 ### Adicionado

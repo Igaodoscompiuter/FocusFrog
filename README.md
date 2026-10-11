@@ -59,6 +59,7 @@ de foco e organização, não um tratamento.)*
 | 🔁 **Rotinas e alarmes** | Transforme foco em hábito com lembretes no horário. |
 | 🎒 **Widget "Já pegou?"** | Checklist de saída de casa direto na tela inicial. |
 | 🔒 **Local-first** | Funciona sem conta e sem internet. Os dados ficam no seu celular. |
+| ☁️ **Conta opcional** | Entre com Google ou Facebook pra guardar tudo na nuvem e trocar de celular sem perder nada *(em breve, 1.5.0)*. |
 
 ## Baixar
 
@@ -112,6 +113,8 @@ android/app/src/main/java/com/focusfrog/app/
 ├── PomodoroForegroundService.java   cronômetro na notificação
 ├── FocusDistractionMonitor.java     foco limpo
 └── ChecklistWidget*.java            widget "Já pegou?"
+site/                 site oficial (focusfrog.netlify.app) — ver site/README.md
+supabase/migrations/  banco da sincronização opcional
 docs/                 propriedade intelectual, prints
 ```
 

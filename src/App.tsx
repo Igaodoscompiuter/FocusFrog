@@ -1,4 +1,5 @@
 
+import './styles/tokens.css';
 import './global-components.css';
 import './App.css';
 import React, { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import { useAuth } from './hooks/useAuth';
 import { usePWAInstall } from './context/PWAInstallProvider';
 import { OnboardingNameScreen } from './screens/OnboardingNameScreen';
 import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
+import { OnboardingAccountScreen, ACCOUNT_CHOICE_KEY } from './screens/OnboardingAccountScreen';
 import { SplashScreen } from './screens/SplashScreen';
 import { AppLayout } from './components/AppLayout';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
@@ -17,7 +19,8 @@ import InstallPromptPopup from './components/InstallPromptPopup';
 
 function App() {
   const { userName, onboardingCompleted } = useUser();
-  const { isLoading } = useAuth();
+  const { isLoading, isConfigured } = useAuth();
+  const [accountChoice, setAccountChoice] = useState(() => localStorage.getItem(ACCOUNT_CHOICE_KEY));
   const { fontSize } = useUI();
   const { canInstall, triggerInstall } = usePWAInstall();
 
@@ -30,7 +33,10 @@ function App() {
   const [minTimePassed, setMinTimePassed] = useState(false);
 
   useEffect(() => {
+    // o tamanho vai no <html>: assim tudo que usa rem acompanha
+    // (antes ia só no <body> e quase nenhum texto mudava de tamanho)
     document.body.className = `font-size-${fontSize}`;
+    document.documentElement.dataset.fontSize = fontSize;
   }, [fontSize]);
 
   // [CORREÇÃO DE VERDADE] setOverlaysWebView()/setBackgroundColor() usam uma
@@ -106,7 +112,12 @@ function App() {
   // --- LÓGICA DE RENDERIZAÇÃO CORRIGIDA ---
   let screenContent;
   if (!onboardingCompleted) {
-    if (!userName) {
+    if (!userName && !accountChoice && isConfigured) {
+      // 1ª abertura: entrar com conta (nova ou existente) ou seguir sem conta
+      screenContent = <OnboardingAccountScreen onContinueWithoutAccount={() => {
+        localStorage.setItem(ACCOUNT_CHOICE_KEY, 'local'); setAccountChoice('local');
+      }} />;
+    } else if (!userName) {
       screenContent = <OnboardingNameScreen />;
     } else {
       screenContent = <OnboardingWelcomeScreen />;

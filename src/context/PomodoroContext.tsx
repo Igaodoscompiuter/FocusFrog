@@ -3,12 +3,13 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useUI } from './UIContext';
 import { useUser } from './UserContext';
-import { uiEffects } from '../sounds';
+import { useTheme } from './ThemeContext';
+import { playEventEffect } from '../store/soundCatalog';
 import { postMessageToSW } from '../sw-helpers';
 import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction, isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { frogSpecies } from '../utils/frogSpecies';
+import { trackFocusComplete } from '../analytics';
 
 export type PomodoroMode = 'quick' | 'classic';
 export type PomodoroSessionStatus = 'idle' | 'focus' | 'break';
@@ -41,6 +42,8 @@ interface PomodoroContextType {
     clearScaredOutcome: () => void;
     pomodorosCompleted: number;
     activeTaskId: string | null;
+    /** fim da fase atual (foco ou pausa), em ms — null parado */
+    sessionEndsAt: number | null;
     activeTaskTitle: string | null;
     mode: PomodoroMode | null;
     sessionStatus: PomodoroSessionStatus;
@@ -76,10 +79,23 @@ export const usePomodoro = () => {
     return context;
 };
 
-const getRandomFrog = (): keyof typeof frogSpecies => {
-    const speciesKeys = Object.keys(frogSpecies);
-    const randomIndex = Math.floor(Math.random() * speciesKeys.length);
-    return speciesKeys[randomIndex] as keyof typeof frogSpecies;
+/**
+ * Sorteio do sapo da sessão respeitando a raridade.
+ * [CORREÇÃO] Antes todas as espécies tinham a mesma chance: com 2 épicas em
+ * 6 espécies, 1 a cada 3 sapos era "épico" e a raridade não significava nada.
+ * Agora cada raridade tem uma chance total, dividida entre as suas espécies.
+ */
+export const RARITY_CHANCE: Record<string, number> = { common: 0.65, rare: 0.25, epic: 0.10 };
+export const getRandomFrog = (rand: () => number = Math.random): keyof typeof frogSpecies => {
+    const all = Object.values(frogSpecies);
+    const weights = all.map(s => {
+        const sameRarity = all.filter(o => o.rarity === s.rarity).length;
+        return (RARITY_CHANCE[s.rarity] ?? 0.1) / sameRarity;
+    });
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = rand() * total;
+    for (let i = 0; i < all.length; i++) { r -= weights[i]; if (r < 0) return all[i].id; }
+    return all[all.length - 1].id;
 };
 
 /**
@@ -109,7 +125,7 @@ function scheduleEndAlert(phase: 'focus' | 'break', endsAt: number, isFinalFocus
 }
 
 export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { playEffect } = useUI();
+    const { activeEffectId, isUnlocked } = useTheme();
     const { addFrogToCollection } = useUser();
 
     const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
@@ -168,9 +184,9 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (activeTaskId) {
             setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'button' });
         }
-        if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
+        playEventEffect('end', isUnlocked, activeEffectId);
         stopAndReset();
-    }, [activeTaskId, stopAndReset, playEffect]);
+    }, [activeTaskId, stopAndReset, isUnlocked, activeEffectId]);
 
     // Efeito para calcular o progresso do ciclo e da sessão
     useEffect(() => {
@@ -231,14 +247,15 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
                 if (activeTaskId) {
                     setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'timer' });
                 }
+                trackFocusComplete(Math.round(((mode === 'quick' ? 1 : totalCycles) * focusDuration) / 60), false);
 
-                if (uiEffects.sessionComplete) playEffect(uiEffects.sessionComplete);
+                playEventEffect('end', isUnlocked, activeEffectId);
                 // O "Foco concluído" já foi agendado no INÍCIO deste bloco pro
                 // horário exato do fim — aqui só encerra preservando ele.
                 stopAndReset({ finished: true });
 
             } else {
-                if (uiEffects.breakStart) playEffect(uiEffects.breakStart);
+                playEventEffect('break', isUnlocked);
                 setSessionStatus('break');
                 setTimeRemaining(breakDuration);
                 const endsAt = Date.now() + breakDuration * 1000;
@@ -252,7 +269,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
             }
         } else if (sessionStatus === 'break') {
             // --- Fim da Pausa ---
-            if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
+            playEventEffect('start', isUnlocked);
             setCurrentCycle(c => c + 1);
             setSessionStatus('focus');
             setTimeRemaining(focusDuration);
@@ -264,7 +281,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         setTimeRemaining(0);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mode, sessionStatus, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, playEffect, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, setSessionEndsAt]);
+    }, [mode, sessionStatus, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, isUnlocked, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, setSessionEndsAt, activeEffectId]);
 
     // Efeito principal do temporizador
     useEffect(() => {
@@ -340,14 +357,14 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setSessionStatus('focus');
         setIsPaused(false);
         
-        if (uiEffects.timerStart) playEffect(uiEffects.timerStart);
+        playEventEffect('start', isUnlocked);
         const endsAt = Date.now() + newFocusDuration * 1000;
         setSessionEndsAt(endsAt);
         resetFocusDistraction();
         setDistractionGuard(isDistractionGuardOn()); // mantém o lado nativo sincronizado
         scheduleEndAlert('focus', endsAt, newTotalCycles <= 1, settings.taskTitle, newBreakDuration, newFocusDuration);
         startOrUpdateFocusForegroundService(settings.taskTitle, 'focus', endsAt);
-    }, [playEffect, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
+    }, [isUnlocked, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
 
     const pauseCycle = useCallback(() => {
         if (sessionStatus !== 'idle') {
@@ -375,6 +392,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
     const value: PomodoroContextType = {
         pomodorosCompleted,
         activeTaskId,
+        sessionEndsAt,
         activeTaskTitle,
         scaredOutcome,
         clearScaredOutcome,

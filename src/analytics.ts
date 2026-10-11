@@ -101,3 +101,13 @@ export const trackDonationClick = () => {
 export const trackInstagramClick = () => {
   gtagEvent('instagram_click');
 };
+
+// ---------------------------------------------------------------
+// Eventos do ciclo principal (Escolher → Começar → Focar → Concluir → Evoluir).
+// Só números e nomes de eventos: nenhum texto de tarefa vai pro Analytics.
+// ---------------------------------------------------------------
+export const trackFocusComplete = (minutes: number, isFrog: boolean) => gtagEvent('focus_complete', { minutes, is_frog: isFrog });
+export const trackFrogCollected = (species: string, rarity: string) => gtagEvent('frog_collected', { species, rarity });
+export const trackTutorialComplete = () => gtagEvent('tutorial_complete');
+export const trackStoreUnlock = (item_id: string, price: number) => gtagEvent('store_unlock', { item_id, price });
+export const trackShareFrog = (species: string) => gtagEvent('share', { method: 'frog_card', content_type: 'frog', item_id: species });

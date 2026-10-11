@@ -106,3 +106,5 @@
   animation: badgeGlow 1.4s ease-in-out infinite;
 }
 @keyframes badgeGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+
+.shareButton { margin-top: 8px; }

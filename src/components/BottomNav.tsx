@@ -1,53 +1,43 @@
-
 import React from 'react';
 import { useUI } from '../context/UIContext';
-import { FiGrid, FiCheckSquare, FiTarget, FiBarChart2, FiUser } from 'react-icons/fi';
+import { FiHome, FiCheckSquare, FiTarget, FiSettings } from 'react-icons/fi';
+import { Icon as AppIcon } from './Icon';
+import { icons } from './Icons';
 import type { Screen } from '../types';
 import styles from './BottomNav.module.css';
 
-const iconMap: Record<Screen, React.ElementType> = {
-  dashboard: FiGrid,
-  tasks: FiCheckSquare,
-  focus: FiTarget,
-  stats: FiBarChart2,
-  rewards: FiUser, 
-  moodboard: FiGrid,
-};
+const FrogIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <span className={className}><AppIcon path={icons.frog} /></span>
+);
 
-const baseScreenOrder: Screen[] = ['focus', 'tasks', 'dashboard', 'stats', 'rewards'];
+/** Abas: nomes curtos (cabem em telas estreitas sem quebrar) e o Início no meio. */
+const tabs: { screen: Screen; label: string; icon: React.ElementType }[] = [
+  { screen: 'focus', label: 'Foco', icon: FiTarget },
+  { screen: 'tasks', label: 'Tarefas', icon: FiCheckSquare },
+  { screen: 'dashboard', label: 'Início', icon: FiHome },
+  { screen: 'stats', label: 'Jardim', icon: FrogIcon },
+  { screen: 'rewards', label: 'Ajustes', icon: FiSettings },
+];
 
 export const BottomNav: React.FC = () => {
   const { activeScreen, handleNavigate } = useUI();
 
-  const screenOrder = baseScreenOrder;
-
-  const screenLabels: Record<Screen, string> = {
-    dashboard: 'Home',
-    tasks: 'Tarefas',
-    focus: 'Foco',
-    stats: 'Estatísticas',
-    rewards: 'Configurações', // Rótulo final ajustado
-    moodboard: 'Dev',
-  };
-
   return (
-    <nav className={styles.bottomNav}>
-        {screenOrder.map((screen) => {
-          const Icon = iconMap[screen];
-          const isActive = activeScreen === screen;
-          const itemClassName = `${styles.navItem} ${isActive ? styles.active : ''}`;
-
-          return (
-            <button 
-              key={screen} 
-              className={itemClassName}
-              onClick={() => handleNavigate(screen)}
-            >
-              <Icon className={styles.navIcon} />
-              <span>{screenLabels[screen]}</span>
-            </button>
-          );
-        })}
+    <nav className={styles.bottomNav} aria-label="Navegação principal">
+      {tabs.map(({ screen, label, icon: Icon }) => {
+        const isActive = activeScreen === screen;
+        return (
+          <button
+            key={screen}
+            className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+            onClick={() => handleNavigate(screen)}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <span className={styles.pill}><Icon className={styles.navIcon} /></span>
+            <span className={styles.label}>{label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 };

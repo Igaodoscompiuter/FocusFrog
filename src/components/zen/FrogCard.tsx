@@ -6,6 +6,7 @@ import { useZenPond } from '../../context/ZenPondContext';
 import { ZenFrog } from './ZenFrog';
 import { useMascot } from '../../hooks/useMascot';
 import styles from './FrogCard.module.css';
+import { useBackHandler } from '../../hooks/useBackHandler';
 
 const rarityLabel: Record<string, string> = {
     common: 'Comum',
@@ -37,6 +38,7 @@ interface FrogCardProps {
  * pequeno em vez de cobrir a tela inteira.
  */
 export const FrogCard: React.FC<FrogCardProps> = ({ speciesId, frogId, onClose }) => {
+    useBackHandler(onClose);
     const species = frogSpecies[speciesId];
     const zenPond = useZenPond();
     const [mascot, setMascot] = useMascot();

@@ -1,10 +1,14 @@
 
 import { useEffect, useRef } from 'react';
+import { useBackHandler } from './useBackHandler';
 
-export const useClickOutside = (callback: () => void) => {
+/** Fecha ao tocar fora — e também no voltar do Android (`active`: só enquanto aberto). */
+export const useClickOutside = (callback: () => void, active = true) => {
     const ref = useRef<HTMLDivElement>(null);
+    useBackHandler(callback, active);
 
     useEffect(() => {
+        if (!active) return;
         const handleClickOutside = (event: MouseEvent) => {
             if (ref.current && !ref.current.contains(event.target as Node)) {
                 callback();
@@ -15,7 +19,7 @@ export const useClickOutside = (callback: () => void) => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [callback]);
+    }, [callback, active]);
 
     return ref;
 };

@@ -94,3 +94,6 @@ android/local.properties
 # chave de assinatura: NUNCA no git
 *.jks
 keystore.properties
+
+# site: o APK vai no deploy, não no git
+site/*.apk

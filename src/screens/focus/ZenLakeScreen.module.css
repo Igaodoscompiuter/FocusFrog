@@ -56,11 +56,11 @@
     width: 280px;
     height: 280px;
     border-radius: 50%;
-    background: radial-gradient(circle, #5C85E8 0%, #3B5FBA 100%);
+    background: radial-gradient(circle, var(--primary-color-hover) 0%, var(--primary-color) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid #3B5FBA;
+    border: 3px solid var(--primary-color);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 3px 5px rgba(0,0,0,0.2);
 }
 

@@ -5,8 +5,8 @@
 .cardWrapper { position: relative; }
 
 .swipeBackground { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; color: white; font-weight: 500; border-radius: var(--border-radius-large); }
-.completeBackground { background-color: #28a745; justify-content: flex-start; }
-.deleteBackground { background-color: #dc3545; justify-content: flex-end; }
+.completeBackground { background-color: var(--success-color); justify-content: flex-start; }
+.deleteBackground { background-color: var(--danger-color); justify-content: flex-end; }
 .swipeIcon { display: flex; align-items: center; gap: 0.5rem; }
 
 .taskCard {

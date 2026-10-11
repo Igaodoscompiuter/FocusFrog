@@ -47,7 +47,10 @@ const FROG_COLLISION_RADIUS = 7;
 const FROG_INTERACTION_DISTANCE = 8;
 export const MAX_POND_FROGS = 8;
 const ATTRACTION_CHANCE = 0.7;
-const MIN_FROG_SCALE = 0.25;
+// Sapos de espécies diferentes "disputam" espaço e o menor encolhe um pouco,
+// mas nunca abaixo disto. [CORREÇÃO] Antes o menor encolhia até 0.25 e era
+// APAGADO da lagoa — a pessoa perdia um sapo que ganhou com foco.
+const MIN_FROG_SCALE = 0.7;
 const SIMULATION_TICK_RATE = 2000;
 
 const random = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -253,12 +256,12 @@ export const ZenPondProvider: React.FC<ZenPondProviderProps> = ({ collectedFrogs
             newRipples.push({ id: now + Math.random(), top: `${a.top}%`, left: `${a.left}%`, gold: true, delayMs: 560 });
           } else {
             const aBig = a.scale > b.scale;
-            updated[i] = { ...a, scale: aBig ? Math.min(a.scale * 1.02, 2.0) : a.scale * 0.98 };
-            updated[j] = { ...b, scale: aBig ? b.scale * 0.98 : Math.min(b.scale * 1.02, 2.0) };
+            updated[i] = { ...a, scale: aBig ? Math.min(a.scale * 1.02, 2.0) : Math.max(a.scale * 0.98, MIN_FROG_SCALE) };
+            updated[j] = { ...b, scale: aBig ? Math.max(b.scale * 0.98, MIN_FROG_SCALE) : Math.min(b.scale * 1.02, 2.0) };
           }
         }
       }
-      const nextPond = updated.filter(f => f.merging || f.scale >= MIN_FROG_SCALE);
+      const nextPond = updated; // ninguém some: só os absorvidos numa fusão saem no próximo tique
 
       let applied = false;
       setState(prev => {

@@ -19,6 +19,21 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- volta do login (Google/Facebook): o navegador abre
+                 com.focusfrog.app://auth-callback?code=... e cai aqui -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.focusfrog.app" android:host="auth-callback" />
+            </intent-filter>
+            <!-- botão "Abrir o FocusFrog" do site (focusfrog://open) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="focusfrog" android:host="open" />
+            </intent-filter>
         </activity>
 
         <provider
@@ -43,6 +58,20 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Mantém visível o cronômetro de uma sessão de foco (Pomodoro) em andamento, com notificação fixa mostrando o tempo restante, mesmo com o app em segundo plano." />
         </service>
+
+        <!-- Widget de tela inicial "Sapo do Dia" -->
+        <receiver
+            android:name=".FrogWidgetProvider"
+            android:exported="false"
+            android:label="Sapo do Dia">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.focusfrog.app.FROG_WIDGET_REST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/frog_widget_info" />
+        </receiver>
 
         <!-- Widget de tela inicial do checklist "Já pegou?" -->
         <receiver

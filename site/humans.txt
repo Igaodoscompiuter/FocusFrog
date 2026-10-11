@@ -1,0 +1,12 @@
+/* EQUIPE */
+Criador do FocusFrog: Igor Viana
+Instagram: @focus.frog
+
+/* SITE */
+Desenvolvido por: Online Já Tech — https://onlinejacwb.com.br
+Cidade: Curitiba, PR
+
+/* APP */
+FocusFrog para Android
+Site: https://focusfrog.netlify.app/
+Código: https://github.com/Igaodoscompiuter/FocusFrog

@@ -3,12 +3,13 @@ import { App } from '@capacitor/app';
 
 /**
  * Aviso de nova versão do APK (fora da Play Store não existe atualização
- * automática). A LP publica um version.json:
+ * automática). O site publica site/update.json (o /version.json antigo
+ * redireciona pra ele, pras instalações da 1.4.0):
  *
  *   {
  *     "versionCode": 4,                 // inteiro, igual ao build.gradle
  *     "versionName": "1.5.0",
- *     "apkUrl": "https://focusfrog.netlify.app/downloads/FocusFrog.apk",
+ *     "apkUrl": "https://focusfrog.netlify.app/FocusFrog.apk",
  *     "notes": ["Novidade 1", "Novidade 2"],
  *     "publishedAt": "2026-10-20"
  *   }
@@ -25,7 +26,7 @@ export interface UpdateManifest {
 
 export interface InstalledVersion { versionCode: number; versionName: string }
 
-const MANIFEST_URL = (import.meta.env.VITE_UPDATE_MANIFEST_URL as string | undefined) || 'https://focusfrog.netlify.app/version.json';
+const MANIFEST_URL = (import.meta.env.VITE_UPDATE_MANIFEST_URL as string | undefined) || 'https://focusfrog.netlify.app/update.json';
 const LAST_CHECK_KEY = 'focusfrog_update_lastCheck';
 const SNOOZE_KEY = 'focusfrog_update_snooze'; // { versionCode, until }
 const CHECK_EVERY_MS = 12 * 60 * 60 * 1000;

@@ -8,11 +8,11 @@ import { todayISO, toISODate } from '../utils/dates';
 import { useUI } from './UIContext';
 import { useTheme } from './ThemeContext';
 import { usePomodoro } from './PomodoroContext';
-import { initialRoutines, initialTaskTemplates, defaultTags, focusFrogMarketingTask, FOCUS_FROG_MARKETING_TASK_ID } from '../constants';
+import { initialRoutines, initialTaskTemplates, defaultTags, focusFrogMarketingTask, FOCUS_FROG_MARKETING_TASK_ID, isSpecialFrogTask } from '../constants';
 import { syncRoutineNotifications, scheduleFrogReminder, cancelFrogReminder } from '../notifications';
 import { syncChecklistToWidget, readChecklistFromWidget } from '../widgetBridge';
 
-type CompletionMethod = 'timer' | 'button' | 'subtask';
+type CompletionMethod = 'timer' | 'button' | 'subtask' | 'instagram';
 
 interface TasksContextType {
     tasks: Task[];
@@ -85,13 +85,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return Date.now() * 1000 + (idCounterRef.current % 1000);
     }, []);
 
-    // [NOVO] Instalação nova já nasce com o card especial FocusFrog como tarefa
-    // de verdade (antes só existia como template na Biblioteca, nunca aparecia
-    // sozinho) — estratégia de marketing combinada com frogTaskId abaixo.
-    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', [focusFrogMarketingTask]);
+    // Instalação nova começa vazia. O Card Especial FocusFrog só entra no fim
+    // do tutorial (passo "presente", ver ensureMarketingFrog), com o convite
+    // pra seguir no Instagram.
+    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
     const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', defaultTags);
-    // Sapo do Dia padrão = o card especial acima, só na 1ª instalação.
-    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', FOCUS_FROG_MARKETING_TASK_ID);
+    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', null);
     const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
 
     const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
@@ -146,30 +145,10 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [triageQueue, setTriageQueue] = useState<Task[]>([]);
     const isTriageActive = useMemo(() => triageQueue.length > 0, [triageQueue]);
 
-    useEffect(() => {
-        const welcomeTaskTemplate = taskTemplates.find(t => t.id === 50);
-        if (!onboardingCompleted && welcomeTaskTemplate) {
-            const newTaskId = `task-${Date.now()}`;
-            const welcomeTaskInstance: Task = {
-                id: newTaskId,
-                title: welcomeTaskTemplate.title,
-                description: welcomeTaskTemplate.description,
-                quadrant: welcomeTaskTemplate.quadrant || 'inbox',
-                pomodoroEstimate: welcomeTaskTemplate.pomodoroEstimate !== undefined ? welcomeTaskTemplate.pomodoroEstimate : 1,
-                customDuration: welcomeTaskTemplate.customDuration,
-                energyNeeded: welcomeTaskTemplate.energyNeeded,
-                subtasks: welcomeTaskTemplate.subtasks?.map((st, subIndex) => ({ id: `sub-${Date.now()}-${subIndex}`, text: st.text, completed: false })),
-                tagId: welcomeTaskTemplate.category === "FocusFrog🐸" ? 1 : undefined,
-                status: 'todo',
-                displayOrder: 0,
-                templateId: welcomeTaskTemplate.id,
-            };
-
-            setTasks([welcomeTaskInstance]);
-            setFrogTaskId(newTaskId);
-            setOnboardingCompleted(true);
-        }
-    }, [onboardingCompleted, setOnboardingCompleted, setTasks, setFrogTaskId, taskTemplates]);
+    // [REMOVIDO] Havia aqui uma "tarefa de boas-vindas": numa instalação nova
+    // (ou depois de resetar os dados) ela criava o Card Especial a partir do
+    // modelo 50 e já o colocava como Sapo do Dia — atrapalhando o tutorial.
+    // Agora o card só entra no fim do tutorial (ensureMarketingFrog).
 
     const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status' | 'displayOrder'>) => {
         const newTasks: Task[] = [{ ...taskData, id: `task-${Date.now()}`, status: 'todo', displayOrder: 0 }];
@@ -199,6 +178,28 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const handleCompleteTask = useCallback((taskId: string, method: CompletionMethod, subtaskId?: string) => {
         const taskToComplete = tasks.find(t => t.id === taskId);
         if (!taskToComplete || taskToComplete.status === 'done') return;
+
+        // Card Especial: marcar os passos não conclui. Ele só conclui quando a
+        // pessoa toca em "Visitar o Instagram" (método 'instagram').
+        const isSpecialCard = isSpecialFrogTask(taskToComplete);
+        if (isSpecialCard && method !== 'instagram') {
+            if (subtaskId) {
+                setTasks(prev => prev.map(t => t.id !== taskId ? t : {
+                    ...t, subtasks: t.subtasks?.map(st => st.id === subtaskId ? { ...st, completed: true } : st),
+                }));
+            } else {
+                addNotification('Esse sapo se conclui no botão "Visitar o Instagram"', '🐸', 'info');
+            }
+            return;
+        }
+        if (isSpecialCard) {
+            setTasks(prev => prev.map(t => t.id !== taskId ? t : {
+                ...t, subtasks: t.subtasks?.map(st => ({ ...st, completed: true })), status: 'done', completedAt: new Date().toISOString(),
+            }));
+            setPontosFoco(p => p + 50);
+            addNotification('Valeu por seguir o FocusFrog! +50 pontos', '🐸', 'victory');
+            return;
+        }
 
         if (taskId === activeTaskId) {
             stopCycle();
@@ -472,6 +473,10 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, [triageQueue, tasks, handleUpdateTaskQuadrant, endTriage, addNotification]);
 
     const ensureMarketingFrog = useCallback(() => {
+        // já existe um Card Especial aberto (inclusive um antigo, criado pelo
+        // modelo)? Usa ele em vez de criar outro.
+        const open = tasks.find(t => isSpecialFrogTask(t) && t.status !== 'done');
+        if (open) { setFrogTaskId(open.id); return; }
         setTasks(prev => {
             const current = prev.find(t => t.id === FOCUS_FROG_MARKETING_TASK_ID);
             if (current && current.status !== 'done') return prev;
@@ -479,7 +484,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             return [fresh, ...prev.filter(t => t.id !== FOCUS_FROG_MARKETING_TASK_ID)];
         });
         setFrogTaskId(FOCUS_FROG_MARKETING_TASK_ID);
-    }, [setTasks, setFrogTaskId]);
+    }, [tasks, setTasks, setFrogTaskId]);
 
     const needsMorningPlan = useMemo(() => {
         const today = todayISO();

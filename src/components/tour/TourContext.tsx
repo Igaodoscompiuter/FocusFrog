@@ -2,7 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { useTasks } from '../../context/TasksContext';
 import { usePomodoro } from '../../context/PomodoroContext';
 import { useUI } from '../../context/UIContext';
-import { FOCUS_FROG_MARKETING_TASK_ID } from '../../constants';
+import { isSpecialFrogTask } from '../../constants';
+import { trackTutorialComplete } from '../../analytics';
 
 export const TOUR_KEY = 'focusfrog_tour';
 
@@ -25,7 +26,7 @@ export const TOUR_STEPS: TourStep[] = [
   { id: 'frog', target: '#frog-card', title: 'Passo 2 · Escolhe seu Sapo do Dia', text: 'O Sapo do Dia é a tarefa que mais importa hoje. Toca aqui e escolhe a tarefa que você acabou de criar (ela já vem marcada).' },
   { id: 'start', target: '#eat-the-frog-button', title: 'Passo 3 · Come o sapo!', text: 'Toca em "Comer o Sapo". Esse primeiro foco dura só 5 segundinhos, pra você ver o sapo nascer.' },
   { id: 'focusing', target: '[class*="timerContainer"]', title: 'Olha ele crescendo 👀', text: 'Enquanto o cronômetro roda, um sapinho cresce com você. Esse é rapidinho, só pra mostrar.' },
-  { id: 'done', title: 'Pronto, você pegou o jeito! 🎉', text: 'Cada foco concluído traz um sapo novo pro seu Jardim Zen, em Estatísticas. Os próximos focos são de verdade: 25 minutos.', button: 'Continuar' },
+  { id: 'done', title: 'Pronto, você pegou o jeito! 🎉', text: 'Cada foco concluído traz um sapo novo pro seu Jardim Zen, na aba Jardim. Os próximos focos são de verdade: 25 minutos.', button: 'Continuar' },
   { id: 'gift', target: '#eat-the-frog-button', title: 'Um último presente 🐸', text: 'Deixei o Card Especial FocusFrog como seu Sapo do Dia. Toca aqui pra seguir a gente no Instagram: tem dica de foco e novidade toda semana!', button: 'Concluir' },
 ];
 
@@ -48,8 +49,20 @@ export const useTour = () => {
   return ctx;
 };
 
+const readList = (k: string): any[] => {
+  try { const v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+};
+/** Já tem uso real no aparelho? (tarefas além do Card Especial, sapos ou rotinas) */
+const alreadyUsesApp = () =>
+  readList('focusfrog_tasks').some(t => !isSpecialFrogTask(t))
+  || readList('focusfrog_collectedFrogs').length > 0
+  || readList('focusfrog_routines').some(r => !r?.isDefault)
+  || Number(localStorage.getItem('focusfrog_pomodorosCompleted')) > 0;
+
 const load = (): TourState => {
   try { const raw = localStorage.getItem(TOUR_KEY); if (raw) return JSON.parse(raw); } catch { /* */ }
+  // quem atualizou de uma versão sem tutorial e já usa o app não vê o tour
+  if (alreadyUsesApp()) return { done: true, step: 0 };
   return { done: false, step: 0 }; // 1ª abertura após o onboarding: começa o tour
 };
 
@@ -68,6 +81,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Ao concluir: a tarefa do tutorial vira um modelo de tarefa RÁPIDA na
   // biblioteca (categoria Saúde), uma vez só.
   const finish = useCallback(() => {
+    trackTutorialComplete();
     const t = tasks.find(x => x.id === state.taskId);
     const title = t?.title?.trim();
     if (title && !taskTemplates.some(tp => tp.title === title)) {
@@ -90,7 +104,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!active) return;
     const created = step?.id === 'create' ? tasks.find(t => !baseIds.current.has(t.id)) : undefined;
     if (created) { setState(s => ({ ...s, step: s.step + 1, taskId: created.id })); }
-    else if (step?.id === 'frog' && frogTaskId && frogTaskId !== FOCUS_FROG_MARKETING_TASK_ID && tasks.some(t => t.id === frogTaskId && t.status !== 'done')) next();
+    else if (step?.id === 'frog' && frogTaskId && !isSpecialFrogTask(tasks.find(t => t.id === frogTaskId)) && tasks.some(t => t.id === frogTaskId && t.status !== 'done')) next();
     else if (step?.id === 'start' && sessionStatus !== 'idle') next();
     else if (step?.id === 'focusing' && sessionStatus === 'idle') next();
   }, [active, step?.id, tasks, frogTaskId, sessionStatus, next]);
@@ -100,7 +114,7 @@ export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (active && step && ['create', 'frog', 'start', 'gift'].includes(step.id)) handleNavigate('dashboard');
     // passo 2: o Card Especial (padrão de instalação) sai do Sapo do Dia, pra
     // pessoa escolher a tarefa que acabou de criar sem nada no caminho
-    if (active && step?.id === 'frog' && frogTaskId === FOCUS_FROG_MARKETING_TASK_ID) handleSetFrog(null);
+    if (active && step?.id === 'frog' && isSpecialFrogTask(tasks.find(t => t.id === frogTaskId))) handleSetFrog(null);
     // fecho do tutorial: Card Especial vira o Sapo do Dia, com o botão dele à mostra
     if (active && step?.id === 'gift') ensureMarketingFrog();
     // eslint-disable-next-line react-hooks/exhaustive-deps

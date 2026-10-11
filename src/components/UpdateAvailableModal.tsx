@@ -3,6 +3,7 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { checkForUpdate, snoozeUpdate, openApkDownload, UpdateManifest } from '../utils/updateCheck';
 import styles from './FrogRewardModal.module.css';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 export const UPDATE_CHECK_EVENT = 'focusfrog:check-update';
 
@@ -28,6 +29,7 @@ export const UpdateAvailableModal: React.FC = () => {
     return () => { clearTimeout(t); sub.then(s => s.remove()); window.removeEventListener(UPDATE_CHECK_EVENT, onManual); };
   }, [run]);
 
+  useBackHandler(() => { if (update) { snoozeUpdate(update.versionCode); setUpdate(null); } }, !!update);
   if (!update) return null;
   const later = () => { snoozeUpdate(update.versionCode); setUpdate(null); };
 

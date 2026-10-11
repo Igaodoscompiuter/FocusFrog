@@ -1,0 +1,21 @@
+{
+  "name": "FocusFrog",
+  "short_name": "FocusFrog",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a120e",
+  "theme_color": "#0a120e",
+  "icons": [
+    {
+      "src": "/images/global/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/global/apple-touch-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

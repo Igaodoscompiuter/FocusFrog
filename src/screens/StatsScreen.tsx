@@ -11,6 +11,8 @@ import { PondDock } from '../components/zen/PondDock';
 import { motivationalQuotes } from '../utils/quotes';
 import { FiAward, FiClock } from 'react-icons/fi';
 import { frogSpecies } from '../utils/frogSpecies';
+import { useTheme } from '../context/ThemeContext';
+import { openStore } from './store/StoreScreen';
 
 const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
@@ -19,6 +21,7 @@ export const StatsScreen: React.FC = () => {
   const { pomodorosCompleted } = usePomodoro();
   const { collectedFrogs } = useUser();
   
+  const { pontosFoco } = useTheme();
   const [showAlbum, setShowAlbum] = useState(false);
   const [showViveiro, setShowViveiro] = useState(false);
 
@@ -100,7 +103,12 @@ export const StatsScreen: React.FC = () => {
         
         <div className={styles.frogPondCard}>
             <ZenPondProvider collectedFrogs={frogsForPond}>
-                <h2 className={styles.sectionTitle}>Jardim Zen</h2>
+                <div className={styles.pondHeaderRow}>
+                    <h2 className={styles.sectionTitle}>Jardim Zen</h2>
+                    <button className={styles.storeBtn} onClick={openStore} aria-label={`Loja do Sapo, ${pontosFoco} pontos`}>
+                        Loja <span>{pontosFoco} pts</span>
+                    </button>
+                </div>
                 <ZenPond>
                     {frogsForPond.length === 0 && (
                         <p className={styles.emptyPondMessage}>

@@ -1,51 +1,16 @@
+import { supabase } from '../supabaseClient';
+import type { User } from '@supabase/supabase-js';
 import { useCallback } from 'react';
 import { useUI } from '../context/UIContext';
-import { supabase } from '../supabaseClient';
-import { User } from '@supabase/supabase-js';
 import { frogSpecies } from '../utils/frogSpecies';
+import { USER_DATA_KEYS, collectSnapshot, applySnapshot, UserSnapshot } from '../sync/userDataKeys';
 
-const USER_DATA_KEYS = [
-    'focusfrog_tasks',
-    'focusfrog_tags',
-    'focusfrog_frogTaskId',
-    'focusfrog_onboardingCompleted',
-    'focusfrog_routines',
-    'focusfrog_taskTemplates',
-    'focusfrog_leavingHomeItems',
-    'focusfrog_userName',
-    'focusfrog_theme',
-    'focusfrog_sound',
-    'focusfrog_ui_settings',
-    'focusfrog_collectedFrogs',
-    'focusfrog_pomodorosCompleted',
-    'focusfrog_zenState', // lagoa + viveiro (entra no backup também)
-    'focusfrog_mascot'
-];
+// Arquivo de backup = mesmo formato da nuvem (ver src/sync/userDataKeys.ts).
+const createBackupObjectFromLocalStorage = () => ({ ...collectSnapshot(), exportedAt: new Date().toISOString() });
 
-const BACKUP_VERSION = '2.2.0';
-
-const createBackupObjectFromLocalStorage = () => {
-    const backup: { [key: string]: any } = { version: BACKUP_VERSION };
-    USER_DATA_KEYS.forEach(key => {
-        const data = localStorage.getItem(key);
-        if (data) {
-            try {
-                backup[key] = JSON.parse(data);
-            } catch (e) {
-                backup[key] = data; // Store as raw string if not JSON
-            }
-        }
-    });
-    return backup;
-};
-
-const restoreLocalStorageFromBackupObject = (data: { [key: string]: any }) => {
-    Object.keys(data).forEach(key => {
-        if (key !== 'version') {
-            const value = typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key];
-            localStorage.setItem(key, value);
-        }
-    });
+const restoreLocalStorageFromBackupObject = (data: UserSnapshot) => {
+    if (!data || typeof data !== 'object' || !USER_DATA_KEYS.some(k => k in data)) throw new Error('backup inválido');
+    applySnapshot(data);
 };
 
 export const useUserData = () => {
@@ -134,6 +99,7 @@ export const useUserData = () => {
         // reset (por isso sapos antigos reapareciam depois de "apagar os
         // dados"). Agora apaga toda chave do app, inclusive as que forem
         // criadas no futuro, sem depender de lembrar de atualizar a lista.
+        supabase.auth.signOut().catch(() => {});
         Object.keys(localStorage)
             .filter(key => key.startsWith('focusfrog_'))
             .forEach(key => localStorage.removeItem(key));
@@ -141,15 +107,11 @@ export const useUserData = () => {
         setTimeout(() => window.location.reload(), 1500);
     }, [addNotification]);
     
-    const syncLocalToSupabase = useCallback(async (user: User) => { /* Implementação omitida para brevidade */ }, []);
-    const downloadAndRestoreFromSupabase = useCallback(async (user: User) => { /* Implementação omitida para brevidade */ }, []);
 
     return {
         exportData,
         importDataFromFile,
         resetData,
-        downloadAndRestoreFromSupabase,
-        syncLocalToSupabase,
         addFrogToCollection,
         getCollectedFrogs,
     };

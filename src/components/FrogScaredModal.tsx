@@ -3,6 +3,7 @@ import { usePomodoro, MAX_DISTRACTION_RATIO } from '../context/PomodoroContext';
 import { frogSpecies } from '../utils/frogSpecies';
 import { ZenFrog } from './zen/ZenFrog';
 import styles from './FrogRewardModal.module.css';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 const fmt = (ms: number) => {
     const s = Math.round(ms / 1000), m = Math.floor(s / 60), r = s % 60;
@@ -13,6 +14,7 @@ const fmt = (ms: number) => {
  *  bronca — explica o critério e convida a tentar de novo. */
 export const FrogScaredModal: React.FC = () => {
     const { scaredOutcome, clearScaredOutcome } = usePomodoro();
+    useBackHandler(clearScaredOutcome, !!scaredOutcome);
     if (!scaredOutcome) return null;
     const species = frogSpecies[scaredOutcome.speciesId];
 
