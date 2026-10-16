@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BottomNav } from './BottomNav';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TasksScreen } from '../screens/TasksScreen';
@@ -20,6 +20,8 @@ import { Capacitor } from '@capacitor/core';
 import { useAndroidBackButton } from '../hooks/useBackHandler';
 import { FrogWidgetSync } from './FrogWidgetSync';
 import { AmbientSoundPlayer } from './AmbientSoundPlayer';
+import { NotificationActionHandler } from './NotificationActionHandler';
+import { trackPageView } from '../analytics';
 import { StoreScreen, OPEN_STORE_EVENT } from '../screens/store/StoreScreen';
 
 // Nota de arquitetura: o TasksProvider NÃO é montado aqui — ele já envolve toda a
@@ -51,6 +53,12 @@ export const AppLayout: React.FC = () => {
         return false;
     });
 
+    // uma visualização por tela no GA4 (o app é uma tela só, sem troca de URL)
+    useEffect(() => {
+        const nomes: Record<string, string> = { dashboard: 'Início', tasks: 'Tarefas', focus: 'Foco', stats: 'Jardim', rewards: 'Ajustes', moodboard: 'Moodboard' };
+        trackPageView(nomes[activeScreen] || activeScreen);
+    }, [activeScreen]);
+
     const ActiveScreenComponent = screenMap[activeScreen];
 
     return (
@@ -69,6 +77,7 @@ export const AppLayout: React.FC = () => {
             <UpdateAvailableModal />
             <FrogWidgetSync />
             <AmbientSoundPlayer />
+            <NotificationActionHandler />
             {storeOpen && <StoreScreen onClose={() => setStoreOpen(false)} />}
             {/* aviso de nova versão é só do PWA — no APK quem atualiza é a instalação */}
             {!Capacitor.isNativePlatform() && <UpdatePrompt />}

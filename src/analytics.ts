@@ -16,10 +16,12 @@ const gtagEvent = (eventName: string, params?: Record<string, unknown>) => {
  * O GA4 já faz isso automaticamente, mas é útil para SPAs.
  */
 export const trackPageView = (page_title: string) => {
+  // no APK a URL é sempre https://localhost/ — a tela vai como caminho próprio
+  const path = '/' + page_title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   gtagEvent('page_view', {
     page_title,
-    page_location: window.location.href,
-    page_path: window.location.pathname,
+    page_location: 'https://app.focusfrog' + path,
+    page_path: path,
   });
 };
 

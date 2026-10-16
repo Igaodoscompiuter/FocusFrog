@@ -76,6 +76,7 @@ export async function schedulePhaseEndNotification(title: string, body: string, 
                     title,
                     body,
                     schedule: { at: new Date(atTimestamp), allowWhileIdle: true },
+                    extra: { go: 'focus' },
                 }],
             });
         } catch (e) {
@@ -131,7 +132,7 @@ export async function scheduleSessionDoneNotification(title: string, body: strin
         await ensureExactAlarmPermission();
         try {
             await LocalNotifications.schedule({
-                notifications: [{ id: NOTIF_ID_SESSION_DONE, title, body, schedule: { at: new Date(atTimestamp), allowWhileIdle: true } }],
+                notifications: [{ id: NOTIF_ID_SESSION_DONE, title, body, schedule: { at: new Date(atTimestamp), allowWhileIdle: true }, extra: { go: 'focus' } }],
             });
         } catch (e) {
             console.warn('[notifications] falha ao agendar aviso de conclusão:', e);
@@ -183,6 +184,7 @@ export async function scheduleFrogReminder(taskTitle: string, delayMs: number) {
                 title: '🐸 Seu Sapo do Dia ainda espera...',
                 body: `"${taskTitle}" continua pendente. Que tal um foco rápido agora?`,
                 schedule: { at: new Date(Date.now() + delayMs), allowWhileIdle: true },
+                extra: { go: 'home' },
             }],
         });
     } catch (e) {
@@ -222,6 +224,46 @@ interface ScheduledRoutine {
 }
 
 const ALARM_CHANNEL_ID = 'routine-alarm';
+
+/** Botões da notificação de rotina (os dois abrem o app; o "adiar" fecha logo em seguida). */
+export const ROUTINE_ACTION_TYPE = 'ff-routine';
+export const ROUTINE_ACTION_START = 'start';
+export const ROUTINE_ACTION_SNOOZE = 'snooze';
+let routineActionsReady = false;
+async function ensureRoutineActions() {
+    if (!Capacitor.isNativePlatform() || routineActionsReady) return;
+    routineActionsReady = true;
+    try {
+        await LocalNotifications.registerActionTypes({ types: [{
+            id: ROUTINE_ACTION_TYPE,
+            actions: [
+                { id: ROUTINE_ACTION_START, title: 'Começar agora', foreground: true },
+                { id: ROUTINE_ACTION_SNOOZE, title: 'Adiar 10 min', foreground: true },
+            ],
+        }] });
+    } catch (e) {
+        console.warn('[notifications] falha ao registrar botões da rotina:', e);
+    }
+}
+
+/** "Adiar": a mesma rotina avisa de novo daqui a alguns minutos (uma vez só). */
+const ROUTINE_SNOOZE_ID_BASE = 16000;
+export async function snoozeRoutineNotification(routineId: string, routineName: string, minutes = 10) {
+    if (!Capacitor.isNativePlatform()) return;
+    await ensureRoutineActions();
+    try {
+        await LocalNotifications.schedule({ notifications: [{
+            id: ROUTINE_SNOOZE_ID_BASE + (routineNotifId(routineId) - ROUTINE_NOTIF_ID_BASE),
+            title: `🐸 Bora? ${routineName}`,
+            body: 'Você pediu pra lembrar de novo. Toque pra começar.',
+            schedule: { at: new Date(Date.now() + minutes * 60 * 1000), allowWhileIdle: true },
+            actionTypeId: ROUTINE_ACTION_TYPE,
+            extra: { routineId },
+        }] });
+    } catch (e) {
+        console.warn('[notifications] falha ao adiar rotina:', e);
+    }
+}
 let alarmChannelReady = false;
 
 /** Canal de notificação de prioridade máxima — só precisa ser criado uma vez. */
@@ -256,6 +298,7 @@ export async function syncRoutineNotifications(routines: ScheduledRoutine[]) {
     await ensureNativePermission();
     await ensureExactAlarmPermission();
     await ensureAlarmChannel();
+    await ensureRoutineActions();
 
     const withTime = routines.filter(r => r.scheduledTime);
     const idsToKeep = new Set(withTime.map(r => routineNotifId(r.id)));
@@ -278,6 +321,7 @@ export async function syncRoutineNotifications(routines: ScheduledRoutine[]) {
                         body: isAlarm ? 'Sua rotina programada começa agora.' : 'Toque para começar assim que estiver pronto.',
                         schedule: { on: { hour, minute }, allowWhileIdle: true },
                         channelId: isAlarm ? ALARM_CHANNEL_ID : undefined,
+                        actionTypeId: ROUTINE_ACTION_TYPE,
                         extra: { routineId: r.id },
                     };
                 }),

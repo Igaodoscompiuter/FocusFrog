@@ -2,14 +2,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S5P71J2Y3Z"></script>
+    <!-- Google Analytics 4 — fluxo "App Android" (o site tem fluxo próprio).
+         No APK o app roda em https://localhost, onde o cookie do GA não é confiável:
+         o identificador do aparelho fica no localStorage e vai como client_id. -->
     <script>
+      window.FF_GA_ID = 'G-ECNYYMVYKP';
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-S5P71J2Y3Z');
+      (function () {
+        var id = window.FF_GA_ID; if (!id || id.indexOf('G-') !== 0) return;
+        var cid; try { cid = localStorage.getItem('ff_ga_cid'); if (!cid) { cid = Math.floor(Math.random() * 1e10) + '.' + Math.floor(Date.now() / 1000); localStorage.setItem('ff_ga_cid', cid); } } catch (e) {}
+        gtag('js', new Date());
+        gtag('config', id, { client_storage: 'none', client_id: cid, send_page_view: false, app_platform: 'android' });
+        var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id; document.head.appendChild(s);
+      })();
     </script>
     <meta charset="UTF-8" />
     <!-- [CORREÇÃO] A linha do ícone foi atualizada para usar um ícone PWA existente e corrigir o erro 404 -->
