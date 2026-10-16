@@ -5,7 +5,7 @@
 const APP_VERSION = '1.5.0';                // versão do APK publicado (igual ao update.json)
 const APK_URL = '/FocusFrog.apk';            // APK na raiz do site (o app e o update.json apontam pra cá)
 const PIX_CODE = '00020126940014BR.GOV.BCB.PIX013642cf5c38-ccc4-452f-b55a-dd3fc32074f20232obrigado por apoiar o Focus Frog5204000053039865802BR5925Igor Sousa Rocha Aguiar V6009SAO PAULO62140510rDkAtQCzNL63048AC4'; // Pix "copia e cola" (código completo). Vazio = apoio por Pix oculto
-const GA_ID   = 'G-S5P71J2Y3Z';             // GA4 do FocusFrog (o mesmo do app). Vazio = sem análise e sem aviso de cookies
+const GA_ID   = 'G-ZB26T84CY4';             // GA4 do FocusFrog, fluxo "Site" (o app tem fluxo próprio). Vazio = sem análise e sem aviso de cookies
 /* =============================== */
 document.querySelectorAll('[data-apk]').forEach(a=>a.setAttribute('href',APK_URL));
 const toast=document.getElementById('toast');let tt;
@@ -22,7 +22,9 @@ if(GA_ID){
   const sc=document.createElement('script');sc.async=true;sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);document.head.appendChild(sc);
   const ck=document.getElementById('ck');
   if(!saved)ck.classList.add('on');
-  const set=v=>{try{localStorage.setItem(CK,v)}catch(e){}gtag('consent','update',{analytics_storage:v});ck.classList.remove('on')};
+  const set=v=>{try{localStorage.setItem(CK,v)}catch(e){}gtag('consent','update',{analytics_storage:v});ck.classList.remove('on');
+    // a visualização da página já foi enviada sem permissão; ao aceitar, conta esta visita de verdade
+    if(v==='granted')gtag('event','page_view',{page_location:location.href,page_title:document.title})};
   document.getElementById('ckOk').addEventListener('click',()=>set('granted'));
   document.getElementById('ckNo').addEventListener('click',()=>set('denied'));
 }else document.querySelectorAll('[data-priv],[data-privwrap]').forEach(e=>e.hidden=true);

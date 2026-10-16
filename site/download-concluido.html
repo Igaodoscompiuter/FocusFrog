@@ -101,5 +101,13 @@
   }));
 })();
 </script>
+<script>
+/* GA4 (fluxo "Site"): só mede se a pessoa já aceitou os cookies na página inicial */
+(function(){var GA='G-ZB26T84CY4',ok=false;try{ok=localStorage.getItem('ff_consent')==='granted'}catch(e){}
+if(!ok)return;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'granted'});
+gtag('js',new Date());gtag('config',GA,{anonymize_ip:true});gtag('event','app_instalado');
+var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+GA;document.head.appendChild(s)})();
+</script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import { UPDATE_CHECK_EVENT } from '../components/UpdateAvailableModal';
 import { Capacitor } from '@capacitor/core';
 import { isDistractionGuardOn, setDistractionGuard } from '../notifications';
 import { useUserData } from '../hooks/useUserData';
+import { useUser } from '../context/UserContext';
 import { useAuth, AuthProviderName } from '../hooks/useAuth';
 import { getLocalBackup, restoreLocalBackup } from '../sync/cloudSync';
 import { GoogleIcon } from './OnboardingAccountScreen';
@@ -14,7 +15,7 @@ import { User } from '@supabase/supabase-js';
 import styles from './RewardsScreen.module.css';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 import UpdatePrompt from '../components/UpdatePrompt';
-import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiHelpCircle, FiShield } from 'react-icons/fi';
+import { FiCloudLightning, FiUpload, FiChevronRight, FiLayout, FiDatabase, FiInfo, FiVolume2, FiZap, FiArrowLeft, FiDownload, FiTrash2, FiInstagram, FiType, FiUser, FiLogIn, FiLogOut, FiCheckCircle, FiHeart, FiCoffee, FiHardDrive, FiHelpCircle, FiShield, FiEdit3 } from 'react-icons/fi';
 import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 import { useBackHandler } from '../hooks/useBackHandler';
@@ -260,6 +261,16 @@ export const RewardsScreen: React.FC = () => {
         setFontSize
     } = useUI();
     const { exportData, importDataFromFile, resetData } = useUserData();
+    const { userName, setUserName } = useUser();
+    const [nameDraft, setNameDraft] = useState('');
+    const { addNotification: notify } = useUI();
+    const saveName = () => {
+        const n = nameDraft.trim();
+        if (!n) return;
+        setUserName(n);
+        notify(`Prontinho, ${n}!`, '🐸', 'success');
+        setActiveSettingsScreen('main');
+    };
     const { restart: restartTour } = useTour();
     // versão real instalada (APK) — antes o texto era fixo e desatualizava
     const [appVersion, setAppVersion] = useState(__APP_VERSION__);
@@ -365,6 +376,19 @@ export const RewardsScreen: React.FC = () => {
                     showResetModal={showResetModal}
                 />;
             // CONTEÚDO DA TELA SOBRE RESTAURADO
+            case 'name':
+                return (
+                    <div className={styles.tabContent}>
+                        <SubScreenHeader title="Seu nome" onBack={() => setActiveSettingsScreen('main')} />
+                        <form className={styles.nameForm} onSubmit={e => { e.preventDefault(); saveName(); }}>
+                            <label htmlFor="ff-name">Como o app chama você</label>
+                            <input id="ff-name" className={styles.nameInput} value={nameDraft} maxLength={30} autoFocus autoComplete="given-name"
+                                onChange={e => setNameDraft(e.target.value)} placeholder="Seu nome" />
+                            <p className={styles.guardHint}>Aparece na saudação da tela inicial. Só fica no seu celular (e na sua conta, se você entrou com o Google).</p>
+                            <button type="submit" className={styles.nameSave} disabled={!nameDraft.trim() || nameDraft.trim() === userName}>Salvar</button>
+                        </form>
+                    </div>
+                );
             case 'about':
                  return (
                     <div className={`${styles.tabContent} ${styles.aboutScreen}`}>
@@ -417,6 +441,7 @@ export const RewardsScreen: React.FC = () => {
                 return (
                     <div className={styles.tabContent}>
                         <div className={styles.header}><h2>Ajustes</h2></div>
+                        <SettingsNavRow icon={FiEdit3} title="Seu nome" description={userName || 'Como o app chama você'} onClick={() => { setNameDraft(userName || ''); setActiveSettingsScreen('name'); }} />
                         <SettingsNavRow icon={FiUser} title="Conta e Sincronização" description={authUser ? `Conectado · ${authUser.email ?? 'conta'}` : 'Entrar com Google'} onClick={() => setActiveSettingsScreen('profile')} />
                         <SettingsNavRow icon={FiLayout} title="Aparência" description="Ajuste tema, sons e outros." onClick={() => setActiveSettingsScreen('appearance')} />
                         <SettingsNavRow icon={FiDatabase} title="Gerenciar Dados" description="Backup, restauração e reset." onClick={() => setActiveSettingsScreen('data')} />
@@ -429,8 +454,9 @@ export const RewardsScreen: React.FC = () => {
                                 </label>
                             </div>
                             <p className={styles.guardHint}>
-                                Te cutuca quando você sai pra outro app durante o foco, e o sapo só vem se o foco foi limpo.
-                                Desligue se as suas tarefas são feitas no celular.
+                                Durante o foco, se você abrir outro app, o FocusFrog te avisa pra voltar.
+                                Pra ganhar o sapo, o tempo fora precisa ficar abaixo de 10% do foco (até 2,5 min num foco de 25).
+                                Usa o celular pra fazer a tarefa? Desligue aqui e o sapo vem do mesmo jeito.
                             </p>
                         </div>
                         <SettingsNavRow icon={FiHelpCircle} title="Refazer tutorial" description="O sapinho te mostra o app de novo." onClick={restartTour} />
