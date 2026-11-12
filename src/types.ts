@@ -39,12 +39,16 @@ export interface Task {
   timeOfDay?: TimeOfDay;
   customDuration?: number;
   templateId?: number;
+  /** Rotina de origem, quando a tarefa foi criada a partir de uma rotina. */
+  routineId?: string;
 }
 
 export interface Subtask {
   id: string;
   text: string;
   completed: boolean;
+  /** Tempo estimado do passo, em minutos. */
+  minutes?: number;
 }
 
 export interface Tag {
@@ -64,7 +68,9 @@ export interface TaskTemplate {
   energyNeeded?: EnergyLevel;
   timeOfDay?: TimeOfDay;
   customDuration?: number;
-  subtasks?: { text: string }[];
+  subtasks?: { text: string; minutes?: number }[];
+  /** Tempo total estimado em minutos (tem prioridade sobre pomodoroEstimate). */
+  estMinutes?: number;
   isDefault?: boolean;
 }
 
@@ -81,6 +87,12 @@ export interface Routine {
    *  outros apps) — pra rotinas que não podem ser ignoradas, tipo a da manhã.
    *  'normal' (ou ausente) = lembrete discreto, como qualquer outra notificação. */
   alarmMode?: 'normal' | 'alarm';
+  /** Dias da semana em que a rotina aparece (0 = domingo … 6 = sábado). Vazio = todo dia. */
+  days?: number[];
+  /** Ao adicionar, vira UMA tarefa com as partes como passos, em vez de várias tarefas. */
+  asOneTask?: boolean;
+  /** Ao adicionar, o usuário escolhe quais partes entram (ex.: Dia de Faxina). */
+  pickSome?: boolean;
 }
 
 export interface ChecklistItem {
