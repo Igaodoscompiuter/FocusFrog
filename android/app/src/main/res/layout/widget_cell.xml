@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/w_cell" android:background="@drawable/widget_row_bg" android:paddingTop="5.0dip" android:paddingBottom="5.0dip" android:layout_width="0.0dip" android:layout_height="wrap_content" android:minHeight="38.0dip" android:layout_weight="1.0" android:paddingStart="10.0dip" android:paddingEnd="8.0dip" android:layout_marginEnd="4.0dip"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@+id/w_check" android:layout_width="20.0dip" android:layout_height="20.0dip" android:src="@drawable/ic_wcheck_off" android:layout_marginEnd="9.0dip" />
+    <TextView android:textSize="12.0sp" android:textStyle="bold" android:textColor="#fffbbf24" android:id="@+id/w_time" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8.0dip" />
+    <LinearLayout android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0">
+        <TextView android:textSize="13.0sp" android:textColor="#fff3f4f6" android:ellipsize="end" android:id="@+id/w_text" android:layout_width="fill_parent" android:layout_height="wrap_content" android:maxLines="1" />
+        <TextView android:textSize="11.0sp" android:textColor="#ff94a3b8" android:ellipsize="end" android:id="@+id/w_sub" android:visibility="gone" android:layout_width="fill_parent" android:layout_height="wrap_content" android:maxLines="1" />
+    </LinearLayout>
+    <TextView android:textSize="18.0sp" android:textColor="#ff94a3b8" android:id="@+id/w_go" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:layout_marginStart="4.0dip" />
+</LinearLayout>

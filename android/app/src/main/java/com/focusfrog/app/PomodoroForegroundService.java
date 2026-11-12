@@ -9,107 +9,81 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-/**
- * Serviço em primeiro plano de verdade pra sessão de foco/pausa — escrito do
- * zero (não usa mais plugin de terceiros) porque precisava de duas coisas que
- * o plugin anterior não dava: um cronômetro AO VIVO de verdade na notificação
- * (setUsesChronometer) e garantia de que ela NÃO possa ser descartada deslizando
- * (setOngoing). Ter o código aqui dá controle total sobre os dois.
- *
- * O cronômetro é nativo do Android — a contagem regressiva na notificação roda
- * sozinha no sistema, sem precisar de nenhum tick de JS pra isso.
- */
+/* loaded from: classes.dex */
 public class PomodoroForegroundService extends Service {
-
-    private static final String CHANNEL_ID = "pomodoro_focus_channel";
-    private static final int NOTIF_ID = 9002; // mesmo ID de antes, pra não duplicar notificações antigas
-
-    public static final String EXTRA_TITLE = "title";
-    public static final String EXTRA_BODY = "body";
-    public static final String EXTRA_ENDS_AT = "ends_at"; // epoch millis
-    public static final String EXTRA_PHASE = "phase"; // "focus" | "break" (só o foco conta distração)
     public static final String ACTION_STOP = "com.focusfrog.app.POMODORO_SERVICE_STOP";
+    private static final String CHANNEL_ID = "pomodoro_focus_channel";
+    public static final String EXTRA_BODY = "body";
+    public static final String EXTRA_ENDS_AT = "ends_at";
+    public static final String EXTRA_PHASE = "phase";
+    public static final String EXTRA_TITLE = "title";
+    private static final int NOTIF_ID = 9002;
+    static volatile boolean running = false;
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && ACTION_STOP.equals(intent.getAction())) {
-            FocusDistractionMonitor.stop();
-            stopForeground(true);
-            stopSelf();
-            return START_NOT_STICKY;
-        }
-
-        String title = intent != null ? intent.getStringExtra(EXTRA_TITLE) : "FocusFrog";
-        String body = intent != null ? intent.getStringExtra(EXTRA_BODY) : "";
-        long endsAt = intent != null ? intent.getLongExtra(EXTRA_ENDS_AT, 0) : 0;
-        String phase = intent != null && intent.getStringExtra(EXTRA_PHASE) != null ? intent.getStringExtra(EXTRA_PHASE) : "focus";
-        FocusDistractionMonitor.setPhase(phase);
-        FocusDistractionMonitor.start(this);
-
-        ensureChannel();
-        Notification notification = buildNotification(title, body, endsAt);
-        startForeground(NOTIF_ID, notification);
-
-        // START_STICKY: se o Android precisar matar o processo por pressão de
-        // memória, tenta recriar o serviço (sem o Intent original) assim que
-        // houver recurso de novo — é a parte de "mesmo se for embora, volta".
-        return START_STICKY;
+    @Override // android.app.Service
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
-    private Notification buildNotification(String title, String body, long endsAt) {
-        Intent openApp = getPackageManager().getLaunchIntentForPackage(getPackageName());
-        PendingIntent contentIntent = openApp != null
-            ? PendingIntent.getActivity(this, 0, openApp, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
-            : null;
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(body)
-            .setSmallIcon(R.drawable.ic_stat_frog)
-            .setOngoing(true) // não pode ser descartada deslizando — é o ponto principal
-            .setOnlyAlertOnce(true) // atualizar (ex.: trocar pra pausa) não vibra/soa de novo
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setCategory(NotificationCompat.CATEGORY_PROGRESS);
-
-        if (contentIntent != null) builder.setContentIntent(contentIntent);
-
-        if (endsAt > 0) {
-            // Cronômetro nativo do Android: setWhen + setChronometerCountDown faz o
-            // próprio sistema contar regressivamente até esse instante, sem precisar
-            // de nenhuma atualização por segundo vinda do app.
-            builder.setWhen(endsAt);
-            builder.setUsesChronometer(true);
-            builder.setChronometerCountDown(true);
+    @Override // android.app.Service
+    public int onStartCommand(Intent intent, int i, int i2) {
+        if (intent != null && ACTION_STOP.equals(intent.getAction())) {
+            FocusDistractionMonitor.stop();
+            running = false;
+            stopForeground(true);
+            stopSelf();
+            return 2;
         }
+        String stringExtra = intent != null ? intent.getStringExtra(EXTRA_TITLE) : "FocusFrog";
+        String stringExtra2 = intent != null ? intent.getStringExtra(EXTRA_BODY) : "";
+        long longExtra = intent != null ? intent.getLongExtra(EXTRA_ENDS_AT, 0L) : 0L;
+        FocusDistractionMonitor.setPhase((intent == null || intent.getStringExtra(EXTRA_PHASE) == null) ? "focus" : intent.getStringExtra(EXTRA_PHASE));
+        FocusDistractionMonitor.start(this);
+        ensureChannel();
+        startForeground(NOTIF_ID, buildNotification(stringExtra, stringExtra2, longExtra));
+        running = true;
+        return 1;
+    }
 
-        return builder.build();
+    private Notification buildNotification(String str, String str2, long j) {
+        Intent launchIntentForPackage = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        PendingIntent activity = launchIntentForPackage != null ? PendingIntent.getActivity(this, 0, launchIntentForPackage, 201326592) : null;
+        NotificationCompat.Builder category = new NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(str).setContentText(str2).setSmallIcon(R.drawable.ic_stat_frog).setOngoing(true).setOnlyAlertOnce(true).setPriority(-1).setCategory(NotificationCompat.CATEGORY_PROGRESS);
+        if (activity != null) {
+            category.setContentIntent(activity);
+        }
+        if (j > 0) {
+            category.setWhen(j);
+            category.setUsesChronometer(true);
+            category.setChronometerCountDown(true);
+        }
+        return category.build();
     }
 
     private void ensureChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null && manager.getNotificationChannel(CHANNEL_ID) == null) {
-                NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID, "Sessão de foco em andamento", NotificationManager.IMPORTANCE_LOW
-                );
-                channel.setDescription("Notificação fixa enquanto um foco ou pausa está rodando.");
-                channel.setShowBadge(false);
-                manager.createNotificationChannel(channel);
-            }
+        NotificationManager notificationManager;
+        NotificationChannel notificationChannel;
+        if (Build.VERSION.SDK_INT < 26 || (notificationManager = (NotificationManager) getSystemService(NotificationManager.class)) == null) {
+            return;
+        }
+        notificationChannel = notificationManager.getNotificationChannel(CHANNEL_ID);
+        if (notificationChannel == null) {
+            NotificationChannel m = new NotificationChannel(CHANNEL_ID, "Sessão de foco em andamento", 2);
+            m.setDescription("Notificação fixa enquanto um foco ou pausa está rodando.");
+            m.setShowBadge(false);
+            notificationManager.createNotificationChannel(m);
         }
     }
 
-    public static void start(Context context, String title, String body, long endsAt, String phase) {
-        Intent intent = new Intent(context, PomodoroForegroundService.class);
-        intent.putExtra(EXTRA_PHASE, phase);
-        intent.putExtra(EXTRA_TITLE, title);
-        intent.putExtra(EXTRA_BODY, body);
-        intent.putExtra(EXTRA_ENDS_AT, endsAt);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    public static void start(Context context, String str, String str2, long j, String str3) {
+        Intent intent = new Intent(context, (Class<?>) PomodoroForegroundService.class);
+        intent.putExtra(EXTRA_PHASE, str3);
+        intent.putExtra(EXTRA_TITLE, str);
+        intent.putExtra(EXTRA_BODY, str2);
+        intent.putExtra(EXTRA_ENDS_AT, j);
+        if (Build.VERSION.SDK_INT >= 26) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
@@ -117,14 +91,8 @@ public class PomodoroForegroundService extends Service {
     }
 
     public static void stop(Context context) {
-        Intent intent = new Intent(context, PomodoroForegroundService.class);
+        Intent intent = new Intent(context, (Class<?>) PomodoroForegroundService.class);
         intent.setAction(ACTION_STOP);
         context.startService(intent);
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null; // serviço "started", não "bound" — ninguém precisa de bind aqui
     }
 }

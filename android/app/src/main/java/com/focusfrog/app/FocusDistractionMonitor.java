@@ -11,111 +11,140 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
-
 import androidx.core.app.NotificationCompat;
 
-/**
- * Mede distração durante o FOCO sem permissões invasivas (não sabe QUAL app
- * foi aberto, só que o FocusFrog não está na frente):
- *   tela ligada + desbloqueada + FocusFrog em segundo plano → distração.
- * Tela desligada/bloqueada não conta — celular largado é o comportamento
- * desejado. Pausas não contam. Após 30s seguidos, uma cutucada gentil
- * (no máximo uma a cada 2 min). O total fica em SharedPreferences pra
- * sobreviver a um reinício do processo, e o app consulta no fim da sessão.
- */
+/* loaded from: classes.dex */
 public final class FocusDistractionMonitor {
-    private static final String PREFS = "focusfrog_focus";
+    private static final String KEY_GUARD = "guard_enabled";
     private static final String KEY_MS = "distracted_ms";
-    private static final String KEY_GUARD = "guard_enabled"; // Configurações → "Proteger o foco"
-    private static final long TICK_MS = 5_000, NUDGE_AFTER_MS = 30_000, NUDGE_GAP_MS = 120_000;
-    private static final int NUDGE_ID = 9005;
+    private static final long NUDGE_AFTER_MS = 30000;
     private static final String NUDGE_CHANNEL = "focus_nudge";
-
-    /** atualizado por MainActivity.onResume/onPause */
+    private static final long NUDGE_GAP_MS = 120000;
+    private static final int NUDGE_ID = 9005;
+    private static final String PREFS = "focusfrog_focus";
+    private static final long TICK_MS = 5000;
     public static volatile boolean appInForeground = true;
-
+    private static long continuousMs = 0;
+    private static Handler handler = null;
+    private static long lastNudgeAt = 0;
+    private static Runnable loop = null;
     private static volatile String phase = "focus";
-    private static long continuousMs = 0, lastNudgeAt = 0;
-    private static Handler handler;
-    private static Runnable loop;
 
-    private FocusDistractionMonitor() {}
+    private FocusDistractionMonitor() {
+    }
 
-    static void setPhase(String p) { phase = p == null ? "focus" : p; continuousMs = 0; }
+    static void setPhase(String str) {
+        if (str == null) {
+            str = "focus";
+        }
+        phase = str;
+        continuousMs = 0L;
+    }
 
-    static synchronized void start(Context ctx) {
-        if (handler != null) return;
-        final Context app = ctx.getApplicationContext();
-        handler = new Handler(Looper.getMainLooper());
-        loop = new Runnable() {
-            @Override public void run() {
-                tick(app);
-                if (handler != null) handler.postDelayed(this, TICK_MS);
+    static synchronized void start(Context context) {
+        synchronized (FocusDistractionMonitor.class) {
+            if (handler != null) {
+                return;
             }
-        };
-        handler.postDelayed(loop, TICK_MS);
+            final Context applicationContext = context.getApplicationContext();
+            handler = new Handler(Looper.getMainLooper());
+            Runnable runnable = new Runnable() { // from class: com.focusfrog.app.FocusDistractionMonitor.1
+                @Override // java.lang.Runnable
+                public void run() {
+                    FocusDistractionMonitor.tick(applicationContext);
+                    if (FocusDistractionMonitor.handler != null) {
+                        FocusDistractionMonitor.handler.postDelayed(this, FocusDistractionMonitor.TICK_MS);
+                    }
+                }
+            };
+            loop = runnable;
+            handler.postDelayed(runnable, TICK_MS);
+        }
     }
 
     static synchronized void stop() {
-        if (handler != null) { handler.removeCallbacks(loop); handler = null; }
-        continuousMs = 0;
-    }
-
-    private static void tick(Context c) {
-        if (!"focus".equals(phase) || !prefs(c).getBoolean(KEY_GUARD, true)) { continuousMs = 0; return; }
-        PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
-        KeyguardManager km = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
-        boolean usingPhone = pm != null && pm.isInteractive() && (km == null || !km.isKeyguardLocked());
-        if (usingPhone && !appInForeground) {
-            SharedPreferences p = prefs(c);
-            p.edit().putLong(KEY_MS, p.getLong(KEY_MS, 0) + TICK_MS).apply();
-            continuousMs += TICK_MS;
-            long now = System.currentTimeMillis();
-            if (continuousMs >= NUDGE_AFTER_MS && now - lastNudgeAt >= NUDGE_GAP_MS) {
-                lastNudgeAt = now;
-                nudge(c);
+        synchronized (FocusDistractionMonitor.class) {
+            Handler handler2 = handler;
+            if (handler2 != null) {
+                handler2.removeCallbacks(loop);
+                handler = null;
             }
-        } else {
-            continuousMs = 0;
+            continuousMs = 0L;
         }
     }
 
-    public static void setGuardEnabled(Context c, boolean enabled) { prefs(c).edit().putBoolean(KEY_GUARD, enabled).apply(); if (!enabled) clearNudge(c); }
 
-    public static long getDistractedMs(Context c) { return prefs(c).getLong(KEY_MS, 0); }
-
-    public static void reset(Context c) {
-        prefs(c).edit().putLong(KEY_MS, 0).apply();
-        continuousMs = 0;
-        lastNudgeAt = 0;
-    }
-
-    /** voltou pro app: a cutucada já cumpriu o papel */
-    public static void clearNudge(Context c) {
-        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) nm.cancel(NUDGE_ID);
-    }
-
-    private static void nudge(Context c) {
-        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm == null) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm.getNotificationChannel(NUDGE_CHANNEL) == null) {
-            NotificationChannel ch = new NotificationChannel(NUDGE_CHANNEL, "Lembretes de foco", NotificationManager.IMPORTANCE_DEFAULT);
-            ch.setDescription("Cutucada gentil quando você sai do foco pra outro app.");
-            nm.createNotificationChannel(ch);
+    public static void tick(Context context) {
+        if (!"focus".equals(phase) || !prefs(context).getBoolean(KEY_GUARD, true)) {
+            continuousMs = 0L;
+            return;
         }
-        Intent open = c.getPackageManager().getLaunchIntentForPackage(c.getPackageName());
-        PendingIntent pi = open == null ? null
-            : PendingIntent.getActivity(c, NUDGE_ID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        NotificationCompat.Builder b = new NotificationCompat.Builder(c, NUDGE_CHANNEL)
-            .setSmallIcon(R.drawable.ic_stat_frog)
-            .setContentTitle("🐸 Ei, seu sapo tá te esperando")
-            .setContentText("Volta pro foco? Ele está crescendo com você.")
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        if (pi != null) b.setContentIntent(pi);
-        nm.notify(NUDGE_ID, b.build());
+        PowerManager powerManager = (PowerManager) context.getSystemService("power");
+        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService("keyguard");
+        if (powerManager != null && powerManager.isInteractive() && ((keyguardManager == null || !keyguardManager.isKeyguardLocked()) && !appInForeground)) {
+            SharedPreferences prefs = prefs(context);
+            prefs.edit().putLong(KEY_MS, prefs.getLong(KEY_MS, 0L) + TICK_MS).apply();
+            continuousMs += TICK_MS;
+            long currentTimeMillis = System.currentTimeMillis();
+            if (continuousMs < NUDGE_AFTER_MS || currentTimeMillis - lastNudgeAt < NUDGE_GAP_MS) {
+                return;
+            }
+            lastNudgeAt = currentTimeMillis;
+            nudge(context);
+            return;
+        }
+        continuousMs = 0L;
     }
 
-    private static SharedPreferences prefs(Context c) { return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE); }
+    public static void setGuardEnabled(Context context, boolean z) {
+        prefs(context).edit().putBoolean(KEY_GUARD, z).apply();
+        if (z) {
+            return;
+        }
+        clearNudge(context);
+    }
+
+    public static long getDistractedMs(Context context) {
+        return prefs(context).getLong(KEY_MS, 0L);
+    }
+
+    public static void reset(Context context) {
+        prefs(context).edit().putLong(KEY_MS, 0L).apply();
+        continuousMs = 0L;
+        lastNudgeAt = 0L;
+    }
+
+    public static void clearNudge(Context context) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService("notification");
+        if (notificationManager != null) {
+            notificationManager.cancel(NUDGE_ID);
+        }
+    }
+
+    private static void nudge(Context context) {
+        NotificationChannel notificationChannel;
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService("notification");
+        if (notificationManager == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 26) {
+            notificationChannel = notificationManager.getNotificationChannel(NUDGE_CHANNEL);
+            if (notificationChannel == null) {
+                NotificationChannel m = new NotificationChannel(NUDGE_CHANNEL, "Lembretes de foco", 3);
+                m.setDescription("Cutucada gentil quando você sai do foco pra outro app.");
+                notificationManager.createNotificationChannel(m);
+            }
+        }
+        Intent launchIntentForPackage = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        PendingIntent activity = launchIntentForPackage == null ? null : PendingIntent.getActivity(context, NUDGE_ID, launchIntentForPackage, 201326592);
+        NotificationCompat.Builder priority = new NotificationCompat.Builder(context, NUDGE_CHANNEL).setSmallIcon(R.drawable.ic_stat_frog).setContentTitle("🐸 Ei, seu sapo tá te esperando").setContentText("Volta pro foco? Ele está crescendo com você.").setAutoCancel(true).setPriority(0);
+        if (activity != null) {
+            priority.setContentIntent(activity);
+        }
+        notificationManager.notify(NUDGE_ID, priority.build());
+    }
+
+    private static SharedPreferences prefs(Context context) {
+        return context.getSharedPreferences(PREFS, 0);
+    }
 }

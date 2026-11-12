@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView android:textSize="12.0sp" android:textStyle="bold" android:textColor="#ff94a3b8" android:gravity="center" android:id="@+id/w_more" android:background="@drawable/widget_row_bg" android:layout_width="0.0dip" android:layout_height="38.0dip" android:maxLines="1" android:layout_weight="1.0" android:layout_marginEnd="4.0dip"
+  xmlns:android="http://schemas.android.com/apk/res/android" />

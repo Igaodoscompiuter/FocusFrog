@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator android:interpolator="@android:interpolator/linear" android:duration="60000" android:repeatCount="infinite">
+        <propertyValuesHolder android:valueType="floatType" android:propertyName="trimPathEnd">
+            <keyframe android:value="0" android:fraction="0.0" />
+            <keyframe android:value="0" android:fraction="0.0154" />
+            <keyframe android:value="1" android:fraction="0.019067" />
+            <keyframe android:value="1" android:fraction="0.021267" />
+            <keyframe android:value="0" android:fraction="0.027133" />
+            <keyframe android:value="0" android:fraction="0.036667" />
+            <keyframe android:value="0" android:fraction="1.0" />
+        </propertyValuesHolder>
+    </objectAnimator>
+</set>

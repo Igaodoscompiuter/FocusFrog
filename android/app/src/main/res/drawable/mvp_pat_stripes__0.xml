@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <path android:pathData="M26,54 Q38,44 50,42" android:strokeColor="#ffffffff" android:strokeWidth="3.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.55" />
+        <path android:pathData="M28,64 Q44,54 62,48" android:strokeColor="#ffffffff" android:strokeWidth="3.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.55" />
+        <path android:pathData="M38,70 Q56,62 72,56" android:strokeColor="#ffffffff" android:strokeWidth="3.2" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.55" />
+    </group>
+</vector>

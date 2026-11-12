@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <path android:fillColor="#ffffffff" android:pathData="M30,65 a20,18 0 1,0 40,0 a20,18 0 1,0 -40,0 Z" android:fillAlpha="0.8" />
+    </group>
+</vector>

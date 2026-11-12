@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewFlipper android:id="@+id/mascot_hop" android:padding="4.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent" android:inAnimation="@anim/mascot_hop" android:flipInterval="3600000" android:autoStart="true" android:animateFirstView="false"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ViewFlipper android:id="@+id/mascot_breath" android:layout_width="fill_parent" android:layout_height="fill_parent" android:inAnimation="@anim/mascot_breath" android:flipInterval="2000" android:autoStart="true" android:animateFirstView="true">
+        <ViewFlipper android:id="@+id/mascot_flipper" android:layout_width="fill_parent" android:layout_height="fill_parent" android:inAnimation="@anim/mascot_frame_in" android:outAnimation="@anim/mascot_frame_out" android:flipInterval="120" android:autoStart="true" android:animateFirstView="false">
+            <ImageView android:id="@+id/mascot_f0" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f1" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f2" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f3" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f4" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f5" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f6" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f7" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f8" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f9" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f10" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f11" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f12" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f13" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f14" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f15" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f16" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f17" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f18" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f19" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f20" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f21" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f22" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+            <ImageView android:id="@+id/mascot_f23" android:layout_width="fill_parent" android:layout_height="fill_parent" android:scaleType="fitCenter" android:contentDescription="Mascote" />
+        </ViewFlipper>
+    </ViewFlipper>
+</ViewFlipper>

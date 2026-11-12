@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <group android:name="eyes" android:pivotX="50.0" android:pivotY="45.0">
+            <path android:fillColor="#ffffffff" android:pathData="M30,45 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+            <path android:fillColor="#ffffffff" android:pathData="M50,45 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+            <path android:fillColor="#ff000000" android:pathData="M35,45 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0 Z" />
+            <path android:fillColor="#ff000000" android:pathData="M55,45 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0 Z" />
+            <path android:fillColor="#ffffffff" android:pathData="M40.3,43 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0 Z" />
+            <path android:fillColor="#ffffffff" android:pathData="M60.3,43 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0 Z" />
+        </group>
+        <path android:pathData="M45,68 Q50,72 55,68" android:strokeColor="#ff000000" android:strokeWidth="2.0" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.35" />
+    </group>
+</vector>

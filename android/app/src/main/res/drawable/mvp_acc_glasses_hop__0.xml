@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <path android:fillColor="#ff111827" android:pathData="M34,40 L44,40 Q49,40 49,45 L49,46 Q49,51 44,51 L34,51 Q29,51 29,46 L29,45 Q29,40 34,40 Z M56,40 L66,40 Q71,40 71,45 L71,46 Q71,51 66,51 L56,51 Q51,51 51,46 L51,45 Q51,40 56,40 Z" />
+        <path android:pathData="M49,44 L51,44" android:strokeColor="#ff111827" android:strokeWidth="2.0" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:pathData="M32,43 L38,43" android:strokeColor="#ffffffff" android:strokeWidth="1.6" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.35" />
+    </group>
+</vector>

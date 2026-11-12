@@ -15,10 +15,7 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- o ícone do launcher fica nos activity-alias abaixo (ícone com o humor do sapo) -->
             <!-- volta do login (Google/Facebook): o navegador abre
                  com.focusfrog.app://auth-callback?code=... e cai aqui -->
             <intent-filter android:autoVerify="false">
@@ -35,6 +32,87 @@
                 <data android:scheme="focusfrog" android:host="open" />
             </intent-filter>
         </activity>
+
+        <!-- Ícone com o humor do sapo (MascotIcon troca qual alias fica ligado;
+             só um por vez). LauncherDefault é o ícone normal do app. -->
+        <activity-alias
+            android:name=".LauncherSad"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_mood_sad"
+            android:roundIcon="@mipmap/ic_mood_sad"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".LauncherSleepy"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_mood_sleepy"
+            android:roundIcon="@mipmap/ic_mood_sleepy"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".LauncherHappy"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_mood_happy"
+            android:roundIcon="@mipmap/ic_mood_happy"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".LauncherNormal"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_mood_normal"
+            android:roundIcon="@mipmap/ic_mood_normal"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".LauncherDefault"
+            android:targetActivity=".MainActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Recados do sapo (MascotNudge): agenda os horários do dia, refaz depois
+             de reiniciar/atualizar e troca o ícone com o humor -->
+        <receiver
+            android:name=".MascotNudge"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="com.focusfrog.app.MASCOT_NUDGE" />
+                <action android:name="com.focusfrog.app.MASCOT_ICON" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -67,10 +145,41 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.focusfrog.app.FROG_WIDGET_REST" />
+                <action android:name="com.focusfrog.app.FROG_WIDGET_STEP" />
+                <action android:name="com.focusfrog.app.FROG_WIDGET_DONE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/frog_widget_info" />
+        </receiver>
+
+        <!-- Widget do mascote (carinho e mosca) -->
+        <receiver
+            android:name=".MascotWidgetProvider"
+            android:exported="false"
+            android:label="Mascote">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.focusfrog.app.MASCOT_PET" />
+                <action android:name="com.focusfrog.app.MASCOT_FEED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/mascot_widget_info" />
+        </receiver>
+
+        <!-- Widget "Agenda de hoje" -->
+        <receiver
+            android:name=".AgendaWidgetProvider"
+            android:exported="false"
+            android:label="Agenda de hoje">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.focusfrog.app.AGENDA_WIDGET_ITEM" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/agenda_widget_info" />
         </receiver>
 
         <!-- Widget de tela inicial do checklist "Já pegou?" -->
@@ -88,12 +197,6 @@
                 android:resource="@xml/checklist_widget_info" />
         </receiver>
 
-        <!-- Alimenta o GridView do widget acima — BIND_REMOTEVIEWS é obrigatória
-             pro Android confiar que só o próprio sistema pode chamar esse serviço. -->
-        <service
-            android:name=".ChecklistWidgetService"
-            android:permission="android.permission.BIND_REMOTEVIEWS"
-            android:exported="false" />
     </application>
 
     <!-- Permissions -->
@@ -104,4 +207,6 @@
     <!-- Serviço em primeiro plano do Pomodoro (ver <service> acima) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Recados do sapo: reagendar depois de reiniciar o celular -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 </manifest>

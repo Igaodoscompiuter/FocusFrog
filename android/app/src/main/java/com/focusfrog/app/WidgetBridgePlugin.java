@@ -1,150 +1,134 @@
 package com.focusfrog.app;
 
 import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.Settings;
-
+import androidx.core.app.NotificationCompat;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-/**
- * Ponte mínima entre o JS e o widget nativo: depois que o app escreve o
- * checklist em @capacitor/preferences, chama refreshChecklistWidget() pra o
- * widget atualizar na hora, em vez de esperar o próximo ciclo automático do
- * Android (que pode levar até 30 minutos).
- */
 @CapacitorPlugin(name = "WidgetBridge")
+/* loaded from: classes.dex */
 public class WidgetBridgePlugin extends Plugin {
-
     @PluginMethod
-    public void refreshChecklistWidget(PluginCall call) {
+    public void refreshChecklistWidget(PluginCall pluginCall) {
         ChecklistWidgetProvider.refreshAll(getContext());
-        call.resolve(new JSObject());
+        pluginCall.resolve(new JSObject());
     }
 
     @PluginMethod
-    public void refreshFrogWidget(PluginCall call) {
+    public void refreshAgendaWidget(PluginCall pluginCall) {
+        AgendaWidgetProvider.refreshAll(getContext());
+        pluginCall.resolve(new JSObject());
+    }
+
+    @PluginMethod
+    public void refreshFrogWidget(PluginCall pluginCall) {
         FrogWidgetProvider.refreshAll(getContext());
-        call.resolve(new JSObject());
+        pluginCall.resolve(new JSObject());
     }
 
-    /**
-     * No Android 12+ (API 31+), SCHEDULE_EXACT_ALARM precisa ser LIGADA PELO
-     * USUÁRIO numa tela própria do sistema — declarar a permissão no manifesto
-     * (como já fazemos) não é suficiente e não mostra nenhum diálogo sozinho.
-     * Sem isso ligado, alarmes de horário exato (rotinas, fim de foco/pausa)
-     * podem simplesmente não disparar, sem erro nenhum visível. Esse método
-     * deixa o JS checar o estado e, se precisar, abrir essa tela direto.
-     */
     @PluginMethod
-    public void checkExactAlarmPermission(PluginCall call) {
-        JSObject result = new JSObject();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-            result.put("granted", am != null && am.canScheduleExactAlarms());
-        } else {
-            result.put("granted", true); // versões antigas não exigem essa permissão separada
+    public void refreshMascotWidget(PluginCall pluginCall) {
+        MascotWidgetProvider.refreshAll(getContext());
+        pluginCall.resolve(new JSObject());
+    }
+
+    @PluginMethod
+    /*
+    */
+    public void checkExactAlarmPermission(PluginCall pluginCall) {
+        JSObject jSObject = new JSObject();
+        boolean granted = true;
+        if (Build.VERSION.SDK_INT >= 31) {
+            AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(NotificationCompat.CATEGORY_ALARM);
+            granted = alarmManager != null && alarmManager.canScheduleExactAlarms();
         }
-        call.resolve(result);
+        jSObject.put("granted", granted);
+        pluginCall.resolve(jSObject);
     }
 
     @PluginMethod
-    public void openExactAlarmSettings(PluginCall call) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+    public void openExactAlarmSettings(PluginCall pluginCall) {
+        if (Build.VERSION.SDK_INT >= 31) {
+            Intent intent = new Intent("android.settings.REQUEST_SCHEDULE_EXACT_ALARM");
             intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(268435456);
             getContext().startActivity(intent);
         }
-        call.resolve(new JSObject());
+        pluginCall.resolve(new JSObject());
     }
 
     @PluginMethod
-    public void startFocusService(PluginCall call) {
-        String title = call.getString("title", "FocusFrog");
-        String body = call.getString("body", "");
-        long endsAt = call.getLong("endsAt", 0L);
-        String phase = call.getString("phase", "focus");
-        PomodoroForegroundService.start(getContext(), title, body, endsAt, phase);
-        call.resolve(new JSObject());
-    }
-
-    /** total de distração (ms) acumulado na sessão de foco atual */
-    @PluginMethod
-    public void getFocusDistraction(PluginCall call) {
-        JSObject r = new JSObject();
-        r.put("distractedMs", FocusDistractionMonitor.getDistractedMs(getContext()));
-        call.resolve(r);
+    public void startFocusService(PluginCall pluginCall) {
+        PomodoroForegroundService.start(getContext(), pluginCall.getString(PomodoroForegroundService.EXTRA_TITLE, "FocusFrog"), pluginCall.getString(PomodoroForegroundService.EXTRA_BODY, ""), pluginCall.getLong("endsAt", 0L).longValue(), pluginCall.getString(PomodoroForegroundService.EXTRA_PHASE, "focus"));
+        pluginCall.resolve(new JSObject());
     }
 
     @PluginMethod
-    public void setDistractionGuard(PluginCall call) {
-        FocusDistractionMonitor.setGuardEnabled(getContext(), Boolean.TRUE.equals(call.getBoolean("enabled", true)));
-        call.resolve(new JSObject());
+    public void getFocusDistraction(PluginCall pluginCall) {
+        JSObject jSObject = new JSObject();
+        jSObject.put("distractedMs", FocusDistractionMonitor.getDistractedMs(getContext()));
+        pluginCall.resolve(jSObject);
     }
 
     @PluginMethod
-    public void resetFocusDistraction(PluginCall call) {
+    public void setDistractionGuard(PluginCall pluginCall) {
+        FocusDistractionMonitor.setGuardEnabled(getContext(), Boolean.TRUE.equals(pluginCall.getBoolean("enabled", true)));
+        pluginCall.resolve(new JSObject());
+    }
+
+    @PluginMethod
+    public void resetFocusDistraction(PluginCall pluginCall) {
         FocusDistractionMonitor.reset(getContext());
-        call.resolve(new JSObject());
+        pluginCall.resolve(new JSObject());
     }
 
     @PluginMethod
-    public void stopFocusService(PluginCall call) {
+    public void stopFocusService(PluginCall pluginCall) {
         PomodoroForegroundService.stop(getContext());
-        call.resolve(new JSObject());
+        pluginCall.resolve(new JSObject());
     }
 
-    /**
-     * Pede pro launcher fixar o widget na tela inicial, com o diálogo de
-     * confirmação nativo do próprio Android — sem precisar explicar o
-     * caminho manual (segurar a tela → Widgets → achar o app).
-     *
-     * Só existe a partir do Android 8.0 (API 26) e só funciona se o launcher
-     * do aparelho der suporte (a grande maioria dá hoje, mas alguns
-     * launchers alternativos mais simples não). Nos dois casos em que não dá
-     * pra usar esse atalho, devolve supported:false pro JS mostrar o caminho
-     * manual como alternativa, em vez de travar sem explicação.
-     */
     @PluginMethod
-    public void requestPinWidget(PluginCall call) {
+    public void requestPinWidget(PluginCall pluginCall) {
+        boolean isRequestPinAppWidgetSupported;
+        Class cls;
+        boolean requestPinAppWidget;
         Context context = getContext();
-        JSObject result = new JSObject();
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            result.put("supported", false);
-            result.put("reason", "android_version");
-            call.resolve(result);
+        JSObject jSObject = new JSObject();
+        if (Build.VERSION.SDK_INT < 26) {
+            jSObject.put("supported", false);
+            jSObject.put("reason", "android_version");
+            pluginCall.resolve(jSObject);
             return;
         }
-
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        if (!appWidgetManager.isRequestPinAppWidgetSupported()) {
-            result.put("supported", false);
-            result.put("reason", "launcher_unsupported");
-            call.resolve(result);
+        isRequestPinAppWidgetSupported = appWidgetManager.isRequestPinAppWidgetSupported();
+        if (!isRequestPinAppWidgetSupported) {
+            jSObject.put("supported", false);
+            jSObject.put("reason", "launcher_unsupported");
+            pluginCall.resolve(jSObject);
             return;
         }
-
-        // kind = "frog" pede o widget do Sapo do Dia; padrão: checklist
-        Class<?> cls = "frog".equals(call.getString("kind")) ? FrogWidgetProvider.class : ChecklistWidgetProvider.class;
-        ComponentName provider = new ComponentName(context, cls);
-
-        // Callback opcional dispensado aqui (o widget aparece na hora de qualquer
-        // forma); se algum dia quisermos detectar "usuário cancelou o diálogo"
-        // de verdade, dá pra registrar um BroadcastReceiver nesse PendingIntent.
-        boolean requested = appWidgetManager.requestPinAppWidget(provider, null, null);
-        result.put("supported", true);
-        result.put("requested", requested);
-        call.resolve(result);
+        String string = pluginCall.getString("kind");
+        if ("frog".equals(string)) {
+            cls = FrogWidgetProvider.class;
+        } else if ("agenda".equals(string)) {
+            cls = AgendaWidgetProvider.class;
+        } else {
+            cls = "mascot".equals(string) ? MascotWidgetProvider.class : ChecklistWidgetProvider.class;
+        }
+        requestPinAppWidget = appWidgetManager.requestPinAppWidget(new ComponentName(context, (Class<?>) cls), null, null);
+        jSObject.put("supported", true);
+        jSObject.put("requested", requestPinAppWidget);
+        pluginCall.resolve(jSObject);
     }
 }

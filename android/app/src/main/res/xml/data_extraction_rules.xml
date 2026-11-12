@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Nada sai do aparelho por backup automático nem por transferência entre
-     celulares: os dados ficam só no app (local-first). Backup é pela opção
-     Exportar/Importar dados das Configurações. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="root" path="." />

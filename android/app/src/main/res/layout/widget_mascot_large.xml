@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@+id/mascot_root" android:background="@drawable/widget_mascot_card" android:padding="10.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:paddingTop="2.0dip" android:paddingBottom="8.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="4.0dip" android:paddingEnd="4.0dip">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="16.0sp" android:textStyle="bold" android:textColor="#fff8fafc" android:ellipsize="end" android:id="@+id/mascot_name" android:layout_width="0.0dip" android:layout_height="wrap_content" android:maxLines="1" android:layout_weight="1.0" />
+            <TextView android:textSize="11.0sp" android:textStyle="bold" android:textColor="#ffa7f3d0" android:id="@+id/mascot_mood" android:background="@drawable/widget_mood_chip" android:paddingTop="2.0dip" android:paddingBottom="2.0dip" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:paddingStart="8.0dip" android:paddingEnd="8.0dip" />
+        </LinearLayout>
+        <TextView android:textSize="12.0sp" android:textColor="#ff111827" android:ellipsize="end" android:id="@+id/mascot_bubble" android:background="@drawable/widget_bubble" android:paddingTop="6.0dip" android:paddingBottom="6.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="6.0dip" android:maxLines="3" android:paddingStart="10.0dip" android:paddingEnd="10.0dip" />
+    </LinearLayout>
+    <FrameLayout android:id="@+id/mascot_tap" android:background="@drawable/widget_mascot_frame_pond" android:layout_width="fill_parent" android:layout_height="0.0dip" android:foreground="@drawable/widget_tap_ripple" android:layout_weight="1.0">
+        <include layout="@layout/widget_mascot_flipper" />
+        <include layout="@layout/widget_mascot_vector" />
+    </FrameLayout>
+    <LinearLayout android:orientation="vertical" android:paddingTop="10.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingStart="2.0dip" android:paddingEnd="2.0dip">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginBottom="10.0dip">
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0">
+                <ImageView android:layout_width="13.0dip" android:layout_height="13.0dip" android:src="@drawable/ic_bar_food" android:importantForAccessibility="no" />
+                <ProgressBar android:id="@+id/mascot_food" android:layout_width="0.0dip" android:layout_height="7.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_food" android:layout_weight="1.0" android:contentDescription="Barriga" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="10.0dip">
+                <ImageView android:layout_width="13.0dip" android:layout_height="13.0dip" android:src="@drawable/ic_bar_energy" android:importantForAccessibility="no" />
+                <ProgressBar android:id="@+id/mascot_energy" android:layout_width="0.0dip" android:layout_height="7.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_energy" android:layout_weight="1.0" android:contentDescription="Energia" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="10.0dip">
+                <ImageView android:layout_width="13.0dip" android:layout_height="13.0dip" android:src="@drawable/ic_bar_mood" android:importantForAccessibility="no" />
+                <ProgressBar android:id="@+id/mascot_humor" android:layout_width="0.0dip" android:layout_height="7.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_mood" android:layout_weight="1.0" android:contentDescription="Humor" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="0.0dip">
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@+id/mascot_feed" android:background="@drawable/widget_btn_fly" android:layout_width="0.0dip" android:layout_height="40.0dip" android:layout_weight="1.0" android:contentDescription="Dar uma mosca">
+                <ImageView android:layout_width="20.0dip" android:layout_height="20.0dip" android:src="@drawable/ic_widget_fly" android:importantForAccessibility="no" />
+                <TextView android:textSize="14.0sp" android:textStyle="bold" android:textColor="#ffecfdf5" android:id="@+id/mascot_feed_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:layout_marginStart="5.0dip" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@+id/mascot_focus" android:background="@drawable/widget_btn_focus" android:layout_width="0.0dip" android:layout_height="40.0dip" android:layout_weight="1.0" android:contentDescription="Começar um foco" android:layout_marginStart="8.0dip">
+                <ImageView android:layout_width="16.0dip" android:layout_height="16.0dip" android:src="@drawable/ic_widget_play_dark" android:importantForAccessibility="no" />
+                <TextView android:textSize="13.0sp" android:textStyle="bold" android:textColor="#ff1f2937" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Focar" android:maxLines="1" android:layout_marginStart="5.0dip" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

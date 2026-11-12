@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <path android:fillColor="#ffffffff" android:pathData="M31,51 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0 Z" android:fillAlpha="0.6" />
+        <path android:fillColor="#ffffffff" android:pathData="M56,48 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 Z" android:fillAlpha="0.6" />
+        <path android:fillColor="#ffffffff" android:pathData="M61.5,63 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0 Z" android:fillAlpha="0.6" />
+        <path android:fillColor="#ffffffff" android:pathData="M28.5,66 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z" android:fillAlpha="0.6" />
+        <path android:fillColor="#ffffffff" android:pathData="M49,58 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z" android:fillAlpha="0.6" />
+    </group>
+</vector>

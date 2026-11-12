@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector android:drawable="@drawable/mvp_face_eat__0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <target android:name="breath" android:animation="@animator/mv_breath" />
+    <target android:name="tongue" android:animation="@animator/mv_tongue" />
+    <target android:name="fly" android:animation="@animator/mv_fly" />
+    <target android:name="o0" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="o1" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="o2" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="o3" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="o4" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="o5" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="o6" android:animation="@animator/mv_eat_out_f55" />
+    <target android:name="o7" android:animation="@animator/mv_eat_out_f100" />
+    <target android:name="i8" android:animation="@animator/mv_eat_in_s60" />
+    <target android:name="i9" android:animation="@animator/mv_eat_in_s60" />
+    <target android:name="i10" android:animation="@animator/mv_eat_in_f35" />
+    <target android:name="i11" android:animation="@animator/mv_eat_in_f35" />
+    <target android:name="i12" android:animation="@animator/mv_eat_in_s40" />
+</animated-vector>

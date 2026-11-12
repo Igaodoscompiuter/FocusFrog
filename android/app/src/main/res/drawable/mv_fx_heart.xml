@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector android:drawable="@drawable/mvp_fx_heart__0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <target android:name="breath" android:animation="@animator/mv_breath" />
+    <target android:name="rise" android:animation="@animator/mv_rise" />
+    <target android:name="h" android:animation="@animator/mv_fade_fill" />
+</animated-vector>

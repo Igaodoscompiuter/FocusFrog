@@ -6,4 +6,6 @@
     <string name="custom_url_scheme">com.focusfrog.app</string>
     <string name="widget_frog_description">Seu Sapo do Dia na tela inicial: passos, foco e conclusão</string>
     <string name="widget_checklist_description">Checklist "Já pegou?" direto na tela inicial</string>
+    <string name="widget_agenda_description">Agenda de hoje e lembretes de rotina: marque as rápidas sem abrir o app</string>
+    <string name="widget_mascot_description">Seu sapo mascote na tela inicial: dê carinho, alimente com as moscas que você ganha focando e veja como ele está</string>
 </resources>

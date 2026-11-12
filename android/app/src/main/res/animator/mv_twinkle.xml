@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator android:interpolator="@android:interpolator/linear" android:duration="1800" android:repeatCount="infinite">
+        <propertyValuesHolder android:valueType="floatType" android:propertyName="fillAlpha">
+            <keyframe android:value="0.15" android:fraction="0.0" />
+            <keyframe android:value="1" android:fraction="0.5" />
+            <keyframe android:value="0.15" android:fraction="1.0" />
+        </propertyValuesHolder>
+    </objectAnimator>
+</set>

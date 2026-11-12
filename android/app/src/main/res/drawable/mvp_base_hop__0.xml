@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <group android:name="lbL" android:pivotX="28.0" android:pivotY="85.0">
+            <path android:fillColor="#ffffffff" android:pathData="M16,75 a12,10 0 1,0 24,0 a12,10 0 1,0 -24,0 Z" />
+            <path android:pathData="M16,75 a12,10 0 1,0 24,0 a12,10 0 1,0 -24,0 Z" android:strokeColor="#ff000000" android:strokeWidth="1.4" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.25" />
+        </group>
+        <group android:name="lbR" android:pivotX="72.0" android:pivotY="85.0">
+            <path android:fillColor="#ffffffff" android:pathData="M60,75 a12,10 0 1,0 24,0 a12,10 0 1,0 -24,0 Z" />
+            <path android:pathData="M60,75 a12,10 0 1,0 24,0 a12,10 0 1,0 -24,0 Z" android:strokeColor="#ff000000" android:strokeWidth="1.4" android:strokeLineCap="round" android:strokeLineJoin="round" android:strokeAlpha="0.25" />
+        </group>
+        <path android:fillColor="#ffffffff" android:pathData="M20,60 a30,25 0 1,0 60,0 a30,25 0 1,0 -60,0 Z" />
+        <path android:fillColor="#ffffffff" android:pathData="M30,45 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+        <path android:fillColor="#ffffffff" android:pathData="M50,45 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+    </group>
+</vector>

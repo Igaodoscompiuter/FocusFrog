@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:height="100.0dip" android:width="100.0dip" android:viewportWidth="100.0" android:viewportHeight="100.0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <group android:name="breath" android:pivotX="50.0" android:pivotY="85.0">
+        <path android:pathData="M25,50 Q25,22 50,22 Q75,22 75,50" android:strokeColor="#ff1f2937" android:strokeWidth="3.4" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:fillColor="#ff3b82f6" android:pathData="M23,44 L24,44 Q28,44 28,48 L28,55 Q28,59 24,59 L23,59 Q19,59 19,55 L19,48 Q19,44 23,44 Z M76,44 L77,44 Q81,44 81,48 L81,55 Q81,59 77,59 L76,59 Q72,59 72,55 L72,48 Q72,44 76,44 Z" />
+    </group>
+</vector>

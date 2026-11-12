@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector android:drawable="@drawable/mvp_front_hop__0"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
+    <target android:name="breath" android:animation="@animator/mv_hop" />
+    <target android:name="lfL" android:animation="@animator/mv_hop_lft" />
+    <target android:name="lfR" android:animation="@animator/mv_hop_lft" />
+</animated-vector>
