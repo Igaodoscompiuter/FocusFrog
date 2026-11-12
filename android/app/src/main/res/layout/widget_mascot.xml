@@ -13,7 +13,7 @@
             </LinearLayout>
             <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@+id/mascot_focus" android:background="@drawable/widget_btn_focus" android:layout_width="0.0dip" android:layout_height="34.0dip" android:layout_weight="1.0" android:contentDescription="Começar um foco" android:layout_marginStart="6.0dip">
                 <ImageView android:layout_width="16.0dip" android:layout_height="16.0dip" android:src="@drawable/ic_widget_play_dark" android:importantForAccessibility="no" />
-                <TextView android:textSize="13.0sp" android:textStyle="bold" android:textColor="#ff1f2937" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Focar" android:maxLines="1" android:layout_marginStart="5.0dip" />
+                <TextView android:textSize="13.0sp" android:textStyle="bold" android:textColor="#ff1f2937" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/mascot_focus_text" android:text="Focar" android:maxLines="1" android:layout_marginStart="5.0dip" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -27,15 +27,15 @@
         <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginBottom="2.0dip">
             <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0">
                 <ImageView android:layout_width="13.0dip" android:layout_height="13.0dip" android:src="@drawable/ic_bar_food" android:importantForAccessibility="no" />
-                <ProgressBar android:id="@+id/mascot_food" android:layout_width="0.0dip" android:layout_height="7.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_food" android:layout_weight="1.0" android:contentDescription="Barriga" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
+                <ProgressBar android:id="@+id/mascot_food" android:layout_width="0.0dip" android:layout_height="9.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_food" android:layout_weight="1.0" android:contentDescription="Barriga" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
             </LinearLayout>
             <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="10.0dip">
                 <ImageView android:layout_width="13.0dip" android:layout_height="13.0dip" android:src="@drawable/ic_bar_energy" android:importantForAccessibility="no" />
-                <ProgressBar android:id="@+id/mascot_energy" android:layout_width="0.0dip" android:layout_height="7.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_energy" android:layout_weight="1.0" android:contentDescription="Energia" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
+                <ProgressBar android:id="@+id/mascot_energy" android:layout_width="0.0dip" android:layout_height="9.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_energy" android:layout_weight="1.0" android:contentDescription="Energia" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
             </LinearLayout>
             <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_weight="1.0" android:layout_marginStart="10.0dip">
                 <ImageView android:layout_width="13.0dip" android:layout_height="13.0dip" android:src="@drawable/ic_bar_mood" android:importantForAccessibility="no" />
-                <ProgressBar android:id="@+id/mascot_humor" android:layout_width="0.0dip" android:layout_height="7.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_mood" android:layout_weight="1.0" android:contentDescription="Humor" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
+                <ProgressBar android:id="@+id/mascot_humor" android:layout_width="0.0dip" android:layout_height="9.0dip" android:max="100" android:progressDrawable="@drawable/widget_bar_mood" android:layout_weight="1.0" android:contentDescription="Humor" android:layout_marginStart="5.0dip" style="?android:progressBarStyleHorizontal" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

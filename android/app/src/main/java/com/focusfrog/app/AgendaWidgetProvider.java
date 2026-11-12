@@ -154,204 +154,87 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     }
 
 
-    public static RemoteViews build(Context context, int i, float f, float f2) {
-        JSONObject jSONObject;
-        String str;
-        RemoteViews remoteViews;
-        int i2;
-        int i3;
-        float f3;
-        String str2;
-        JSONArray jSONArray;
-        int i4;
-        String str3;
-        int i5;
-        int i6;
-        String str4;
-        int i7;
-        String str5;
-        String sb;
-        Context context2 = context;
-        RemoteViews remoteViews2 = new RemoteViews(context.getPackageName(), R.layout.widget_list);
+    public static RemoteViews build(final Context context, final int i, float f, float f2) {
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_list);
+        JSONObject state;
         try {
-            jSONObject = new JSONObject(context2.getSharedPreferences(PREFS_NAME, 0).getString(KEY_STATE, "{}"));
+            state = new JSONObject(context.getSharedPreferences(PREFS_NAME, 0).getString(KEY_STATE, "{}"));
         } catch (Exception unused) {
-            jSONObject = new JSONObject();
+            state = new JSONObject();
         }
-        JSONArray optJSONArray = jSONObject.optJSONArray("items");
-        int length = optJSONArray == null ? 0 : optJSONArray.length();
-        JSONArray readDone = readDone(context);
-        int i8 = 0;
-        for (int i9 = 0; i9 < length; i9++) {
-            JSONObject optJSONObject = optJSONArray.optJSONObject(i9);
-            if (optJSONObject != null && isDone(readDone, optJSONObject.optString("id"))) {
-                i8++;
+        final JSONArray items = state.optJSONArray("items") == null ? new JSONArray() : state.optJSONArray("items");
+        int length = items.length();
+        final JSONArray readDone = readDone(context);
+        int done = 0;
+        for (int k = 0; k < length; k++) {
+            JSONObject o = items.optJSONObject(k);
+            if (o != null && isDone(readDone, o.optString("id"))) {
+                done++;
             }
         }
-        boolean equals = today().equals(jSONObject.optString("date", ""));
-        remoteViews2.setTextViewText(R.id.w_title, "AGENDA DE HOJE");
-        remoteViews2.setViewVisibility(R.id.w_title, f < 150.0f ? 8 : 0);
-        remoteViews2.setTextViewText(R.id.w_count, length > 0 ? i8 + "/" + length : "");
-        remoteViews2.setImageViewResource(R.id.w_action, R.drawable.ic_widget_plus);
-        remoteViews2.setContentDescription(R.id.w_action, "Anotar no Despejo mental");
-        int i10 = i * 10;
-        remoteViews2.setOnClickPendingIntent(R.id.w_action, WidgetKit.openApp(context2, "dump", i10 + 5202));
-        String str6 = "home";
-        remoteViews2.setOnClickPendingIntent(R.id.w_head, WidgetKit.openApp(context2, "home", i10 + 5201));
-        remoteViews2.removeAllViews(R.id.w_list);
-        if (length == 0 || !equals) {
-            remoteViews2.setViewVisibility(R.id.w_list, 8);
-            remoteViews2.setViewVisibility(R.id.w_empty, 0);
-            remoteViews2.setTextViewText(R.id.w_empty, !equals ? "Abra o app pra atualizar o dia" : "Nada pra hoje. Toque no + pra anotar algo.");
-            remoteViews2.setOnClickPendingIntent(R.id.w_empty, WidgetKit.openApp(context2, "home", i10 + 5203));
-            return remoteViews2;
+        boolean fresh = today().equals(state.optString("date", ""));
+        remoteViews.setTextViewText(R.id.w_title, "AGENDA DE HOJE");
+        remoteViews.setViewVisibility(R.id.w_title, f < 200.0f ? 8 : 0);
+        remoteViews.setImageViewResource(R.id.w_action, R.drawable.ic_widget_plus);
+        remoteViews.setContentDescription(R.id.w_action, "Anotar no Despejo mental");
+        int base = i * 10;
+        remoteViews.setOnClickPendingIntent(R.id.w_action, WidgetKit.openApp(context, "dump", base + 5202));
+        remoteViews.setOnClickPendingIntent(R.id.w_head, WidgetKit.openApp(context, "home", base + 5201));
+        remoteViews.removeAllViews(R.id.w_list);
+        if (length == 0 || !fresh) {
+            remoteViews.setTextViewText(R.id.w_count, "");
+            remoteViews.setViewVisibility(R.id.w_list, 8);
+            remoteViews.setViewVisibility(R.id.w_empty, 0);
+            remoteViews.setTextViewText(R.id.w_empty, !fresh ? "Abra o app pra atualizar o dia" : "Nada pra hoje. Toque no + pra anotar algo.");
+            remoteViews.setOnClickPendingIntent(R.id.w_empty, WidgetKit.openApp(context, "home", base + 5203));
+            return remoteViews;
         }
-        remoteViews2.setViewVisibility(R.id.w_list, 0);
-        remoteViews2.setViewVisibility(R.id.w_empty, 8);
-        boolean z = f2 < 150.0f;
-        int i11 = f >= 300.0f ? 2 : 1;
-        float f4 = f / i11;
-        float f5 = f4 / 15.0f;
-        float clamp = WidgetKit.clamp(12.0f, f5, 15.0f);
-        float[] fArr = new float[length];
-        int i12 = 0;
-        while (true) {
-            str = PomodoroForegroundService.EXTRA_TITLE;
-            remoteViews = remoteViews2;
-            if (i12 >= length) {
-                break;
+        remoteViews.setViewVisibility(R.id.w_list, 0);
+        remoteViews.setViewVisibility(R.id.w_empty, 8);
+        final int cols = WidgetKit.colsFor(f, 110.0f);
+        final float cellW = f / cols;
+        final float baseFont = WidgetKit.clamp(12.0f, cellW / 15.0f, 15.0f);
+        final boolean narrow = cellW < 170.0f;
+        final boolean hideSub = f2 < 150.0f || narrow;
+        float[] heights = new float[Math.min(length, MAX_ROWS)];
+        for (int k = 0; k < heights.length; k++) {
+            JSONObject o = items.optJSONObject(k);
+            String text = "";
+            boolean sub = false;
+            if (o != null) {
+                String time = o.optString("time", "");
+                text = (narrow && !time.isEmpty() ? time + " · " : "") + o.optString(PomodoroForegroundService.EXTRA_TITLE, "");
+                sub = !hideSub && !o.optString("label", "").isEmpty();
             }
-            float f6 = f5;
-            JSONObject optJSONObject2 = optJSONArray.optJSONObject(i12);
-            if (optJSONObject2 == null) {
-                sb = "";
-                i7 = i10;
-                str4 = str6;
-            } else {
-                str4 = str6;
-                StringBuilder sb2 = new StringBuilder();
-                if (f4 >= 170.0f || optJSONObject2.optString("time", "").isEmpty()) {
-                    i7 = i10;
-                    str5 = "";
-                } else {
-                    i7 = i10;
-                    str5 = optJSONObject2.optString("time") + " · ";
+            heights[k] = WidgetKit.cellDp(text, sub, cellW, baseFont, narrow);
+        }
+        WidgetKit.Plan plan = WidgetKit.plan(heights, cols, WidgetKit.listSpace(f2));
+        remoteViews.setTextViewText(R.id.w_count, WidgetKit.counter(done, length, length - plan.shown, f));
+        final float fontScale = cellW / 15.0f;
+        WidgetKit.fillGrid(context, remoteViews, R.id.w_list, plan, new WidgetKit.CellBinder() {
+            @Override
+            public RemoteViews cell(int index, float stretch) {
+                JSONObject o = items.optJSONObject(index);
+                if (o == null) {
+                    return new RemoteViews(context.getPackageName(), R.layout.widget_cell_blank);
                 }
-                sb2.append(str5);
-                sb2.append(optJSONObject2.optString(PomodoroForegroundService.EXTRA_TITLE, ""));
-                sb = sb2.toString();
-            }
-            fArr[i12] = WidgetKit.cellDp(sb, (z || optJSONObject2 == null || optJSONObject2.optString("label", "").isEmpty()) ? false : true, f4, clamp, f4 < 170.0f);
-            i12++;
-            remoteViews2 = remoteViews;
-            f5 = f6;
-            str6 = str4;
-            i10 = i7;
-        }
-        float f7 = f5;
-        int i13 = i10;
-        String str7 = str6;
-        int min = Math.min(24, WidgetKit.fitCells(fArr, i11, WidgetKit.listSpace(f2)));
-        boolean z2 = length > min;
-        int min2 = (!z2 || min <= 1) ? Math.min(length, min) : min - 1;
-        int i14 = (!z2 || min <= 1) ? min2 : min;
-        float stretch = WidgetKit.stretch(fArr, i11, i14, WidgetKit.listSpace(f2));
-        int i15 = 0;
-        while (true) {
-            int i16 = i15 * i11;
-            if (i16 >= i14) {
-                return remoteViews;
-            }
-            int i17 = length;
-            RemoteViews row = WidgetKit.row(context2, stretch);
-            int i18 = 0;
-            while (i18 < i11) {
-                int i19 = i11;
-                int i20 = i16 + i18;
-                if (i20 < min2) {
-                    int i21 = i18;
-                    JSONObject optJSONObject3 = optJSONArray.optJSONObject(i20);
-                    i2 = i16;
-                    if (optJSONObject3 != null) {
-                        jSONArray = optJSONArray;
-                        i3 = i14;
-                        i6 = min2;
-                        f3 = f4;
-                        String str8 = str;
-                        RemoteViews buildRow = buildRow(context, optJSONObject3, readDone, i, i20, z);
-                        WidgetKit.fluidText(buildRow, R.id.w_text, 12.0f, Math.min(1.15f, stretch) * f7, Math.min(1.15f, stretch) * 15.0f);
-                        WidgetKit.fluidText(buildRow, R.id.w_sub, 10.5f, f3 / 22.0f, 12.0f);
-                        WidgetKit.fillCell(buildRow, R.id.w_cell, stretch);
-                        buildRow.setInt(R.id.w_text, "setMaxLines", f3 < 170.0f ? 2 : 1);
-                        String optString = optJSONObject3.optString("time", "");
-                        if (f3 >= 170.0f || optString.isEmpty()) {
-                            str2 = str8;
-                        } else {
-                            buildRow.setViewVisibility(R.id.w_time, 8);
-                            int i22 = R.id.w_text;
-                            StringBuilder sb3 = new StringBuilder();
-                            sb3.append(optString);
-                            sb3.append(" · ");
-                            str2 = str8;
-                            sb3.append(optJSONObject3.optString(str2, ""));
-                            buildRow.setTextViewText(i22, sb3.toString());
-                        }
-                        row.addView(R.id.w_row, buildRow);
-                    } else {
-                        i3 = i14;
-                        i6 = min2;
-                        f3 = f4;
-                        str2 = str;
-                        jSONArray = optJSONArray;
-                    }
-                    i4 = i21;
-                    str3 = str7;
-                    i5 = i13;
-                } else {
-                    i2 = i16;
-                    i3 = i14;
-                    int i23 = min2;
-                    f3 = f4;
-                    str2 = str;
-                    int i24 = i18;
-                    jSONArray = optJSONArray;
-                    if (i20 == i23 && z2 && min > 1) {
-                        RemoteViews remoteViews3 = new RemoteViews(context.getPackageName(), R.layout.widget_more_cell);
-                        remoteViews3.setTextViewText(R.id.w_more, "+" + (i17 - i23) + " no app");
-                        i5 = i13;
-                        i4 = i24;
-                        str3 = str7;
-                        remoteViews3.setOnClickPendingIntent(R.id.w_more, WidgetKit.openApp(context, str3, i5 + 5204));
-                        row.addView(R.id.w_row, remoteViews3);
-                        i6 = i23;
-                    } else {
-                        i4 = i24;
-                        str3 = str7;
-                        i5 = i13;
-                        i6 = i23;
-                        row.addView(R.id.w_row, new RemoteViews(context.getPackageName(), R.layout.widget_cell_blank));
-                    }
+                RemoteViews cell = buildRow(context, o, readDone, i, index, hideSub);
+                float grow = Math.min(1.15f, stretch);
+                WidgetKit.fluidText(cell, R.id.w_text, 12.0f, fontScale * grow, 15.0f * grow);
+                WidgetKit.fluidText(cell, R.id.w_sub, 10.5f, cellW / 22.0f, 12.0f);
+                WidgetKit.fillCell(cell, R.id.w_cell, stretch);
+                cell.setInt(R.id.w_text, "setMaxLines", narrow ? 2 : 1);
+                if (cellW < 130.0f) {
+                    cell.setViewVisibility(R.id.w_check, 8);
                 }
-                i18 = i4 + 1;
-                i13 = i5;
-                str7 = str3;
-                i11 = i19;
-                i16 = i2;
-                optJSONArray = jSONArray;
-                min2 = i6;
-                f4 = f3;
-                str = str2;
-                i14 = i3;
+                String time = o.optString("time", "");
+                if (narrow && !time.isEmpty()) {
+                    cell.setViewVisibility(R.id.w_time, 8);
+                    cell.setTextViewText(R.id.w_text, time + " · " + o.optString(PomodoroForegroundService.EXTRA_TITLE, ""));
+                }
+                return cell;
             }
-            remoteViews.addView(R.id.w_list, row);
-            i15++;
-            context2 = context;
-            length = i17;
-            optJSONArray = optJSONArray;
-            min2 = min2;
-            f4 = f4;
-            str = str;
-            i14 = i14;
-        }
+        });
+        return remoteViews;
     }
 }

@@ -110,23 +110,18 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
     }
 
 
-    public static RemoteViews build(Context context, int i, float f, float f2) {
-        float f3;
-        JSONArray jSONArray;
-        float f4;
-        int i2;
+    public static RemoteViews build(final Context context, final int i, float f, float f2) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_list);
-        JSONArray readItems = readItems(context);
+        final JSONArray readItems = readItems(context);
         int length = readItems.length();
-        int i3 = 0;
-        for (int i4 = 0; i4 < length; i4++) {
-            JSONObject optJSONObject = readItems.optJSONObject(i4);
-            if (optJSONObject != null && optJSONObject.optBoolean("completed")) {
-                i3++;
+        int done = 0;
+        for (int k = 0; k < length; k++) {
+            JSONObject o = readItems.optJSONObject(k);
+            if (o != null && o.optBoolean("completed")) {
+                done++;
             }
         }
         remoteViews.setTextViewText(R.id.w_title, "JÁ PEGOU?");
-        remoteViews.setTextViewText(R.id.w_count, length > 0 ? i3 + "/" + length : "");
         remoteViews.setViewVisibility(R.id.w_title, f < 150.0f ? 8 : 0);
         remoteViews.setImageViewResource(R.id.w_action, R.drawable.ic_widget_reset);
         remoteViews.setContentDescription(R.id.w_action, "Desmarcar tudo");
@@ -134,6 +129,7 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         remoteViews.setOnClickPendingIntent(R.id.w_head, WidgetKit.openApp(context, "home", i + 5300));
         remoteViews.removeAllViews(R.id.w_list);
         if (length == 0) {
+            remoteViews.setTextViewText(R.id.w_count, "");
             remoteViews.setViewVisibility(R.id.w_list, 8);
             remoteViews.setViewVisibility(R.id.w_empty, 0);
             remoteViews.setTextViewText(R.id.w_empty, "Nenhum item ainda. Abra o app pra adicionar.");
@@ -142,73 +138,33 @@ public class ChecklistWidgetProvider extends AppWidgetProvider {
         }
         remoteViews.setViewVisibility(R.id.w_list, 0);
         remoteViews.setViewVisibility(R.id.w_empty, 8);
-        int colsFor = WidgetKit.colsFor(f, 110.0f);
-        float f5 = f / colsFor;
-        float f6 = f5 / 15.0f;
-        float clamp = WidgetKit.clamp(12.0f, f6, 15.0f);
-        float[] fArr = new float[length];
-        for (int i5 = 0; i5 < length; i5++) {
-            JSONObject optJSONObject2 = readItems.optJSONObject(i5);
-            fArr[i5] = WidgetKit.cellDp(optJSONObject2 == null ? "" : optJSONObject2.optString("text", ""), false, f5, clamp, f5 < 170.0f);
+        final int cols = WidgetKit.colsFor(f, 110.0f);
+        final float cellW = f / cols;
+        final float baseFont = WidgetKit.clamp(12.0f, cellW / 15.0f, 15.0f);
+        final boolean narrow = cellW < 170.0f;
+        float[] heights = new float[length];
+        for (int k = 0; k < length; k++) {
+            JSONObject o = readItems.optJSONObject(k);
+            heights[k] = WidgetKit.cellDp(o == null ? "" : o.optString("text", ""), false, cellW, baseFont, narrow);
         }
-        int fitCells = WidgetKit.fitCells(fArr, colsFor, WidgetKit.listSpace(f2));
-        boolean z = length > fitCells;
-        int min = (!z || fitCells <= 1) ? Math.min(length, fitCells) : fitCells - 1;
-        int i6 = (!z || fitCells <= 1) ? min : fitCells;
-        float stretch = WidgetKit.stretch(fArr, colsFor, i6, WidgetKit.listSpace(f2));
-        float min2 = Math.min(1.15f, stretch) * 15.0f;
-        int i7 = 0;
-        while (true) {
-            int i8 = i7 * colsFor;
-            if (i8 >= i6) {
-                return remoteViews;
-            }
-            int i9 = i6;
-            RemoteViews row = WidgetKit.row(context, stretch);
-            RemoteViews remoteViews2 = remoteViews;
-            int i10 = 0;
-            while (i10 < colsFor) {
-                int i11 = colsFor;
-                int i12 = i8 + i10;
-                if (i12 < min) {
-                    i2 = i8;
-                    RemoteViews cell = cell(context, i, readItems.optJSONObject(i12), i12);
-                    jSONArray = readItems;
-                    f3 = f6;
-                    WidgetKit.fluidText(cell, R.id.w_text, 12.0f, f6 * Math.min(1.15f, stretch), min2);
-                    WidgetKit.fillCell(cell, R.id.w_cell, stretch);
-                    f4 = min2;
-                    WidgetKit.fluidText(cell, R.id.w_sub, 10.5f, f5 / 22.0f, 12.0f);
-                    cell.setInt(R.id.w_text, "setMaxLines", f5 < 170.0f ? 2 : 1);
-                    row.addView(R.id.w_row, cell);
-                } else {
-                    f3 = f6;
-                    jSONArray = readItems;
-                    f4 = min2;
-                    i2 = i8;
-                    if (i12 == min && z && fitCells > 1) {
-                        RemoteViews remoteViews3 = new RemoteViews(context.getPackageName(), R.layout.widget_more_cell);
-                        remoteViews3.setTextViewText(R.id.w_more, "+" + (length - min));
-                        remoteViews3.setOnClickPendingIntent(R.id.w_more, WidgetKit.openApp(context, "home", i + 5320));
-                        row.addView(R.id.w_row, remoteViews3);
-                    } else {
-                        row.addView(R.id.w_row, new RemoteViews(context.getPackageName(), R.layout.widget_cell_blank));
-                    }
+        WidgetKit.Plan plan = WidgetKit.plan(heights, cols, WidgetKit.listSpace(f2));
+        remoteViews.setTextViewText(R.id.w_count, WidgetKit.counter(done, length, plan.hidden, f));
+        final float fontScale = cellW / 15.0f;
+        WidgetKit.fillGrid(context, remoteViews, R.id.w_list, plan, new WidgetKit.CellBinder() {
+            @Override
+            public RemoteViews cell(int index, float stretch) {
+                RemoteViews cell = ChecklistWidgetProvider.cell(context, i, readItems.optJSONObject(index), index);
+                float grow = Math.min(1.15f, stretch);
+                WidgetKit.fluidText(cell, R.id.w_text, 12.0f, fontScale * grow, 15.0f * grow);
+                WidgetKit.fillCell(cell, R.id.w_cell, stretch);
+                cell.setInt(R.id.w_text, "setMaxLines", narrow ? 2 : 1);
+                if (cellW < 130.0f) {
+                    cell.setViewVisibility(R.id.w_check, 8);
                 }
-                i10++;
-                min2 = f4;
-                colsFor = i11;
-                i8 = i2;
-                readItems = jSONArray;
-                f6 = f3;
+                return cell;
             }
-            remoteViews = remoteViews2;
-            remoteViews.addView(R.id.w_list, row);
-            i7++;
-            i6 = i9;
-            colsFor = colsFor;
-            f6 = f6;
-        }
+        });
+        return remoteViews;
     }
 
     private static RemoteViews cell(Context context, int i, JSONObject jSONObject, int i2) {

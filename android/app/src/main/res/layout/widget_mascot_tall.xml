@@ -17,7 +17,7 @@
         </LinearLayout>
         <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@+id/mascot_focus" android:background="@drawable/widget_btn_focus" android:layout_width="0.0dip" android:layout_height="38.0dip" android:layout_weight="1.0" android:contentDescription="Começar um foco" android:layout_marginStart="6.0dip">
             <ImageView android:layout_width="16.0dip" android:layout_height="16.0dip" android:src="@drawable/ic_widget_play_dark" android:importantForAccessibility="no" />
-            <TextView android:textSize="13.0sp" android:textStyle="bold" android:textColor="#ff1f2937" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Focar" android:maxLines="1" android:layout_marginStart="5.0dip" />
+            <TextView android:textSize="13.0sp" android:textStyle="bold" android:textColor="#ff1f2937" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/mascot_focus_text" android:text="Focar" android:maxLines="1" android:layout_marginStart="5.0dip" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

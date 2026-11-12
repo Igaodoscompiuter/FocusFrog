@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -164,6 +165,12 @@ public class FrogWidgetProvider extends AppWidgetProvider {
             Log.e("FrogWidget", "build falhou", e);
         }
         boolean compact = !(f >= 180.0f && f2 >= 130.0f);
+        float density = context.getResources().getDisplayMetrics().density;
+        int pad = Math.round((f2 < 160.0f ? 8.0f : 14.0f) * density);
+        remoteViews.setViewPadding(R.id.frog_root, pad, pad, pad, pad);
+        if (f2 < 118.0f && Build.VERSION.SDK_INT >= 31) {
+            remoteViews.setViewLayoutHeight(R.id.frog_btn_row, 32.0f, 1);
+        }
         boolean active = "active".equals(optString);
         remoteViews.setViewVisibility(R.id.frog_state_active, active ? 0 : 8);
         remoteViews.setViewVisibility(R.id.frog_state_empty, PluginMethod.RETURN_NONE.equals(optString) ? 0 : 8);
@@ -243,16 +250,8 @@ public class FrogWidgetProvider extends AppWidgetProvider {
         boolean z4 = z3;
         long optLong = jSONObject.optLong("focusEndsAt", 0L);
         boolean z5 = optLong > currentTimeMillis;
-        if (f2 < 140.0f || (f >= 230.0f && f2 < 200.0f)) {
-            j = optLong;
-            i2 = 1;
-        } else if (f2 >= 300.0f) {
-            j = optLong;
-            i2 = 3;
-        } else {
-            j = optLong;
-            i2 = 2;
-        }
+        j = optLong;
+        i2 = WidgetKit.linesFor(f2 - 112.0f, WidgetKit.clamp(14.0f, f / 17.0f, 19.0f), 1, 3);
         remoteViews.setInt(R.id.frog_title, "setMaxLines", i2);
         int i7 = i5;
         WidgetKit.fluidText(remoteViews, R.id.frog_title, 14.0f, f / 17.0f, 19.0f);
@@ -319,6 +318,10 @@ public class FrogWidgetProvider extends AppWidgetProvider {
             remoteViews.setTextViewText(R.id.frog_steps, i7 + "/" + optInt);
         } else {
             remoteViews.setViewVisibility(R.id.frog_steps_row, 8);
+            if (optInt > 0 && !z5 && f >= 150.0f) {
+                remoteViews.setTextViewText(R.id.frog_badge, i7 + "/" + optInt);
+                remoteViews.setViewVisibility(R.id.frog_badge, 0);
+            }
         }
         boolean z6 = optInt == 0 || z4;
         PendingIntent broadcast = WidgetKit.broadcast(context, FrogWidgetProvider.class, ACTION_DONE, i + 4800, null, null);

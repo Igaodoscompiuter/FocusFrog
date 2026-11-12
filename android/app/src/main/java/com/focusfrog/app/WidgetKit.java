@@ -123,6 +123,75 @@ final class WidgetKit {
         return f2;
     }
 
+
+    /** Resultado do cálculo da grade: quantos itens cabem, quantos ficam de fora e quanto esticar as células. */
+    static final class Plan {
+        final int cols;
+        final int shown;
+        final int hidden;
+        final float stretch;
+
+        Plan(int cols, int shown, int hidden, float stretch) {
+            this.cols = cols;
+            this.shown = shown;
+            this.hidden = hidden;
+            this.stretch = stretch;
+        }
+    }
+
+    interface CellBinder {
+        RemoteViews cell(int index, float stretch);
+    }
+
+    /** Planeja a grade sem reservar vaga para "+N": o excedente vai para o contador do cabeçalho. */
+    static Plan plan(float[] heights, int cols, float space) {
+        int n = heights.length;
+        float used = 0.0f;
+        int shown = 0;
+        while (shown < n) {
+            float rowH = 42.0f;
+            for (int c = 0; c < cols && shown + c < n; c++) {
+                rowH = Math.max(rowH, heights[shown + c]);
+            }
+            if (used + rowH > space && shown > 0) {
+                break;
+            }
+            used += rowH;
+            shown = Math.min(n, shown + cols);
+        }
+        int hidden = n - shown;
+        float ratio = used > 0.0f ? space / used : 1.0f;
+        float stretch = hidden > 0 ? Math.min(ratio, 2.4f) : Math.min(ratio, 2.2f);
+        return new Plan(cols, shown, hidden, Math.max(1.0f, stretch));
+    }
+
+    /** Monta as linhas da grade e preenche as células vazias da última linha. */
+    static void fillGrid(Context context, RemoteViews remoteViews, int listId, Plan plan, CellBinder binder) {
+        int rows = (int) Math.ceil(plan.shown / (float) plan.cols);
+        for (int r = 0; r < rows; r++) {
+            RemoteViews row = row(context, plan.stretch);
+            for (int c = 0; c < plan.cols; c++) {
+                int idx = (r * plan.cols) + c;
+                if (idx < plan.shown) {
+                    row.addView(R.id.w_row, binder.cell(idx, plan.stretch));
+                } else {
+                    row.addView(R.id.w_row, new RemoteViews(context.getPackageName(), R.layout.widget_cell_blank));
+                }
+            }
+            remoteViews.addView(listId, row);
+        }
+    }
+
+    static String counter(int done, int total, int hidden, float width) {
+        if (total <= 0) {
+            return "";
+        }
+        if (width < 150.0f) {
+            return done + "/" + total;
+        }
+        return done + "/" + total + (hidden > 0 ? " · +" + hidden : "");
+    }
+
     static RemoteViews row(Context context, float f) {
         return new RemoteViews(context.getPackageName(), f > 1.0f ? R.layout.widget_row_fill : R.layout.widget_row);
     }

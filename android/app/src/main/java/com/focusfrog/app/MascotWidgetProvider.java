@@ -58,6 +58,7 @@ public class MascotWidgetProvider extends AppWidgetProvider {
     enum Kind {
         SMALL,
         TALL,
+        STRIP,
         WIDE,
         LARGE
     }
@@ -403,7 +404,10 @@ public class MascotWidgetProvider extends AppWidgetProvider {
 
     static Kind kindFor(float f, float f2) {
         if (f >= 230.0f) {
-            return f2 >= 200.0f ? Kind.LARGE : Kind.WIDE;
+            if (f2 >= 260.0f) {
+                return Kind.LARGE;
+            }
+            return f2 < 118.0f ? (f >= 300.0f ? Kind.STRIP : Kind.SMALL) : Kind.WIDE;
         }
         if (f2 >= 230.0f && f >= 150.0f) {
             return Kind.TALL;
@@ -412,7 +416,7 @@ public class MascotWidgetProvider extends AppWidgetProvider {
     }
 
     static int layoutFor(Kind kind) {
-        return kind == Kind.LARGE ? R.layout.widget_mascot_large : kind == Kind.WIDE ? R.layout.widget_mascot : kind == Kind.TALL ? R.layout.widget_mascot_tall : R.layout.widget_mascot_small;
+        return kind == Kind.LARGE ? R.layout.widget_mascot_large : kind == Kind.STRIP ? R.layout.widget_mascot_strip : kind == Kind.WIDE ? R.layout.widget_mascot : kind == Kind.TALL ? R.layout.widget_mascot_tall : R.layout.widget_mascot_small;
     }
 
     static int frameBg(String str) {
@@ -424,7 +428,7 @@ public class MascotWidgetProvider extends AppWidgetProvider {
     }
 
     static RemoteViews build(Context context, Kind kind, Bitmap[] bitmapArr) {
-        return build(context, kind, bitmapArr, kind == Kind.SMALL ? 120.0f : kind == Kind.TALL ? 170.0f : 300.0f, kind == Kind.WIDE ? 140.0f : 260.0f);
+        return build(context, kind, bitmapArr, kind == Kind.SMALL ? 120.0f : kind == Kind.TALL ? 170.0f : 300.0f, kind == Kind.STRIP ? 90.0f : kind == Kind.WIDE ? 140.0f : 260.0f);
     }
 
     static final class Snap {
@@ -497,10 +501,24 @@ public class MascotWidgetProvider extends AppWidgetProvider {
             float f3 = ((kind == Kind.TALL || kind == Kind.LARGE) ? f : 0.55f * f) / 20.0f;
             float clamp = WidgetKit.clamp(11.0f, f3, 14.0f);
             WidgetKit.fluidText(remoteViews, R.id.mascot_bubble, 11.0f, f3, 14.0f);
-            remoteViews.setInt(R.id.mascot_bubble, "setMaxLines", WidgetKit.linesFor((kind == Kind.TALL ? 0.22f : kind == Kind.LARGE ? 0.24f : 0.42f) * f2, clamp, 2, 7));
-            WidgetKit.fluidText(remoteViews, R.id.mascot_name, 13.0f, f / 20.0f, 17.0f);
+            if (kind != Kind.STRIP) {
+                remoteViews.setInt(R.id.mascot_bubble, "setMaxLines", WidgetKit.linesFor((kind == Kind.TALL ? 0.22f : kind == Kind.LARGE ? 0.24f : 0.42f) * f2, clamp, 2, 7));
+            }
+            WidgetKit.fluidText(remoteViews, R.id.mascot_name, 13.0f, f / 20.0f, kind == Kind.STRIP ? 14.0f : 17.0f);
             remoteViews.setTextViewText(R.id.mascot_name, stats.name);
-            remoteViews.setTextViewText(R.id.mascot_mood, MascotCore.label(str) + " · Nv " + MascotCore.levelFor(jSONObject.optInt("xp")));
+            int level = MascotCore.levelFor(jSONObject.optInt("xp"));
+            float textColW = kind == Kind.WIDE ? ((f - 30.0f) * 1.1f) / 2.0f : kind == Kind.STRIP ? f - 8.0f - Math.max(56.0f, f2 - 16.0f) - 10.0f - 100.0f : f - 20.0f;
+            remoteViews.setTextViewText(R.id.mascot_mood, textColW < 190.0f ? "Nv " + level : MascotCore.label(str) + " · Nv " + level);
+            float btnW = kind == Kind.WIDE ? ((((f - 30.0f) * 0.9f) / 2.0f) - 6.0f) / 2.0f : (f - 26.0f) / 2.0f;
+            if (kind != Kind.STRIP) {
+                remoteViews.setViewVisibility(R.id.mascot_focus_text, btnW < 72.0f ? 8 : 0);
+            }
+            if (kind == Kind.STRIP) {
+                remoteViews.setInt(R.id.mascot_bubble, "setMaxLines", WidgetKit.linesFor(f2 - 44.0f, 12.0f, 1, 3));
+                if (Build.VERSION.SDK_INT >= 31) {
+                    remoteViews.setViewLayoutWidth(R.id.mascot_tap, Math.max(56.0f, f2 - 16.0f), 1);
+                }
+            }
             remoteViews.setOnClickPendingIntent(R.id.mascot_name, openApp(context, "home", 64));
         }
         if (kind == Kind.WIDE || kind == Kind.LARGE) {

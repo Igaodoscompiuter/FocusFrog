@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@+id/mascot_root" android:background="@drawable/widget_mascot_card" android:padding="8.0dip" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@+id/mascot_tap" android:background="@drawable/widget_mascot_frame_pond" android:layout_width="64.0dip" android:layout_height="fill_parent" android:foreground="@drawable/widget_tap_ripple">
+        <include layout="@layout/widget_mascot_flipper" />
+        <include layout="@layout/widget_mascot_vector" />
+    </FrameLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:layout_width="0.0dip" android:layout_height="fill_parent" android:layout_weight="1.0" android:layout_marginStart="10.0dip" android:layout_marginEnd="6.0dip">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="14.0sp" android:textStyle="bold" android:textColor="#fff8fafc" android:ellipsize="end" android:id="@+id/mascot_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" />
+            <TextView android:textSize="10.0sp" android:textStyle="bold" android:textColor="#ffa7f3d0" android:id="@+id/mascot_mood" android:background="@drawable/widget_mood_chip" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:paddingStart="6.0dip" android:paddingEnd="6.0dip" android:layout_marginStart="6.0dip" />
+        </LinearLayout>
+        <TextView android:textSize="12.0sp" android:textColor="#ff111827" android:ellipsize="end" android:id="@+id/mascot_bubble" android:background="@drawable/widget_bubble" android:paddingTop="4.0dip" android:paddingBottom="4.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="4.0dip" android:maxLines="2" android:paddingStart="8.0dip" android:paddingEnd="8.0dip" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@+id/mascot_feed" android:background="@drawable/widget_btn_fly" android:layout_width="48.0dip" android:layout_height="38.0dip" android:contentDescription="Dar uma mosca">
+        <ImageView android:layout_width="18.0dip" android:layout_height="18.0dip" android:src="@drawable/ic_widget_fly" android:importantForAccessibility="no" />
+        <TextView android:textSize="13.0sp" android:textStyle="bold" android:textColor="#ffecfdf5" android:id="@+id/mascot_feed_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:layout_marginStart="3.0dip" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@+id/mascot_focus" android:background="@drawable/widget_btn_focus" android:layout_width="38.0dip" android:layout_height="38.0dip" android:contentDescription="Começar um foco" android:layout_marginStart="6.0dip">
+        <ImageView android:layout_width="16.0dip" android:layout_height="16.0dip" android:src="@drawable/ic_widget_play_dark" android:importantForAccessibility="no" />
+    </LinearLayout>
+</LinearLayout>
