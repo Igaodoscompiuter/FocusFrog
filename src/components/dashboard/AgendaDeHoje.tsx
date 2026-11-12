@@ -8,6 +8,7 @@ import { icons } from '../Icons';
 import { TaskCard } from '../tasks/TaskCard';
 import styles from './AgendaDeHoje.module.css';
 import type { Task } from '../../types';
+import { RoutineGroupCard } from './RoutineGroupCard';
 
 
 export const AgendaDeHoje: React.FC = () => {
@@ -38,7 +39,9 @@ export const AgendaDeHoje: React.FC = () => {
                     {tasksDeHoje.map(task => (
                         <div key={task.id}>
                             {carriedLabel(task.dueDate) && <span className={styles.carried}>{carriedLabel(task.dueDate)}</span>}
-                            <TaskCard task={task} tags={tags} quadrant={task.quadrant} />
+                            {task.routineId && task.subtasks?.length
+                                ? <RoutineGroupCard task={task} />
+                                : <TaskCard task={task} tags={tags} quadrant={task.quadrant} />}
                         </div>
                     ))}
                 </div>

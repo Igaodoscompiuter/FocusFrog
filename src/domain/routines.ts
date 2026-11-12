@@ -102,7 +102,7 @@ export function routineProgress(task: Pick<Task, 'subtasks'>): {
  * Versão curta para dias ruins: só as partes marcadas como essenciais ou, na falta
  * de marcação, as duas primeiras (o começo é o que mais importa para arrancar).
  */
-export function shortVersion<T extends { essential?: boolean }>(steps: T[], fallbackCount = 2): T[] {
-  const marked = steps.filter((s) => s.essential);
+export function shortVersion<T extends object>(steps: T[], fallbackCount = 2): T[] {
+  const marked = steps.filter((s) => (s as { essential?: boolean }).essential);
   return marked.length ? marked : steps.slice(0, fallbackCount);
 }

@@ -44,6 +44,8 @@ interface TasksContextType {
     /** Adiciona a rotina conforme o modo dela. Em "escolher partes" sem ids, abre a escolha (routineToPick). */
     handleAddRoutine: (routine: Routine, pickedTemplateIds?: number[]) => void;
     routineToPick: Routine | null;
+    /** Tira uma parte da tarefa (sem contar como feita). Se só sobrarem partes feitas, a tarefa conclui. */
+    handleSkipSubtask: (taskId: string, subtaskId: string) => void;
     closeRoutinePick: () => void;
     handleApplyImport: (preview: ImportPreview, opts?: { skipDuplicates?: boolean }) => { tasks: number; routines: number };
     handleSaveRoutine: (routine: Routine) => void;
@@ -419,6 +421,17 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, [handleAddTasks, addNotification]);
 
+    const handleSkipSubtask = useCallback((taskId: string, subtaskId: string) => {
+        setTasks(prev => prev.map(t => {
+            if (t.id !== taskId) return t;
+            const rest = (t.subtasks ?? []).filter(st => st.id !== subtaskId);
+            const done = rest.length === 0 || rest.every(st => st.completed);
+            return done
+                ? { ...t, subtasks: rest, status: 'done', completedAt: new Date().toISOString() }
+                : { ...t, subtasks: rest };
+        }));
+    }, [setTasks]);
+
     const [routineToPick, setRoutineToPick] = useState<Routine | null>(null);
     const closeRoutinePick = useCallback(() => setRoutineToPick(null), []);
 
@@ -552,6 +565,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleDeleteTemplate,
         handleAddRoutine,
         routineToPick,
+        handleSkipSubtask,
         closeRoutinePick,
         handleApplyImport,
         handleSaveRoutine,
