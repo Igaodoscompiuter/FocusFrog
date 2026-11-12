@@ -20,6 +20,7 @@ import focusfrogCoffee from '../assets/focusfrog-coffee.png';
 import { FontSize } from '../context/UIContext';
 import { useBackHandler } from '../hooks/useBackHandler';
 import { openStore } from './store/StoreScreen';
+import { DevImportPanel } from '../components/dev/DevImportPanel';
 
 // Chave Pix (telefone) do apoio ao projeto
 const PIX_KEY = '41988094386';
@@ -256,6 +257,7 @@ export const RewardsScreen: React.FC = () => {
         toggleSoundEnabled, 
         hapticsEnabled, 
         setHapticsEnabled, 
+        devModeEnabled,
         setDevModeEnabled, 
         fontSize, 
         setFontSize
@@ -389,6 +391,13 @@ export const RewardsScreen: React.FC = () => {
                         </form>
                     </div>
                 );
+            case 'devImport':
+                return (
+                    <div className={styles.tabContent}>
+                        <SubScreenHeader title="Importar tarefas (JSON)" onBack={() => setActiveSettingsScreen('main')} />
+                        <DevImportPanel />
+                    </div>
+                );
             case 'about':
                  return (
                     <div className={`${styles.tabContent} ${styles.aboutScreen}`}>
@@ -459,6 +468,7 @@ export const RewardsScreen: React.FC = () => {
                                 Usa o celular pra fazer a tarefa? Desligue aqui e o sapo vem do mesmo jeito.
                             </p>
                         </div>
+                        {devModeEnabled && <SettingsNavRow icon={FiUpload} title="Importar tarefas (JSON)" description="Modo desenvolvedor · cole ou abra um arquivo." onClick={() => setActiveSettingsScreen('devImport')} />}
                         <SettingsNavRow icon={FiHelpCircle} title="Refazer tutorial" description="O sapinho te mostra o app de novo." onClick={restartTour} />
                         <SettingsNavRow icon={FiInfo} title="Sobre" description="Nossa história e missão." onClick={() => setActiveSettingsScreen('about')} />
                     </div>

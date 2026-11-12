@@ -67,7 +67,7 @@ export function routineAsTask(
   templates: TaskTemplate[],
   dueDate: string,
   now = Date.now(),
-): Omit<Task, 'id' | 'status' | 'displayOrder' | 'createdAt'> {
+): Omit<Task, 'id' | 'status' | 'displayOrder'> {
   const subtasks: Subtask[] = stepsFromTemplates(templates).map((s, i) => ({
     id: `sub-${now}-${i}`,
     text: s.text,
@@ -82,7 +82,7 @@ export function routineAsTask(
     dueDate,
     routineId: routine.id,
     subtasks,
-  } as Omit<Task, 'id' | 'status' | 'displayOrder' | 'createdAt'>;
+  };
 }
 
 /** Progresso de uma rotina já adicionada como tarefa única. */

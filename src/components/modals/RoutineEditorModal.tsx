@@ -7,6 +7,7 @@ import { routineIcons, quadrants, defaultCategories } from '../../constants';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { useTasks } from '../../context/TasksContext';
 import styles from './RoutineEditorModal.module.css';
+import { WEEKDAY_SHORT, describeDays, routineMode, type RoutineMode } from '../../domain/routines';
 import { trackNewRoutineCreated } from '../../analytics';
 
 // A definição de tipo para tarefas dentro do editor.
@@ -222,6 +223,41 @@ export const RoutineEditorModal = ({ routineToEdit, onSave, onClose }: RoutineEd
                                 <div className="form-group"><label>Ícone</label><div className={styles.iconSelector}>{routineIcons.map(iconName => (<button key={iconName} className={routine.icon === iconName ? styles.active : ''} onClick={() => handleFieldChange('icon', iconName)}><Icon path={icons[iconName]} /></button>))}</div></div>
                             </>
                         )}
+
+                        <div className="form-group">
+                            <label>Ao adicionar esta rotina</label>
+                            <div className={styles.segmentedControl}>
+                                {([['separate', 'Tarefas soltas'], ['one', 'Uma tarefa'], ['pick', 'Escolher partes']] as [RoutineMode, string][]).map(([m, label]) => (
+                                    <button key={m} type="button"
+                                        className={`${styles.segment} ${routineMode(routine) === m ? styles.active : ''}`}
+                                        onClick={() => setRoutine(prev => ({ ...prev, asOneTask: m === 'one' || undefined, pickSome: m === 'pick' || undefined }))}
+                                    >{label}</button>
+                                ))}
+                            </div>
+                            <small style={{ color: 'var(--text-secondary-color)', display: 'block', marginTop: 'var(--sp-xs)' }}>
+                                {routineMode(routine) === 'one' ? 'Vira um bloco só na agenda, com as partes como passos e o tempo somado.'
+                                    : routineMode(routine) === 'pick' ? 'Você escolhe quais partes entram naquele dia.'
+                                    : 'Cada parte vira uma tarefa na sua lista.'}
+                            </small>
+                        </div>
+                        <div className="form-group">
+                            <label>Dias da semana · {describeDays(routine.days)}</label>
+                            <div className={styles.segmentedControl}>
+                                {WEEKDAY_SHORT.map((d, i) => {
+                                    const on = (routine.days ?? []).includes(i);
+                                    return (
+                                        <button key={d} type="button" className={`${styles.segment} ${on ? styles.active : ''}`}
+                                            style={{ padding: 'var(--sp-sm) 0' }}
+                                            onClick={() => setRoutine(prev => {
+                                                const cur = prev.days ?? [];
+                                                const next = cur.includes(i) ? cur.filter(x => x !== i) : [...cur, i].sort();
+                                                return { ...prev, days: next.length === 0 || next.length === 7 ? undefined : next };
+                                            })}
+                                        >{d}</button>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
                         {/* [CORREÇÃO] Agendamento disponível pra QUALQUER rotina, inclusive as
                             padrão — antes ficava preso dentro do bloco "só rotina nova". */}

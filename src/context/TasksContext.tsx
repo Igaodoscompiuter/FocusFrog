@@ -1,4 +1,6 @@
 
+import { routineAsTask, routineMode, routineTemplates } from '../domain/routines';
+import type { ImportPreview } from '../domain/taskImport';
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -39,7 +41,11 @@ interface TasksContextType {
     handleCreateTemplateFromTask: (task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>, category?: string) => void;
     handleCreateTemplate: (task: Partial<Omit<Task, 'id'>>, category?: string) => TaskTemplate;
     handleDeleteTemplate: (templateId: number) => void;
-    handleAddRoutine: (routine: Routine) => void;
+    /** Adiciona a rotina conforme o modo dela. Em "escolher partes" sem ids, abre a escolha (routineToPick). */
+    handleAddRoutine: (routine: Routine, pickedTemplateIds?: number[]) => void;
+    routineToPick: Routine | null;
+    closeRoutinePick: () => void;
+    handleApplyImport: (preview: ImportPreview, opts?: { skipDuplicates?: boolean }) => { tasks: number; routines: number };
     handleSaveRoutine: (routine: Routine) => void;
     handleDeleteRoutine: (routineId: string) => void;
     handleAddTemplates: (templates: TaskTemplate[]) => void;
@@ -405,7 +411,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             ...template,
             quadrant: template.quadrant || 'inbox',
             pomodoroEstimate: template.pomodoroEstimate ?? 1,
-            subtasks: template.subtasks?.map((st, i) => ({ id: `sub-${Date.now()}-${i}`, text: st.text, completed: false })),
+            subtasks: template.subtasks?.map((st, i) => ({ id: `sub-${Date.now()}-${i}`, text: st.text, completed: false, ...(st.minutes ? { minutes: st.minutes } : {}) })),
         }));
         if (newTasks.length > 0) {
             handleAddTasks(newTasks);
@@ -413,13 +419,42 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, [handleAddTasks, addNotification]);
 
-    const handleAddRoutine = useCallback((routine: Routine) => {
-        const templatesToAdd = (routine.taskTemplateIds && taskTemplates.filter(t => routine.taskTemplateIds.includes(t.id))) || [];
-        if (templatesToAdd.length > 0) {
-            handleAddTemplates(templatesToAdd);
-            addNotification(`Rotina '${routine.name}' adicionada`, '🚀', 'success');
+    const [routineToPick, setRoutineToPick] = useState<Routine | null>(null);
+    const closeRoutinePick = useCallback(() => setRoutineToPick(null), []);
+
+    const handleAddRoutine = useCallback((routine: Routine, pickedTemplateIds?: number[]) => {
+        const mode = routineMode(routine);
+        if (mode === 'pick' && !pickedTemplateIds) { setRoutineToPick(routine); return; }
+        const all = routineTemplates(routine, taskTemplates);
+        const chosen = pickedTemplateIds ? all.filter(t => pickedTemplateIds.includes(t.id)) : all;
+        if (chosen.length === 0) return;
+        if (mode === 'one') {
+            const d = new Date();
+            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            handleAddTasks([routineAsTask(routine, chosen, today)]);
+        } else {
+            handleAddTemplates(chosen);
         }
-    }, [taskTemplates, handleAddTemplates, addNotification]);
+        addNotification(`Rotina '${routine.name}' adicionada`, '🚀', 'success');
+    }, [taskTemplates, handleAddTasks, handleAddTemplates, addNotification]);
+
+    const handleApplyImport = useCallback((preview: ImportPreview, opts?: { skipDuplicates?: boolean }) => {
+        const skip = opts?.skipDuplicates ?? true;
+        const ready = preview.ready.filter(r => !(skip && r.duplicate));
+        if (ready.length) handleAddTasks(ready.map(r => r.task));
+        const routinesToAdd = preview.routines.filter(r => !(skip && r.duplicate));
+        const base = Date.now();
+        let tplId = Math.max(1000, ...taskTemplates.map(t => t.id)) + 1;
+        const newTemplates: TaskTemplate[] = [];
+        const newRoutines: Routine[] = routinesToAdd.map((r, i) => {
+            const ids = r.templates.map(t => { const id = tplId++; newTemplates.push({ ...t, id } as TaskTemplate); return id; });
+            return { ...r.routine, id: `routine-${base}-${i}`, isDefault: false, taskTemplateIds: ids } as Routine;
+        });
+        if (newTemplates.length) setTaskTemplates(prev => [...prev, ...newTemplates]);
+        if (newRoutines.length) setRoutines(prev => [...prev, ...newRoutines]);
+        addNotification(`${ready.length} tarefa(s) e ${newRoutines.length} rotina(s) importadas`, '📥', 'success');
+        return { tasks: ready.length, routines: newRoutines.length };
+    }, [handleAddTasks, taskTemplates, setTaskTemplates, setRoutines, addNotification]);
 
     const handleSaveRoutine = useCallback((routineToSave: Routine) => {
         setRoutines(prev => {
@@ -516,6 +551,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         handleCreateTemplate,
         handleDeleteTemplate,
         handleAddRoutine,
+        routineToPick,
+        closeRoutinePick,
+        handleApplyImport,
         handleSaveRoutine,
         handleDeleteRoutine,
         handleAddTemplates,

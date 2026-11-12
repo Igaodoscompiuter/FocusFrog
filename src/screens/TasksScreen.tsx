@@ -1,4 +1,5 @@
 
+import { RoutinePickSheet } from '../components/modals/RoutinePickSheet';
 import React, { useState, useMemo } from 'react';
 import { useTasks } from '../context/TasksContext';
 import { TaskCard } from '../components/tasks/TaskCard';
@@ -117,6 +118,7 @@ export const TasksScreen: React.FC = () => {
                     onTriage={processTriage} 
                 />
             )}
+            <RoutinePickSheet />
             {isLibraryOpen && <TaskLibraryModal onAddRoutine={handleAddRoutine} onAddTemplates={handleAddTemplates} onClose={() => setIsLibraryOpen(false)} />}
             <FilterPanel isOpen={isFilterPanelOpen} onClose={() => setIsFilterPanelOpen(false)} filters={filters} onFilterChange={setFilters} />
 
