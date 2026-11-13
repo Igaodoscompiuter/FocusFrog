@@ -1,55 +1,36 @@
-
-import { todayISO, carriedLabel } from '../../utils/dates';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import Hs from './AgendaDeHoje.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { Capacitor } from '@capacitor/core';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import React, { useMemo } from 'react';
-import { useTasks } from '../../context/TasksContext';
+import { useUI } from '../../context/UIContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-import { TaskCard } from '../tasks/TaskCard';
-import styles from './AgendaDeHoje.module.css';
-import type { Task } from '../../types';
-import { RoutineGroupCard } from './RoutineGroupCard';
+import { Yt, hl } from '../../utils/dates';
+import { ZO } from '../../widgets/widgetSync';
+import { useTasks } from '../../context/TasksContext';
+import { Hm } from '../tasks/TaskCard';
 
-
-export const AgendaDeHoje: React.FC = () => {
-    const { tasks, tags } = useTasks();
-    const [open, setOpen] = useLocalStorage<boolean>('focusfrog_agendaOpen', false);
-
-    const todayString = todayISO();
-    // [CORREÇÃO] Antes só entrava data EXATAMENTE igual a hoje — tarefa de
-    // ontem não concluída sumia da Agenda sem aviso. Agora vem junto pra hoje
-    // (as de dias anteriores primeiro), com uma etiqueta discreta.
-    const tasksDeHoje = useMemo(() => tasks
-        .filter(task => task.dueDate && task.dueDate <= todayString && task.status !== 'done')
-        .sort((a, b) => (a.dueDate! < b.dueDate! ? -1 : a.dueDate! > b.dueDate! ? 1 : 0)),
-    [tasks, todayString]);
-    const carried = tasksDeHoje.filter(t => carriedLabel(t.dueDate)).length;
-
-    return (
-        <div className={styles.card}>
-            <button className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
-                <h3><Icon path={icons.calendar} /> Agenda de Hoje</h3>
-                <span className={styles.summary}>
-                    {tasksDeHoje.length === 0 ? 'livre' : `${tasksDeHoje.length} tarefa${tasksDeHoje.length > 1 ? 's' : ''}${carried ? ` · ${carried} de antes` : ''}`}
-                    <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>›</span>
-                </span>
-            </button>
-            {open && (tasksDeHoje.length > 0 ? (
-                <div className={styles.taskList}>
-                    {tasksDeHoje.map(task => (
-                        <div key={task.id}>
-                            {carriedLabel(task.dueDate) && <span className={styles.carried}>{carriedLabel(task.dueDate)}</span>}
-                            {task.routineId && task.subtasks?.length
-                                ? <RoutineGroupCard task={task} />
-                                : <TaskCard task={task} tags={tags} quadrant={task.quadrant} />}
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className={styles.emptyState}>
-                    <p>Nenhuma tarefa pra hoje. Aproveite o dia ou adicione novas tarefas!</p>
-                </div>
-            ))}
-        </div>
-    );
+export const KM = () => {
+  const {
+      tasks: e,
+      tags: t
+    } = useTasks(),
+    {
+      addNotification: n
+    } = useUI(),
+    s = async () => {
+      const {
+        supported: u,
+        reason: d
+      } = await ZO();
+      u || n(d === "launcher_unsupported" ? 'Sua tela inicial não aceita esse atalho: segure um espaço vazio dela e procure "FocusFrog" em Widgets.' : "Não deu pra abrir o atalho do widget agora.", "ℹ️", "info");
+    },
+    [r, o] = useLocalStorage("focusfrog_agendaOpen", false),
+    a = Yt(),
+    l = React.useMemo(() => e.filter(u => u.dueDate && u.dueDate <= a && u.status !== "done").sort((u, d) => u.dueDate < d.dueDate ? -1 : u.dueDate > d.dueDate ? 1 : 0), [e, a]),
+    c = l.filter(u => hl(u.dueDate)).length;
+  return <div className={Hs.card}><button className={Hs.header} onClick={() => o(!r)} aria-expanded={r}><h3><Icon path={icons.calendar} />{" Agenda de Hoje"}</h3><span className={Hs.summary}>{l.length === 0 ? "livre" : `${l.length} tarefa${l.length > 1 ? "s" : ""}${c ? ` · ${c} de antes` : ""}`}<span className={`${Hs.chevron} ${r ? Hs.chevronOpen : ""}`}>›</span></span></button>{r && Capacitor.isNativePlatform() && <button className={Hs.widgetBtn} onClick={s}><Icon path={icons.layoutGrid} />{" Pôr a agenda na tela inicial"}</button>}{r && (l.length > 0 ? <div className={Hs.taskList}>{l.map(u => <div key={u.id}>{hl(u.dueDate) && <span className={Hs.carried}>{hl(u.dueDate)}</span>}<Hm task={u} tags={t} quadrant={u.quadrant} /></div>)}</div> : <div className={Hs.emptyState}><p>Nenhuma tarefa pra hoje. Aproveite o dia ou adicione novas tarefas!</p></div>)}</div>;
 };

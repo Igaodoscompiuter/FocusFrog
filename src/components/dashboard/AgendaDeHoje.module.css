@@ -1,5 +1,3 @@
-/* AgendaDeHoje.module.css */
-
 .card {
   background-color: var(--surface-color);
   padding: var(--sp-lg);
@@ -7,16 +5,14 @@
   border: 1px solid var(--border-color);
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 1rem; 
+  margin-bottom: 1rem;
 }
-
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
 }
-
 .header h3 {
   margin: 0;
   display: flex;
@@ -26,33 +22,87 @@
   font-weight: 600;
   white-space: nowrap;
 }
-
 .taskList {
-  /* [CORREÇÃO] Sem limite, um dia cheio de tarefas agendadas esticava o card
-     infinitamente e empurrava a Home inteira pra baixo. Agora rola por dentro
-     depois de uma altura razoável, igual os quadrantes de Tarefas. */
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   max-height: 40vh;
   overflow-y: auto;
 }
-
 .emptyState {
   text-align: center;
   color: var(--text-secondary-color);
   padding: 1rem 0;
-  font-size: var(--font-size-sm);      /* REATORADO */
-  line-height: var(--line-height-sm); /* REATORADO */
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
 }
-
-/* recolhível: título vira botão com resumo */
-button.header { width: 100%; min-height: 32px; gap: 10px; background: none; border: none; padding: 0; margin-bottom: 0; cursor: pointer; color: inherit; font: inherit; text-align: left; }
-.summary { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary-color); white-space: nowrap; }
-.chevron { font-size: 1.3rem; line-height: 1; transition: transform .2s ease; display: inline-block; }
-.chevronOpen { transform: rotate(90deg); }
-.taskList { margin-top: 0.75rem; }
-.emptyState { margin-top: 0.5rem; }
-.carried { display: inline-block; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary-color); background: var(--surface-secondary-color); border-radius: 999px; padding: 1px 8px; margin: 0 0 4px 4px; }
-
-.header + * { margin-top: 12px; }
+button.header {
+  width: 100%;
+  min-height: 32px;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary-color);
+  white-space: nowrap;
+}
+.chevron {
+  font-size: 1.3rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+.chevronOpen {
+  transform: rotate(90deg);
+}
+.taskList {
+  margin-top: 0.75rem;
+}
+.emptyState {
+  margin-top: 0.5rem;
+}
+.carried {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary-color);
+  background: var(--surface-secondary-color);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin: 0 0 4px 4px;
+}
+.header + * {
+  margin-top: 12px;
+}
+.widgetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin: 0 0 12px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-secondary-color);
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.widgetBtn svg {
+  width: 15px;
+  height: 15px;
+}

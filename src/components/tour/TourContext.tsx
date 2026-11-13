@@ -1,128 +1,165 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
-import { useTasks } from '../../context/TasksContext';
-import { usePomodoro } from '../../context/PomodoroContext';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { useUI } from '../../context/UIContext';
-import { isSpecialFrogTask } from '../../constants';
-import { trackTutorialComplete } from '../../analytics';
+import { Lt } from '../../constants';
+import { W3 } from '../../analytics';
+import { usePomodoro } from '../../context/PomodoroContext';
+import { useTasks } from '../../context/TasksContext';
+import { WS } from '../routines/RoutineLibrary';
 
-export const TOUR_KEY = 'focusfrog_tour';
+export const wd = [{
+  id: "welcome",
+  title: "Oi! Que bom te ver por aqui 🐸",
+  text: 'Em 3 passos eu te mostro como sair do "não sei por onde começar" pro foco de verdade.',
+  button: "Bora!"
+}, {
+  id: "create",
+  target: "#tutorial-step1-form",
+  title: "Passo 1 · Tira da cabeça",
+  text: "Escreve aqui uma coisa que você precisa fazer hoje e toca no +. Pode ser pequena!"
+}, {
+  id: "frog",
+  target: "#frog-card",
+  title: "Passo 2 · Escolhe seu Sapo do Dia",
+  text: "O Sapo do Dia é a tarefa que mais importa hoje. Toca aqui e escolhe a tarefa que você acabou de criar (ela já vem marcada)."
+}, {
+  id: "start",
+  target: "#eat-the-frog-button",
+  title: "Passo 3 · Come o sapo!",
+  text: 'Toca em "Comer o Sapo". Esse primeiro foco dura só 5 segundos, pra você ver o sapo nascer.'
+}, {
+  id: "focusing",
+  target: '[class*="timerContainer"]',
+  title: "Olha ele crescendo 👀",
+  text: "Enquanto o cronômetro roda, um sapinho cresce com você. Esse é rapidinho, só pra mostrar."
+}, {
+  id: "done",
+  title: "Pronto, você pegou o jeito! 🎉",
+  text: "Cada foco concluído traz um sapo novo pro seu Jardim Zen, na aba Jardim. Os próximos focos são de verdade: 25 minutos.",
+  button: "Continuar"
+}, {
+  id: "gift",
+  target: "#eat-the-frog-button",
+  title: "Uma última coisa",
+  text: "Deixei o Card Especial FocusFrog como seu Sapo do Dia. Toca aqui pra seguir a gente no Instagram: tem dica de foco e novidade toda semana!",
+  button: "Concluir"
+}];
 
-export interface TourStep {
-  id: string;
-  /** seletor do elemento iluminado (sem = balão centralizado) */
-  target?: string;
-  title: string;
-  text: string;
-  /** passos sem ação esperada mostram um botão pra avançar */
-  button?: string;
-}
+const HS = React.createContext(null);
 
-/** Roteiro: o sapo guia a pessoa a FAZER de verdade o ciclo principal —
- *  criar tarefa → escolher Sapo do Dia → iniciar foco. Os passos de ação
- *  avançam sozinhos quando a ação acontece (não por "Próximo"). */
-export const TOUR_STEPS: TourStep[] = [
-  { id: 'welcome', title: 'Oi! Que bom te ver por aqui 🐸', text: 'Eu sou o sapinho do FocusFrog. Em 3 passos rapidinhos eu te mostro como sair do "não sei por onde começar" pro foco de verdade.', button: 'Bora!' },
-  { id: 'create', target: '#tutorial-step1-form', title: 'Passo 1 · Tira da cabeça', text: 'Escreve aqui uma coisa que você precisa fazer hoje e toca no +. Pode ser pequena!' },
-  { id: 'frog', target: '#frog-card', title: 'Passo 2 · Escolhe seu Sapo do Dia', text: 'O Sapo do Dia é a tarefa que mais importa hoje. Toca aqui e escolhe a tarefa que você acabou de criar (ela já vem marcada).' },
-  { id: 'start', target: '#eat-the-frog-button', title: 'Passo 3 · Come o sapo!', text: 'Toca em "Comer o Sapo". Esse primeiro foco dura só 5 segundinhos, pra você ver o sapo nascer.' },
-  { id: 'focusing', target: '[class*="timerContainer"]', title: 'Olha ele crescendo 👀', text: 'Enquanto o cronômetro roda, um sapinho cresce com você. Esse é rapidinho, só pra mostrar.' },
-  { id: 'done', title: 'Pronto, você pegou o jeito! 🎉', text: 'Cada foco concluído traz um sapo novo pro seu Jardim Zen, na aba Jardim. Os próximos focos são de verdade: 25 minutos.', button: 'Continuar' },
-  { id: 'gift', target: '#eat-the-frog-button', title: 'Um último presente 🐸', text: 'Deixei o Card Especial FocusFrog como seu Sapo do Dia. Toca aqui pra seguir a gente no Instagram: tem dica de foco e novidade toda semana!', button: 'Concluir' },
-];
-
-interface TourState { done: boolean; step: number; taskId?: string }
-interface TourContextValue {
-  active: boolean;
-  step: TourStep | null;
-  stepIndex: number;
-  /** tarefa criada no passo 1 (vai primeiro e já marcada no seletor) */
-  tourTaskId: string | null;
-  next: () => void;
-  skip: () => void;
-  restart: () => void;
-}
-
-const TourContext = createContext<TourContextValue | null>(null);
 export const useTour = () => {
-  const ctx = useContext(TourContext);
-  if (!ctx) throw new Error('useTour precisa estar dentro de <TourProvider>');
-  return ctx;
+  const e = React.useContext(HS);
+  if (!e) throw new Error("useTour precisa estar dentro de <TourProvider>");
+  return e;
 };
 
-const readList = (k: string): any[] => {
-  try { const v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
-};
-/** Já tem uso real no aparelho? (tarefas além do Card Especial, sapos ou rotinas) */
-const alreadyUsesApp = () =>
-  readList('focusfrog_tasks').some(t => !isSpecialFrogTask(t))
-  || readList('focusfrog_collectedFrogs').length > 0
-  || readList('focusfrog_routines').some(r => !r?.isDefault)
-  || Number(localStorage.getItem('focusfrog_pomodorosCompleted')) > 0;
-
-const load = (): TourState => {
-  try { const raw = localStorage.getItem(TOUR_KEY); if (raw) return JSON.parse(raw); } catch { /* */ }
-  // quem atualizou de uma versão sem tutorial e já usa o app não vê o tour
-  if (alreadyUsesApp()) return { done: true, step: 0 };
-  return { done: false, step: 0 }; // 1ª abertura após o onboarding: começa o tour
+const Af = e => {
+  try {
+    const t = JSON.parse(localStorage.getItem(e) || "[]");
+    return Array.isArray(t) ? t : [];
+  } catch {
+    return [];
+  }
 };
 
-export const TourProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<TourState>(load);
-  const { tasks, frogTaskId, ensureMarketingFrog, handleSetFrog, handleCreateTemplate, taskTemplates } = useTasks();
-  const { sessionStatus } = usePomodoro();
-  const { handleNavigate } = useUI();
+const HD = () => Af("focusfrog_tasks").some(e => !Lt(e)) || Af("focusfrog_collectedFrogs").length > 0 || Af("focusfrog_routines").some(e => !(e != null && e.isDefault)) || Number(localStorage.getItem("focusfrog_pomodorosCompleted")) > 0;
 
-  useEffect(() => { localStorage.setItem(TOUR_KEY, JSON.stringify(state)); }, [state]);
+const GD = () => {
+  try {
+    const e = localStorage.getItem(WS);
+    if (e) return JSON.parse(e);
+  } catch {}
+  return HD() ? {
+    done: true,
+    step: 0
+  } : {
+    done: false,
+    step: 0
+  };
+};
 
-  const active = !state.done;
-  const stepIndex = state.step;
-  const step = active ? TOUR_STEPS[stepIndex] ?? null : null;
-
-  // Ao concluir: a tarefa do tutorial vira um modelo de tarefa RÁPIDA na
-  // biblioteca (categoria Saúde), uma vez só.
-  const finish = useCallback(() => {
-    trackTutorialComplete();
-    const t = tasks.find(x => x.id === state.taskId);
-    const title = t?.title?.trim();
-    if (title && !taskTemplates.some(tp => tp.title === title)) {
-      handleCreateTemplate({ title, quadrant: 'do', pomodoroEstimate: 0 }, 'Saúde');
-    }
-    setState({ done: true, step: 0 });
-  }, [tasks, state.taskId, taskTemplates, handleCreateTemplate]);
-  const goTo = useCallback((i: number) => {
-    if (i >= TOUR_STEPS.length) { finish(); return; }
-    setState(s => ({ ...s, done: false, step: i }));
-  }, [finish]);
-  const next = useCallback(() => goTo(stepIndex + 1), [goTo, stepIndex]);
-  const skip = useCallback(() => setState({ done: true, step: 0 }), []);
-  const restart = useCallback(() => { handleNavigate('dashboard'); setState({ done: false, step: 0 }); }, [handleNavigate]);
-
-  // passos de ação: avança quando a pessoa faz de verdade
-  const baseIds = useRef(new Set(tasks.map(t => t.id)));
-  useEffect(() => { if (step?.id === 'create') baseIds.current = new Set(tasks.map(t => t.id)); /* eslint-disable-next-line */ }, [step?.id]);
-  useEffect(() => {
-    if (!active) return;
-    const created = step?.id === 'create' ? tasks.find(t => !baseIds.current.has(t.id)) : undefined;
-    if (created) { setState(s => ({ ...s, step: s.step + 1, taskId: created.id })); }
-    else if (step?.id === 'frog' && frogTaskId && !isSpecialFrogTask(tasks.find(t => t.id === frogTaskId)) && tasks.some(t => t.id === frogTaskId && t.status !== 'done')) next();
-    else if (step?.id === 'start' && sessionStatus !== 'idle') next();
-    else if (step?.id === 'focusing' && sessionStatus === 'idle') next();
-  }, [active, step?.id, tasks, frogTaskId, sessionStatus, next]);
-
-  // passos da Home: garante que a pessoa está na Home
-  useEffect(() => {
-    if (active && step && ['create', 'frog', 'start', 'gift'].includes(step.id)) handleNavigate('dashboard');
-    // passo 2: o Card Especial (padrão de instalação) sai do Sapo do Dia, pra
-    // pessoa escolher a tarefa que acabou de criar sem nada no caminho
-    if (active && step?.id === 'frog' && isSpecialFrogTask(tasks.find(t => t.id === frogTaskId))) handleSetFrog(null);
-    // fecho do tutorial: Card Especial vira o Sapo do Dia, com o botão dele à mostra
-    if (active && step?.id === 'gift') ensureMarketingFrog();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, step?.id]);
-
-  return (
-    <TourContext.Provider value={{ active, step, stepIndex, tourTaskId: state.taskId ?? null, next, skip, restart }}>
-      {children}
-    </TourContext.Provider>
-  );
+export const KD = ({
+  children: e
+}) => {
+  const [t, n] = React.useState(GD),
+    {
+      tasks: s,
+      frogTaskId: r,
+      ensureMarketingFrog: o,
+      handleSetFrog: a,
+      handleCreateTemplate: l,
+      taskTemplates: c
+    } = useTasks(),
+    {
+      sessionStatus: u
+    } = usePomodoro(),
+    {
+      handleNavigate: d
+    } = useUI();
+  React.useEffect(() => {
+    localStorage.setItem(WS, JSON.stringify(t));
+  }, [t]);
+  const f = !t.done,
+    h = t.step,
+    m = f ? wd[h] ?? null : null,
+    v = React.useCallback(() => {
+      var C;
+      W3();
+      const b = s.find(S => S.id === t.taskId),
+        j = (C = b == null ? undefined : b.title) == null ? undefined : C.trim();
+      j && !c.some(S => S.title === j) && l({
+        title: j,
+        quadrant: "do",
+        pomodoroEstimate: 0
+      }, "Saúde"), n({
+        done: true,
+        step: 0
+      });
+    }, [s, t.taskId, c, l]),
+    x = React.useCallback(b => {
+      if (b >= wd.length) {
+        v();
+        return;
+      }
+      n(j => ({
+        ...j,
+        done: false,
+        step: b
+      }));
+    }, [v]),
+    k = React.useCallback(() => x(h + 1), [x, h]),
+    y = React.useCallback(() => n({
+      done: true,
+      step: 0
+    }), []),
+    p = React.useCallback(() => {
+      d("dashboard"), n({
+        done: false,
+        step: 0
+      });
+    }, [d]),
+    g = React.useRef(new Set(s.map(b => b.id)));
+  return React.useEffect(() => {
+    (m == null ? undefined : m.id) === "create" && (g.current = new Set(s.map(b => b.id)));
+  }, [m == null ? undefined : m.id]), React.useEffect(() => {
+    if (!f) return;
+    const b = (m == null ? undefined : m.id) === "create" ? s.find(j => !g.current.has(j.id)) : undefined;
+    b ? n(j => ({
+      ...j,
+      step: j.step + 1,
+      taskId: b.id
+    })) : ((m == null ? undefined : m.id) === "frog" && r && !Lt(s.find(j => j.id === r)) && s.some(j => j.id === r && j.status !== "done") || (m == null ? undefined : m.id) === "start" && u !== "idle" || (m == null ? undefined : m.id) === "focusing" && u === "idle") && k();
+  }, [f, m == null ? undefined : m.id, s, r, u, k]), React.useEffect(() => {
+    f && m && ["create", "frog", "start", "gift"].includes(m.id) && d("dashboard"), f && (m == null ? undefined : m.id) === "frog" && Lt(s.find(b => b.id === r)) && a(null), f && (m == null ? undefined : m.id) === "gift" && o();
+  }, [f, m == null ? undefined : m.id]), <HS.Provider value={{
+    active: f,
+    step: m,
+    stepIndex: h,
+    tourTaskId: t.taskId ?? null,
+    next: k,
+    skip: y,
+    restart: p
+  }}>{e}</HS.Provider>;
 };

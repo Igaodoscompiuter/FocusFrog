@@ -1,143 +1,78 @@
-
-import './styles/tokens.css';
-import './global-components.css';
-import './App.css';
-import React, { useEffect, useState } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Capacitor } from '@capacitor/core';
-import { useUser } from './context/UserContext';
 import { useUI } from './context/UIContext';
+import { useUser } from './context/UserContext';
 import { useAuth } from './hooks/useAuth';
-import { usePWAInstall } from './context/PWAInstallProvider';
-import { OnboardingNameScreen } from './screens/OnboardingNameScreen';
-import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
-import { OnboardingAccountScreen, ACCOUNT_CHOICE_KEY } from './screens/OnboardingAccountScreen';
-import { SplashScreen } from './screens/SplashScreen';
-import { AppLayout } from './components/AppLayout';
-import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import InstallPromptPopup from './components/InstallPromptPopup';
+import { oP } from './context/InstallContext';
+import { B_, C_SP, LP, MP } from './screens/onboarding/Onboarding';
+import { C_zP } from './components/SplashScreen';
+import { GX, YX } from './components/AppLayout';
+import { SplashScreen as CapSplashScreen } from '@capacitor/splash-screen';
+import { StatusBar, Style as StatusBarStyle } from '@capacitor/status-bar';
 
-function App() {
-  const { userName, onboardingCompleted } = useUser();
-  const { isLoading, isConfigured } = useAuth();
-  const [accountChoice, setAccountChoice] = useState(() => localStorage.getItem(ACCOUNT_CHOICE_KEY));
-  const { fontSize } = useUI();
-  const { canInstall, triggerInstall } = usePWAInstall();
-
-  const [showInstallPopup, setShowInstallPopup] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
-  const [isFadingOut, setIsFadingOut] = useState(false);
-
-  // --- LÓGICA DA SPLASH SCREEN MELHORADA ---
-  const [authFinished, setAuthFinished] = useState(false);
-  const [minTimePassed, setMinTimePassed] = useState(false);
-
-  useEffect(() => {
-    // o tamanho vai no <html>: assim tudo que usa rem acompanha
-    // (antes ia só no <body> e quase nenhum texto mudava de tamanho)
-    document.body.className = `font-size-${fontSize}`;
-    document.documentElement.dataset.fontSize = fontSize;
-  }, [fontSize]);
-
-  // [CORREÇÃO DE VERDADE] setOverlaysWebView()/setBackgroundColor() usam uma
-  // API do Android anterior ao Android 11 (SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN),
-  // que o Android 15 não respeita mais de forma confiável — e brigava com o
-  // adjustMarginsForEdgeToEdge:auto (esse sim moderno) que cuida do CONTEÚDO.
-  // Resultado: a barra ficava transparente de qualquer jeito. Mantemos só
-  // setStyle (API moderna, WindowInsetsControllerCompat, funciona bem) pra
-  // cor do ÍCONE; a cor de FUNDO da barra agora é uma div própria no CSS
-  // (ver .statusBarFill), desenhada atrás da barra transparente do sistema —
-  // é a abordagem que o próprio Google recomenda pra edge-to-edge de verdade.
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-    StatusBar.setStyle({ style: Style.Light }).catch(() => {}); // ícones escuros (fundo claro)
-  }, []);
-
-  useEffect(() => {
-    if (!isLoading) {
-      setAuthFinished(true);
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMinTimePassed(true);
+export function App() {
+  const {
+      userName: e,
+      onboardingCompleted: t
+    } = useUser(),
+    {
+      isLoading: n,
+      isConfigured: s
+    } = useAuth(),
+    [r, o] = React.useState(() => localStorage.getItem(B_)),
+    {
+      fontSize: a
+    } = useUI(),
+    {
+      canInstall: l,
+      triggerInstall: c
+    } = oP(),
+    [u, d] = React.useState(false),
+    [f, h] = React.useState(true),
+    [m, v] = React.useState(false),
+    [x, k] = React.useState(false),
+    [y, p] = React.useState(false);
+  React.useEffect(() => {
+    document.body.className = `font-size-${a}`, document.documentElement.dataset.fontSize = a;
+  }, [a]), React.useEffect(() => {
+    Capacitor.isNativePlatform() && StatusBar.setStyle({
+      style: StatusBarStyle.Light
+    }).catch(() => {});
+  }, []), React.useEffect(() => {
+    n || k(true);
+  }, [n]), React.useEffect(() => {
+    const C = setTimeout(() => {
+      p(true);
     }, 2500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (authFinished && minTimePassed) {
-      const fadeOutTimer = setTimeout(() => setIsFadingOut(true), 50);
-      const removeSplashTimer = setTimeout(() => {
-        if (Capacitor.isNativePlatform()) {
-          CapacitorSplashScreen.hide({ fadeOutDuration: 300 });
-        }
-        setShowSplash(false);
+    return () => clearTimeout(C);
+  }, []), React.useEffect(() => {
+    if (!x || !y) return;
+    const C = setTimeout(() => v(true), 50),
+      S = setTimeout(() => {
+        Capacitor.isNativePlatform() && CapSplashScreen.hide({
+          fadeOutDuration: 300
+        }), h(false);
       }, 800);
-
-      return () => {
-        clearTimeout(fadeOutTimer);
-        clearTimeout(removeSplashTimer);
-      };
-    }
-  }, [authFinished, minTimePassed]);
-
-  useEffect(() => {
-    if (canInstall) {
-      const timer = setTimeout(() => setShowInstallPopup(true), 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [canInstall]);
-
-  const handleInstall = () => {
-    setShowInstallPopup(false);
-    triggerInstall();
-  };
-
-  const handleDismiss = () => {
-    setShowInstallPopup(false);
-  };
-
-  {/* [CORREÇÃO] No app nativo, a splash do Capacitor já mostra (fica visível
-      até CapacitorSplashScreen.hide() ser chamado). Esse componente React
-      mostrava o MESMO logo por baixo dela — a pessoa via a splash nativa
-      sumir e revelar essa segunda, quase idêntica, fazendo sua própria
-      animação. No nativo pulamos direto pro app real; no PWA/web (sem
-      splash nativa nenhuma) ele continua sendo a única splash que existe. */}
-  if (showSplash && !Capacitor.isNativePlatform()) {
-    return <SplashScreen isFadingOut={isFadingOut} />;
-  }
-
-  // --- LÓGICA DE RENDERIZAÇÃO CORRIGIDA ---
-  let screenContent;
-  if (!onboardingCompleted) {
-    if (!userName && !accountChoice && isConfigured) {
-      // 1ª abertura: entrar com conta (nova ou existente) ou seguir sem conta
-      screenContent = <OnboardingAccountScreen onContinueWithoutAccount={() => {
-        localStorage.setItem(ACCOUNT_CHOICE_KEY, 'local'); setAccountChoice('local');
-      }} />;
-    } else if (!userName) {
-      screenContent = <OnboardingNameScreen />;
-    } else {
-      screenContent = <OnboardingWelcomeScreen />;
-    }
-  } else {
-    // Se o onboarding estiver concluído, renderize o AppLayout
-    screenContent = <AppLayout />;
-  }
-
-  return (
-    <div id="app-container">
-      {Capacitor.isNativePlatform() && <div className="statusBarFill" />}
-      {screenContent}
-      <InstallPromptPopup 
-        show={showInstallPopup}
-        onInstall={handleInstall}
-        onDismiss={handleDismiss}
-      />
-    </div>
-  );
+    return () => {
+      clearTimeout(C), clearTimeout(S);
+    };
+  }, [x, y]), React.useEffect(() => {
+    if (!l) return;
+    const C = setTimeout(() => d(true), 3500);
+    return () => clearTimeout(C);
+  }, [l]);
+  const g = () => {
+      d(false), c();
+    },
+    b = () => {
+      d(false);
+    };
+  if (f && !Capacitor.isNativePlatform()) return <C_zP isFadingOut={m} />;
+  let j;
+  return t ? j = <GX /> : !e && !r && s ? j = <LP onContinueWithoutAccount={() => {
+    localStorage.setItem(B_, "local"), o("local");
+  }} /> : e ? j = <MP /> : j = <C_SP />, <div id="app-container">{Capacitor.isNativePlatform() && <div className="statusBarFill" />}{j}<YX show={u} onInstall={g} onDismiss={b} /></div>;
 }
-
-export default App;

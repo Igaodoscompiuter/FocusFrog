@@ -1,167 +1,144 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback, useRef } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Capacitor } from '@capacitor/core';
+import { isSupabaseConfigured, supabase } from '../supabaseClient';
+import { $3, F3 } from '../analytics';
 import { App as CapApp } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
-import { User } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../supabaseClient';
-import { handleLogin, syncNow, clearSyncMeta, pushLocal, getLastSyncAt, SyncOutcome } from '../sync/cloudSync';
-import { trackLogin, trackUserCreation } from '../analytics';
+import { L_, X2, Xc, lh, sP } from '../sync/cloudSync';
 
-export type AuthProviderName = 'google';
-export type LoginOrigin = 'onboarding' | 'settings';
+const na = "focusfrog_auth_origin";
 
-const ORIGIN_KEY = 'focusfrog_auth_origin';            // de onde o login partiu (sobrevive ao vaivém do navegador)
-export const PENDING_UPLOAD_KEY = 'focusfrog_pending_first_upload'; // conta nova: sobe após salvar o nome
-const NATIVE_REDIRECT = 'com.focusfrog.app://auth-callback';
+export const dl = "focusfrog_pending_first_upload";
 
-interface AuthContextType {
-    user: User | null;
-    isLoading: boolean;
-    isConfigured: boolean;
-    /** login em andamento (entre tocar no botão e voltar pro app) */
-    isSigningIn: boolean;
-    lastSyncAt: number | null;
-    signIn: (provider: AuthProviderName, origin: LoginOrigin) => Promise<void>;
-    signOut: () => Promise<void>;
-    syncNowManual: () => Promise<SyncOutcome>;
-}
+const vf = "com.focusfrog.app://auth-callback";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const nS = React.createContext(undefined);
 
-/** Recarrega o app pra todos os contextos lerem os dados que vieram da nuvem. */
-const reloadWithData = () => setTimeout(() => window.location.reload(), 150);
+const eu = () => setTimeout(() => window.location.reload(), 150);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSigningIn, setIsSigningIn] = useState(false);
-    const [lastSyncAt, setLastSyncAt] = useState<number | null>(getLastSyncAt());
-    const handled = useRef<string | null>(null);
-
-    // Depois do login: decide restaurar / pedir nome / subir, conforme a origem.
-    const afterSignIn = useCallback(async (u: User) => {
-        const origin = localStorage.getItem(ORIGIN_KEY) as LoginOrigin | null;
-        if (!origin || handled.current === u.id) return;
-        handled.current = u.id;
-        localStorage.removeItem(ORIGIN_KEY);
+export const AuthProvider = ({
+  children: e
+}) => {
+  const [t, n] = React.useState(null),
+    [s, r] = React.useState(true),
+    [o, a] = React.useState(false),
+    [l, c] = React.useState(Xc()),
+    u = React.useRef(null),
+    d = React.useCallback(async v => {
+      var k;
+      const x = localStorage.getItem(na);
+      if (!(!x || u.current === v.id)) {
+        u.current = v.id, localStorage.removeItem(na);
         try {
-            const outcome = await handleLogin(u.id, origin);
-            const provider = (u.app_metadata?.provider as string) || 'unknown';
-            if (outcome === 'new-account' || outcome === 'uploaded') trackUserCreation(provider); else trackLogin(provider);
-            setLastSyncAt(getLastSyncAt());
-            if (outcome === 'restored') {
-                // se o backup não tiver nome, cai na tela do nome (não volta pro login)
-                localStorage.setItem('focusfrog_account_choice', 'cloud');
-                reloadWithData(); return;
-            }
-            if (outcome === 'new-account') {
-                // conta nova vinda da 1ª abertura: o nome fica VAZIO na tela
-                // seguinte e a conta só sobe depois que a pessoa salvar o nome
-                localStorage.removeItem('focusfrog_userName');
-                localStorage.setItem(PENDING_UPLOAD_KEY, u.id);
-                localStorage.setItem('focusfrog_account_choice', 'cloud');
-                reloadWithData();
-            }
-        } catch (e) {
-            console.warn('[auth] pós-login falhou:', e);
-        } finally {
-            setIsSigningIn(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!isSupabaseConfigured) { setIsLoading(false); return; }
-
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            const u = session?.user ?? null;
-            setUser(u);
-            setIsLoading(false);
-            // sincronização diária ao abrir (pula se já sincronizou nas últimas 24h)
-            if (u && !localStorage.getItem(ORIGIN_KEY) && !localStorage.getItem(PENDING_UPLOAD_KEY)) {
-                syncNow(u.id).then(r => { setLastSyncAt(getLastSyncAt()); if (r === 'pulled') reloadWithData(); });
-            }
-        });
-
-        const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-            const u = session?.user ?? null;
-            setUser(u);
-            setIsLoading(false);
-            if (event === 'SIGNED_IN' && u) afterSignIn(u);
-        });
-
-        // Android: o navegador devolve com.focusfrog.app://auth-callback?code=...
-        let urlSub: { remove: () => void } | undefined;
-        if (Capacitor.isNativePlatform()) {
-            CapApp.addListener('appUrlOpen', async ({ url }) => {
-                if (!url.startsWith(NATIVE_REDIRECT)) return;
-                Browser.close().catch(() => {});
-                const params = new URL(url.replace(NATIVE_REDIRECT, 'https://x/cb')).searchParams;
-                const code = params.get('code');
-                if (code) {
-                    const { error } = await supabase.auth.exchangeCodeForSession(code);
-                    if (error) { console.warn('[auth] troca do código falhou:', error.message); setIsSigningIn(false); }
-                } else {
-                    setIsSigningIn(false); // cancelou ou deu erro no provedor
-                }
-            }).then(h => { urlSub = h; });
-            // voltou pro app sem concluir o login (fechou a aba): libera o botão
-            CapApp.addListener('appStateChange', ({ isActive }) => {
-                if (isActive) setTimeout(() => setIsSigningIn(s => (s && !localStorage.getItem(ORIGIN_KEY) ? false : s)), 1500);
-            });
-        }
-
-        return () => { sub.subscription.unsubscribe(); urlSub?.remove(); };
-    }, [afterSignIn]);
-
-    const signIn = useCallback(async (provider: AuthProviderName, origin: LoginOrigin) => {
-        if (!isSupabaseConfigured) return;
-        setIsSigningIn(true);
-        localStorage.setItem(ORIGIN_KEY, origin);
-        handled.current = null;
-        const native = Capacitor.isNativePlatform();
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-                redirectTo: native ? NATIVE_REDIRECT : window.location.origin,
-                skipBrowserRedirect: native, // no Android abrimos numa aba do navegador
-                queryParams: provider === 'google' ? { prompt: 'select_account' } : undefined,
-            },
-        });
-        if (error || !data?.url) {
-            console.warn('[auth] login falhou:', error?.message);
-            localStorage.removeItem(ORIGIN_KEY);
-            setIsSigningIn(false);
+          const y = await sP(v.id, x),
+            p = ((k = v.app_metadata) == null ? undefined : k.provider) || "unknown";
+          if (y === "new-account" || y === "uploaded" ? $3(p) : F3(p), c(Xc()), y === "restored") {
+            localStorage.setItem("focusfrog_account_choice", "cloud"), eu();
             return;
+          }
+          y === "new-account" && (localStorage.removeItem("focusfrog_userName"), localStorage.setItem(dl, v.id), localStorage.setItem("focusfrog_account_choice", "cloud"), eu());
+        } catch (y) {
+          console.warn("[auth] pós-login falhou:", y);
+        } finally {
+          a(false);
         }
-        if (native) await Browser.open({ url: data.url, presentationStyle: 'popover' });
+      }
     }, []);
-
-    const signOut = useCallback(async () => {
-        // sobe o que tem antes de sair, pra não perder o dia
-        if (user) { try { await pushLocal(user.id); } catch { /* offline: sai mesmo assim */ } }
-        await supabase.auth.signOut();
-        clearSyncMeta();
-        localStorage.removeItem(PENDING_UPLOAD_KEY);
-        setLastSyncAt(null);
-    }, [user]);
-
-    const syncNowManual = useCallback(async () => {
-        if (!user) return 'skipped' as SyncOutcome;
-        const r = await syncNow(user.id, { force: true });
-        setLastSyncAt(getLastSyncAt());
-        if (r === 'pulled') reloadWithData();
-        return r;
-    }, [user]);
-
-    return (
-        <AuthContext.Provider value={{ user, isLoading, isConfigured: isSupabaseConfigured, isSigningIn, lastSyncAt, signIn, signOut, syncNowManual }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({
+      data: {
+        session: k
+      }
+    }) => {
+      const y = (k == null ? undefined : k.user) ?? null;
+      n(y), r(false), y && !localStorage.getItem(na) && !localStorage.getItem(dl) && L_(y.id).then(p => {
+        c(Xc()), p === "pulled" && eu();
+      });
+    });
+    const {
+      data: v
+    } = supabase.auth.onAuthStateChange((k, y) => {
+      const p = (y == null ? undefined : y.user) ?? null;
+      n(p), r(false), k === "SIGNED_IN" && p && d(p);
+    });
+    let x;
+    return Capacitor.isNativePlatform() && (CapApp.addListener("appUrlOpen", async ({
+      url: k
+    }) => {
+      if (!k.startsWith(vf)) return;
+      Browser.close().catch(() => {});
+      const p = new URL(k.replace(vf, "https://x/cb")).searchParams.get("code");
+      if (p) {
+        const {
+          error: g
+        } = await supabase.auth.exchangeCodeForSession(p);
+        g && (console.warn("[auth] troca do código falhou:", g.message), a(false));
+      } else a(false);
+    }).then(k => {
+      x = k;
+    }), CapApp.addListener("appStateChange", ({
+      isActive: k
+    }) => {
+      k && setTimeout(() => a(y => y && !localStorage.getItem(na) ? false : y), 1500);
+    })), () => {
+      v.subscription.unsubscribe(), x == null || x.remove();
+    };
+  }, [d]);
+  const f = React.useCallback(async (v, x) => {
+      a(true), localStorage.setItem(na, x), u.current = null;
+      const k = Capacitor.isNativePlatform(),
+        {
+          data: y,
+          error: p
+        } = await supabase.auth.signInWithOAuth({
+          provider: v,
+          options: {
+            redirectTo: k ? vf : window.location.origin,
+            skipBrowserRedirect: k,
+            queryParams: v === "google" ? {
+              prompt: "select_account"
+            } : undefined
+          }
+        });
+      if (p || !(y != null && y.url)) {
+        console.warn("[auth] login falhou:", p == null ? undefined : p.message), localStorage.removeItem(na), a(false);
+        return;
+      }
+      k && (await Browser.open({
+        url: y.url,
+        presentationStyle: "popover"
+      }));
+    }, []),
+    h = React.useCallback(async () => {
+      if (t) try {
+        await lh(t.id);
+      } catch {}
+      await supabase.auth.signOut(), X2(), localStorage.removeItem(dl), c(null);
+    }, [t]),
+    m = React.useCallback(async () => {
+      if (!t) return "skipped";
+      const v = await L_(t.id, {
+        force: true
+      });
+      return c(Xc()), v === "pulled" && eu(), v;
+    }, [t]);
+  return <nS.Provider value={{
+    user: t,
+    isLoading: s,
+    isConfigured: isSupabaseConfigured,
+    isSigningIn: o,
+    lastSyncAt: l,
+    signIn: f,
+    signOut: h,
+    syncNowManual: m
+  }}>{e}</nS.Provider>;
 };
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) throw new Error('useAuth deve ser usado dentro de um AuthProvider');
-    return context;
+  const e = React.useContext(nS);
+  if (e === undefined) throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+  return e;
 };

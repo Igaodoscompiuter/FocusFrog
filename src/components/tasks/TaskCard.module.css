@@ -1,125 +1,224 @@
-/*
-    TaskCard.module.css
-*/
-
-.cardWrapper { position: relative; }
-
-.swipeBackground { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; color: white; font-weight: 500; border-radius: var(--border-radius-large); }
-.completeBackground { background-color: var(--success-color); justify-content: flex-start; }
-.deleteBackground { background-color: var(--danger-color); justify-content: flex-end; }
-.swipeIcon { display: flex; align-items: center; gap: 0.5rem; }
-
+.cardWrapper {
+  position: relative;
+}
+.raised {
+  z-index: 30;
+}
+.swipeBackground {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 16px;
+  pointer-events: none;
+}
+.completeBackground {
+  background-color: var(--success-color);
+  justify-content: flex-start;
+}
+.deleteBackground {
+  background-color: var(--danger-color);
+  justify-content: flex-end;
+}
+.swipeIcon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .taskCard {
-    background-color: var(--surface-color);
-    border-radius: var(--border-radius-large);
-    padding: 1rem;
-    box-shadow: var(--shadow-small);
-    cursor: grab;
-    position: relative;
-    border: 1px solid var(--border-color);
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-    touch-action: pan-y; 
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 6px 12px 12px;
+  border-radius: 16px;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  -webkit-user-select: none;
+  user-select: none;
+  transition: border-color 0.2s ease;
 }
-
-.statusDone { opacity: 0.6; }
-.statusDone .taskCardTitleGroup h4 { text-decoration: line-through; color: var(--text-secondary-color); }
-
-.dragging { cursor: grabbing; box-shadow: var(--shadow-large); transform: scale(1.02); z-index: 1000; }
-.inboxCard { background-color: var(--surface-secondary-color); border-color: transparent; }
-
-.taskCardContent { display: flex; flex-direction: column; gap: 0.5rem; }
-.taskCardHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
-
-.taskCardTitleGroup { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
-
-.taskCardTitleGroup h4 {
-    margin: 0;
-    font-size: var(--font-size-lg);      /* REATORADO */
-    line-height: var(--line-height-lg); /* REATORADO */
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.compact {
+  padding: 8px 4px 8px 12px;
+  background: var(--background-color);
 }
-
-.checkbox { min-width: 18px; width: 18px; height: 18px; border: 2px solid var(--border-color); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
-.checkbox.disabled { border-color: var(--border-color); cursor: not-allowed; opacity: 0.7; }
-
-.actionPlaceholder { min-width: 18px; width: 18px; height: 18px; }
-.taskCardActions { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
-
-.headerPlayButton.activeFocus { color: var(--accent-color); transform: scale(1.1); }
-.frogIconActive { color: var(--accent-color); transform: scale(1.1); }
-
-.taskCardDescription {
-    font-size: var(--font-size-sm);      /* REATORADO */
-    line-height: var(--line-height-sm); /* REATORADO */
-    color: var(--text-secondary-color);
-    margin: 0;
-    padding-left: 2.2rem; 
+.isFrog {
+  border: 1.5px solid var(--accent-color);
 }
-
-.isFrog { border: 2px solid var(--accent-color); }
-
-.subtasksSection { padding-left: 0.5rem; margin-top: 0.5rem; overflow: hidden; }
-.subtasksHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    color: var(--text-secondary-color);
-    font-size: var(--font-size-xs);      /* REATORADO */
-    line-height: var(--line-height-xs); /* REATORADO */
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--border-radius-medium);
-    background-color: var(--background-color);
+.focusing {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 22%, transparent);
 }
-
-.collapsibleChevron { transition: transform 0.2s ease-in-out; }
-.subtasksSection.collapsed .collapsibleChevron { transform: rotate(-90deg); }
-.subtasksContent { padding-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
-
-.subtaskItem {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: var(--font-size-sm);      /* REATORADO */
-    line-height: var(--line-height-sm); /* REATORADO */
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    transition: background-color 0.15s ease;
+.checkbox {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid var(--text-secondary-color);
+  background: transparent;
+  color: var(--text-secondary-color);
+  font: 700 10px var(--font-family, Inter, sans-serif);
 }
-
-.subtaskItem.clickable { cursor: pointer; }
-.subtaskItem.completed span { text-decoration: line-through; color: var(--text-disabled-color); }
-
-.subtaskCheckbox { min-width: 14px; width: 14px; height: 14px; border: 1px solid var(--border-color); border-radius: 4px; transition: background-color 0.2s ease, border-color 0.2s ease; }
-
-.subtaskItem.completed .subtaskCheckbox { background-color: var(--primary-color); border-color: var(--primary-color); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); }
-
-.subtaskCheckOrPlay { display: flex; align-items: center; justify-content: center; height: 24px; width: 24px; }
-.subtaskPlayButton { color: var(--text-secondary-color); }
-.subtaskPlayButton.activeFocus { color: var(--accent-color); }
-.subtaskPlayButton.disabled { opacity: 0.4; cursor: not-allowed; }
-
-.clickableText { cursor: pointer; }
-
-.footerTags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
-.footerTag {
-    font-size: var(--font-size-xs);      /* REATORADO */
-    line-height: var(--line-height-xs); /* REATORADO */
-    padding: 2px 8px;
-    border-radius: 12px;
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary-color);
-    display: flex;
-    align-items: center;
+.compact .checkbox {
+  width: 26px;
+  height: 26px;
 }
-
-.energyTag { gap: 0.25rem; }
-
-@media (max-width: 480px) {
-    .taskCardTitleGroup h4 { white-space: normal; }
+.checkboxSteps {
+  border-radius: 10px;
+  border-style: dashed;
+}
+.body {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-color);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.compact .title {
+  font-size: 14px;
+}
+.frogMark {
+  margin-right: 4px;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 12px;
+  color: var(--text-secondary-color);
+}
+.hint {
+  font-size: 12px;
+  color: var(--text-secondary-color);
+}
+.due {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  background: var(--background-color-light);
+  color: var(--text-secondary-color);
+}
+.carried {
+  background: color-mix(in srgb, var(--danger-color) 16%, transparent);
+  color: var(--danger-color);
+}
+.today {
+  background: color-mix(
+    in srgb,
+    var(--warning-color, #f59e0b) 18%,
+    transparent
+  );
+  color: var(--warning-color, #f59e0b);
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tagDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.play {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  background: var(--background-color-light);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.play:disabled {
+  cursor: default;
+}
+.playActive {
+  color: var(--accent-color);
+}
+.menuWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.more {
+  width: 32px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary-color);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.menu {
+  position: fixed;
+  z-index: 2500;
+  min-width: 200px;
+  max-height: 70vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 14px 34px #00000059;
+}
+.menu button {
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.menu button:hover {
+  background: var(--background-color-hover);
+}
+.menuLabel {
+  padding: 8px 12px 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary-color);
+}
+.menuSep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border-color);
+}
+.danger {
+  color: var(--danger-color) !important;
 }

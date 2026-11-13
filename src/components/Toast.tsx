@@ -1,57 +1,49 @@
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import fo from './Toast.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { Co } from '../context/UIContext';
+import { motion } from 'framer-motion';
 
-import React, { useEffect } from 'react';
-import { Notification } from '../context/UIContext';
-import { notificationConfig } from '../config/notificationConfig';
-import styles from './Toast.module.css';
-
-export interface ToastProps {
-  notification: Notification;
-  onDismiss: (id: number) => void;
-}
-
-export const Toast: React.FC<ToastProps> = ({ notification, onDismiss }) => {
-
-    useEffect(() => {
-        // [CORREÇÃO] Antes, uma notificação com ação (ex: "Desfazer") nunca agendava
-        // o timer de descarte — ficava presa na tela pra sempre e travava a fila
-        // (só 1 notificação visível por vez). Agora sempre agenda, só que com mais
-        // tempo quando há uma ação, pra dar chance de tocar em "Desfazer".
-        const duration = notification.action ? notificationConfig.actionableDuration : notificationConfig.defaultDuration;
-        const dismissTimeout = setTimeout(() => {
-            onDismiss(notification.id);
-        }, duration);
-
-        return () => clearTimeout(dismissTimeout);
-    }, [notification, onDismiss]);
-
-    // Mapeia a categoria da notificação para a classe de estilo correspondente
-    const categoryClass = styles[notification.category] || '';
-
-    const handleActionClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Impede que o clique no botão descarte o toast
-        if(notification.action) {
-            notification.action.onAction();
-        }
-        onDismiss(notification.id); // Descarta o toast após a ação
+export const UQ = ({
+  notification: e,
+  onDismiss: t,
+  fast: n
+}) => {
+  const {
+      id: s,
+      action: r,
+      category: o
+    } = e,
+    a = r ? Co.actionableDuration : n ? Co.fastDuration : Co.duration[o] ?? Co.duration.info,
+    l = React.useRef(t);
+  l.current = t;
+  const c = React.useRef(a),
+    u = React.useRef(0),
+    d = React.useRef(),
+    [f, h] = React.useState(false),
+    m = () => {
+      u.current = Date.now(), clearTimeout(d.current), d.current = setTimeout(() => l.current(s), c.current);
+    },
+    v = () => {
+      f || (clearTimeout(d.current), c.current = Math.max(600, c.current - (Date.now() - u.current)), h(true));
+    },
+    x = () => {
+      f && (h(false), m());
     };
-
-    return (
-        <div
-          className={`${styles.toast} ${categoryClass}`}
-          onClick={() => onDismiss(notification.id)}
-        >
-            <span className={styles.toastIcon}>
-              {notification.icon}
-            </span>
-            <div className={styles.toastContent}>
-                <p>{notification.message}</p>
-            </div>
-            {/* Adiciona o botão de ação se ele existir na notificação */}
-            {notification.action && (
-                <button className={styles.actionButton} onClick={handleActionClick}>
-                    {notification.action.label}
-                </button>
-            )}
-        </div>
-    );
+  React.useEffect(() => (m(), () => clearTimeout(d.current)), [s]);
+  const k = (p, g) => {
+      Math.abs(g.offset.x) > 80 || Math.abs(g.velocity.x) > 500 ? l.current(s) : x();
+    },
+    y = p => {
+      p.stopPropagation(), r == null || r.onAction(), l.current(s);
+    };
+  return <motion.div className={`${fo.toast} ${fo[o] || ""}`} role="status" drag="x" dragConstraints={{
+    left: 0,
+    right: 0
+  }} dragElastic={0.7} onDragStart={v} onDragEnd={k} onPointerDown={v} onPointerUp={x} onPointerCancel={x} onClick={() => l.current(s)}><span className={fo.iconTile} aria-hidden="true">{e.icon}</span><p className={fo.message}>{e.message}</p>{r && <button className={fo.action} onClick={y}>{r.label}</button>}<span className={fo.progress} aria-hidden="true"><span key={s} className={fo.bar} style={{
+        animationDuration: `${a}ms`,
+        animationPlayState: f ? "paused" : "running"
+      }} /></span></motion.div>;
 };

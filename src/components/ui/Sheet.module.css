@@ -1,0 +1,233 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+  --mode: var(--text-secondary-color);
+  color: var(--mode);
+  background: color-mix(in srgb, var(--mode) 16%, transparent);
+}
+.rapida {
+  --mode: var(--text-secondary-color);
+}
+.foco {
+  --mode: var(--info-color, #3b82f6);
+}
+.checklist {
+  --mode: var(--success-color, #10b981);
+}
+.bloco {
+  --mode: var(--warning-color, #f59e0b);
+}
+.trilha {
+  --mode: #8b5cf6;
+}
+.sheetOverlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2100;
+  background: #0000008c;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: var(--surface-color);
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideUp 0.25s ease;
+}
+.sheet > * {
+  flex-shrink: 0;
+}
+.centerOverlay {
+  align-items: center;
+  padding: 16px;
+}
+.dialog {
+  border-radius: 24px;
+  max-width: 460px;
+}
+.sheetHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sheetTitle {
+  margin: 0;
+  font-family: Poppins, var(--font-family, sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+}
+.muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary-color);
+}
+.closeBtn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 0;
+  background: var(--background-color-light);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.stepRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--background-color);
+  color: var(--text-color);
+  text-align: left;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.stepRow.now {
+  border-color: var(--accent-color);
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 12%,
+    var(--background-color)
+  );
+}
+.stepRow:disabled {
+  cursor: default;
+}
+.box {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 2px solid var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on-primary, #fff);
+}
+.box.on {
+  border-color: var(--success-color);
+  background: var(--success-color);
+}
+.stepText {
+  flex-grow: 1;
+  min-width: 0;
+}
+.stepText.done {
+  color: var(--text-secondary-color);
+  text-decoration: line-through;
+}
+.stepMeta {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8b5cf6;
+  white-space: nowrap;
+}
+.primaryBtn,
+.secondaryBtn,
+.ghostBtn,
+.successBtn {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.primaryBtn {
+  border: 0;
+  background: var(--accent-color);
+  color: var(--text-on-accent, #111);
+}
+.secondaryBtn {
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+  font-weight: 600;
+}
+.successBtn {
+  border: 1px solid color-mix(in srgb, var(--success-color) 55%, transparent);
+  background: color-mix(in srgb, var(--success-color) 13%, transparent);
+  color: var(--success-color);
+}
+.ghostBtn {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary-color);
+  font-weight: 600;
+}
+.row {
+  display: flex;
+  gap: 8px;
+}
+.row > * {
+  flex: 1;
+}
+.hint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary-color);
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  0% {
+    transform: translateY(24px);
+    opacity: 0.6;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}

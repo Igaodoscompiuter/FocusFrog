@@ -1,106 +1,265 @@
-/* [PORTADO EXATO do zen-lake-v3.html] */
 .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 1900;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    opacity: 0;
-    animation: backdropIn 0.2s ease forwards;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1900;
+  background: #0000008c;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  animation: backdropIn 0.2s ease forwards;
 }
-@keyframes backdropIn { to { opacity: 1; } }
-
+@keyframes backdropIn {
+  to {
+    opacity: 1;
+  }
+}
 .sheet {
-    width: 100%;
-    max-width: 480px;
-    max-height: 82vh;
-    overflow-y: auto;
-    background: #16211e;
-    border-radius: 22px 22px 0 0;
-    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
-    animation: sheetUp 0.3s cubic-bezier(.2, .8, .3, 1);
+  width: 100%;
+  max-width: 480px;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: #16211e;
+  border-radius: 22px 22px 0 0;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  animation: sheetUp 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
-@keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } }
-
+@keyframes sheetUp {
+  0% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
-.title { font-size: 17px; font-weight: 700; color: #eef5f1; }
-.subtitle { font-size: 12px; color: #9db8ac; margin-top: 2px; }
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #eef5f1;
+}
+.subtitle {
+  font-size: 12px;
+  color: #9db8ac;
+  margin-top: 2px;
+}
 .closeBtn {
-    font: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    background: #16211e;
-    color: #eef5f1;
-    border: 1px solid #24352f;
-    border-radius: 999px;
-    padding: 7px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #16211e;
+  color: #eef5f1;
+  border: 1px solid #24352f;
+  border-radius: 999px;
+  padding: 7px 12px;
 }
-.closeBtn:active { transform: scale(0.97); }
-
+.closeBtn:active {
+  transform: scale(0.97);
+}
 .sectionTitle {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #9db8ac;
-    margin: 14px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9db8ac;
+  margin: 14px 0 8px;
 }
-.empty { font-size: 13px; color: #9db8ac; padding: 8px 0; }
-
+.empty {
+  font-size: 13px;
+  color: #9db8ac;
+  padding: 8px 0;
+}
 .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 .mini {
-    border-radius: 14px;
-    padding: 8px 6px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    border: 1px solid #24352f;
+  border-radius: 14px;
+  padding: 8px 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #24352f;
 }
-.mini.common { background: rgba(139, 195, 74, 0.08); }
-.mini.rare { background: rgba(79, 195, 247, 0.12); border-color: rgba(79, 195, 247, 0.4); }
-.mini.epic { background: rgba(251, 191, 36, 0.14); border-color: rgba(251, 191, 36, 0.55); }
-
-.miniPic { cursor: pointer; height: 46px; display: flex; align-items: center; justify-content: center; }
+.mini.common {
+  background: #8bc34a14;
+}
+.mini.rare {
+  background: #4fc3f71f;
+  border-color: #4fc3f766;
+}
+.mini.epic {
+  background: #c084fc21;
+  border-color: #c084fc80;
+}
+.mini.legendary {
+  background: #fbbf2424;
+  border-color: #fbbf2499;
+  box-shadow: 0 0 14px -4px #fbbf24b3;
+}
+.miniPic {
+  cursor: pointer;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .miniName {
-    font-size: 11px;
-    color: #eef5f1;
-    line-height: 1.2;
-    min-height: 26px;
-    display: flex;
-    align-items: center;
-    text-align: center;
+  font-size: 11px;
+  color: #eef5f1;
+  line-height: 1.2;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  text-align: center;
 }
 .miniBtn {
-    font: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 999px;
-    padding: 4px 10px;
-    border: 1px solid #24352f;
-    background: transparent;
-    color: #eef5f1;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 4px 10px;
+  border: 1px solid #24352f;
+  background: transparent;
+  color: #eef5f1;
 }
-.miniBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* [PORTADO de lagoa-zen-index.html — terrário] cartão inteiro clicável,
-   raridade escrita colorida, estado bloqueado do Álbum. */
-.mini { cursor: pointer; }
-.miniTag { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
-.mini.locked { background: rgba(255, 255, 255, .03); opacity: .75; cursor: default; }
-.albumBar { height: 6px; border-radius: 4px; background: rgba(255, 255, 255, .08); overflow: hidden; margin: 4px 0 10px; }
-.albumBar span { display: block; height: 100%; background: #FBBF24; border-radius: 4px; }
+.miniBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mini {
+  cursor: pointer;
+}
+.miniTag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mini.locked {
+  background: #ffffff08;
+  opacity: 0.75;
+  cursor: default;
+}
+.albumBar {
+  height: 6px;
+  border-radius: 4px;
+  background: #ffffff14;
+  overflow: hidden;
+  margin: 4px 0 10px;
+}
+.albumBar span {
+  display: block;
+  height: 100%;
+  background: #fbbf24;
+  border-radius: 4px;
+}
+.boxTabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 10px;
+  scrollbar-width: none;
+}
+.boxTabs::-webkit-scrollbar {
+  display: none;
+}
+.boxTab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9db8ac;
+  background: #ffffff0a;
+  border: 1px solid #24352f;
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.boxTab b {
+  font-size: 11px;
+  color: #eef5f1;
+  background: #ffffff14;
+  border-radius: 999px;
+  padding: 0 6px;
+}
+.boxTabOn {
+  color: #eef5f1;
+  border-color: #4f9d7a;
+  background: #4f9d7a2e;
+}
+.boxFrame {
+  border-radius: 16px;
+  padding: 10px;
+  border: 1px solid #24352f;
+  background: #ffffff05;
+}
+.boxFrame[data-box="mata"] {
+  background: linear-gradient(180deg, rgba(46, 125, 50, 0.14), transparent 60%);
+}
+.boxFrame[data-box="riacho"] {
+  background: linear-gradient(180deg, rgba(2, 136, 209, 0.14), transparent 60%);
+}
+.boxFrame[data-box="jardim"] {
+  background: linear-gradient(
+    180deg,
+    rgba(236, 64, 122, 0.12),
+    transparent 60%
+  );
+}
+.boxFrame[data-box="noite"] {
+  background: linear-gradient(180deg, rgba(57, 73, 171, 0.18), transparent 60%);
+}
+.boxFrame[data-box="cosmos"] {
+  background: linear-gradient(
+    180deg,
+    rgba(106, 27, 154, 0.18),
+    transparent 60%
+  );
+}
+.boxTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cfe3da;
+  margin: 2px 2px 10px;
+}
+.mini {
+  position: relative;
+}
+.stackBadge {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #0b1512;
+  background: #eef5f1;
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.habitatHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 14px 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #cfe3da;
+}
+.habitatHead span {
+  color: #9db8ac;
+  font-weight: 600;
+}

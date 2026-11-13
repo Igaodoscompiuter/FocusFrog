@@ -1,132 +1,40 @@
-
-import React, { useState } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import Et from './LeavingHomeChecklist.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Capacitor } from '@capacitor/core';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useUI } from '../../context/UIContext';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-import { ChecklistModal } from '../modals/ChecklistModal';
-import type { ChecklistItem } from '../../types';
-import { useUI } from '../../context/UIContext';
-import { requestPinChecklistWidget } from '../../widgetBridge';
-import styles from './LeavingHomeChecklist.module.css';
+import { WO } from '../../widgets/widgetSync';
+import { N6 } from '../modals/ChecklistModal';
 
-interface LeavingHomeChecklistProps {
-    items: ChecklistItem[];
-    onToggleItem: (itemId: string) => void;
-    onAddItem: (text: string) => void;
-    onRemoveItem: (itemId: string) => void;
-    onResetItems: () => void;
-}
-
-export const LeavingHomeChecklist: React.FC<LeavingHomeChecklistProps> = ({ 
-    items, onToggleItem, onAddItem, onRemoveItem, onResetItems 
+export const G6 = ({
+  items: e,
+  onToggleItem: t,
+  onAddItem: n,
+  onRemoveItem: s,
+  onResetItems: r
 }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    // recolhido por padrão na Home (decisão de produto): progresso no título
-    const [open, setOpen] = useLocalStorage<boolean>('focusfrog_checklistOpen', false);
-    const doneCount = items.filter(i => i.completed).length;
-    const { addNotification } = useUI();
-
-    const handlePinWidget = async () => {
-        const { supported, reason } = await requestPinChecklistWidget();
-        if (!supported) {
-            const msg = reason === 'launcher_unsupported'
-                ? 'Sua tela inicial não aceita esse atalho — adicione segurando um espaço vazio dela e procurando "FocusFrog" em Widgets.'
-                : 'Esse atalho precisa do app instalado no celular (não funciona aqui no navegador).';
-            addNotification(msg, 'ℹ️', 'info');
-        }
-        // Quando suportado, o próprio Android já mostra o diálogo de confirmação —
-        // não precisa de mais nada daqui.
+  const [o, a] = React.useState(false),
+    [l, c] = React.useState(false),
+    [u, d] = useLocalStorage("focusfrog_checklistOpen", false),
+    f = e.filter(x => x.completed).length,
+    {
+      addNotification: h
+    } = useUI(),
+    m = async () => {
+      const {
+        supported: x,
+        reason: k
+      } = await WO();
+      x || h(k === "launcher_unsupported" ? 'Sua tela inicial não aceita esse atalho — adicione segurando um espaço vazio dela e procurando "FocusFrog" em Widgets.' : "Esse atalho precisa do app instalado no celular (não funciona aqui no navegador).", "ℹ️", "info");
     };
-
-    if (!items || items.length === 0) {
-        return null; 
-    }
-
-    const handleToggleItemClick = (itemId: string) => {
-        if (isEditing) return;
-        onToggleItem(itemId);
-    };
-
-    return (
-        <>
-            {isModalOpen && (
-                <ChecklistModal 
-                    items={items}
-                    onAddItem={onAddItem}
-                    onRemoveItem={onRemoveItem}
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
-            
-            <div className={styles.card}>
-                <div className={styles.header}>
-                    <button className={styles.titleToggle} onClick={() => setOpen(!open)} aria-expanded={open}>
-                        <h3><Icon path={icons.briefcase} /> Já pegou?</h3>
-                        <span className={styles.summary}>{doneCount}/{items.length}<span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>›</span></span>
-                    </button>
-                </div>
-
-                {open && <div className={styles.toolbar}>
-                        {Capacitor.isNativePlatform() && !isEditing && (
-                            <button
-                                className={styles.toolButton}
-                                onClick={handlePinWidget}
-                                title="Adicionar à tela inicial"
-                            >
-                                <Icon path={icons.layoutGrid} /> Widget
-                            </button>
-                        )}
-                        {!isEditing ? (
-                             <button 
-                                className={styles.toolButton}
-                                onClick={onResetItems}
-                                title="Desmarcar Todos"
-                            >
-                               <Icon path={icons.rotateCw} /> Desmarcar
-                            </button>
-                        ) : (
-                            <button 
-                                className={`${styles.toolButton} ${styles.toolPrimary}`}
-                                onClick={() => setIsModalOpen(true)}
-                                title="Adicionar Item"
-                            >
-                                <Icon path={icons.plus} /> Item
-                            </button>
-                        )}
-                        <button 
-                            className={styles.toolButton}
-                            onClick={() => setIsEditing(!isEditing)}
-                            title={isEditing ? 'Concluir Edição' : 'Editar Checklist'}
-                        >
-                            {isEditing ? <><Icon path={icons.check} /> Pronto</> : <><Icon path={icons.pencil} /> Editar</>}
-                        </button>
-                    </div>}
-                {open && <ul className={`${styles.checklist} ${isEditing ? styles.editingList : ""}`}>
-                    {items.map(item => (
-                        <li 
-                            key={item.id} 
-                            className={`${styles.checklistItem} ${item.completed ? styles.completed : ''} ${isEditing ? styles.editing : ''}`}
-                            onClick={() => handleToggleItemClick(item.id)}
-                        >
-                            <div className={styles.itemContent}>
-                                <span className={styles.checkbox}></span>
-                                <span className={styles.text}>{item.text}</span>
-                            </div>
-                            {isEditing && !item.isDefault && (
-                                <button 
-                                    className="btn btn-icon btn-small"
-                                    onClick={() => onRemoveItem(item.id)}
-                                    title="Remover Item"
-                                >
-                                    <Icon path={icons.trash} />
-                                </button>
-                            )}
-                        </li>
-                    ))}
-                </ul>}
-            </div>
-        </>
-    );
+  if (!e || e.length === 0) return null;
+  const v = x => {
+    l || t(x);
+  };
+  return <>{o && <N6 items={e} onAddItem={n} onRemoveItem={s} onClose={() => a(false)} />}<div className={Et.card}><div className={Et.header}><button className={Et.titleToggle} onClick={() => d(!u)} aria-expanded={u}><h3><Icon path={icons.briefcase} />{" Já pegou?"}</h3><span className={Et.summary}>{f}/{e.length}<span className={`${Et.chevron} ${u ? Et.chevronOpen : ""}`}>›</span></span></button></div>{u && <div className={Et.toolbar}>{Capacitor.isNativePlatform() && !l && <button className={Et.toolButton} onClick={m} title="Adicionar à tela inicial"><Icon path={icons.layoutGrid} />{" Widget"}</button>}{l ? <button className={`${Et.toolButton} ${Et.toolPrimary}`} onClick={() => a(true)} title="Adicionar Item"><Icon path={icons.plus} />{" Item"}</button> : <button className={Et.toolButton} onClick={r} title="Desmarcar Todos"><Icon path={icons.rotateCw} />{" Desmarcar"}</button>}<button className={Et.toolButton} onClick={() => c(!l)} title={l ? "Concluir Edição" : "Editar Checklist"}>{l ? <><Icon path={icons.check} />{" Pronto"}</> : <><Icon path={icons.pencil} />{" Editar"}</>}</button></div>}{u && <ul className={`${Et.checklist} ${l ? Et.editingList : ""}`}>{e.map(x => <li key={x.id} className={`${Et.checklistItem} ${x.completed ? Et.completed : ""} ${l ? Et.editing : ""}`} onClick={() => v(x.id)}><div className={Et.itemContent}><span className={Et.checkbox} /><span className={Et.text}>{x.text}</span></div>{l && !x.isDefault && <button className="btn btn-icon btn-small" onClick={() => s(x.id)} title="Remover Item"><Icon path={icons.trash} /></button>}</li>)}</ul>}</div></>;
 };

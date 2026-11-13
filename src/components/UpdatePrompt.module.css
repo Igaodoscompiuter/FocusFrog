@@ -1,34 +1,30 @@
-
 .updatePrompt {
   position: fixed;
   bottom: 20px;
   right: 20px;
   background-color: #2a2a2a;
-  color: white;
+  color: #fff;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px #0003;
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 1000;
   font-family: sans-serif;
 }
-
 .message {
   margin-right: 15px;
 }
-
 .updateButton {
   background-color: #007bff;
-  color: white;
+  color: #fff;
   border: none;
   padding: 10px 15px;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 .updateButton:hover {
   background-color: #0056b3;
 }

@@ -1,19 +1,8 @@
-/* 
-  StatsScreen.module.css - Versão Corrigida e Espaçada
-
-  [AJUSTE DE LAYOUT]: Adicionada margem superior para criar um respiro no topo da tela.
-  - As variáveis de fundo (--bg-card-*) foram substituídas por `--surface-color`.
-  - As sombras (--shadow-*) foram removidas e substituídas por `border: 1px solid var(--border-color)`.
-  - As variáveis de texto (--text-color-*) foram consolidadas para usar `--text-color`, com opacidade para diferenciação.
-  - Os raios de borda (--br-*) foram corrigidos para a nomenclatura correta (`--border-radius-*`).
-*/
-
 .statsContainer {
   padding-left: var(--sp-md);
   padding-right: var(--sp-md);
-  margin-top: var(--sp-lg); /* Adicionado espaçamento no topo da tela */
+  margin-top: var(--sp-lg);
 }
-
 .centeredStreakCard {
   background: var(--surface-color);
   color: var(--text-color);
@@ -23,14 +12,12 @@
   margin-bottom: var(--sp-md);
   border: 1px solid var(--border-color);
 }
-
 .streakNumber {
   font-size: 3.5rem;
-  font-weight: bold;
+  font-weight: 700;
   line-height: 1;
   color: var(--accent-color);
 }
-
 .streakText {
   display: block;
   font-size: 1.2rem;
@@ -38,7 +25,6 @@
   margin-top: var(--sp-xs);
   color: var(--text-color);
 }
-
 .streakQuote {
   font-style: italic;
   margin-top: var(--sp-md);
@@ -46,14 +32,12 @@
   opacity: 0.8;
   font-size: 0.9rem;
 }
-
 .keyMetricsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--sp-md);
   margin-bottom: var(--sp-md);
 }
-
 .metricCard {
   background: var(--surface-color);
   padding: var(--sp-md);
@@ -64,38 +48,27 @@
   text-align: center;
   border: 1px solid var(--border-color);
 }
-
 .metricValueContainer {
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
 }
-
 .metricIcon {
   font-size: 1.5rem;
   color: var(--accent-color);
 }
-
 .metricValue {
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 700;
   color: var(--text-color);
 }
-
 .metricLabel {
   font-size: 0.9rem;
   color: var(--text-color);
   opacity: 0.8;
   margin-top: var(--sp-xs);
 }
-
 .frogPondCard {
-  /* [CORREÇÃO DE VERDADE] A altura fixa de 290px era de ANTES do lago virar
-     um retângulo 3:4 (igual o protótipo) — o lago queria ser mais alto que
-     isso, e sem overflow:hidden ele vazava visualmente por cima do que vinha
-     depois na página (exatamente o "lago jogado em cima" relatado). Agora o
-     card cresce com o conteúdo de verdade, com overflow:hidden como rede de
-     segurança — a página inteira já rola normalmente por fora (screen-content). */
   background: var(--surface-color);
   padding: var(--sp-md);
   border-radius: var(--border-radius-lg);
@@ -104,7 +77,6 @@
   flex-direction: column;
   overflow: hidden;
 }
-
 .pondHeaderRow {
   display: flex;
   align-items: center;
@@ -112,8 +84,13 @@
   gap: var(--sp-sm);
   margin-bottom: var(--sp-sm);
 }
-.pondHeaderRow .sectionTitle { margin-bottom: 0; }
-.pondHeaderButtons { display: flex; gap: var(--sp-xs); }
+.pondHeaderRow .sectionTitle {
+  margin-bottom: 0;
+}
+.pondHeaderButtons {
+  display: flex;
+  gap: var(--sp-xs);
+}
 .viveiroBtn {
   font: inherit;
   font-size: 0.78rem;
@@ -126,7 +103,6 @@
   cursor: pointer;
   white-space: nowrap;
 }
-
 .sectionTitle {
   text-align: center;
   font-size: 1.2rem;
@@ -134,29 +110,21 @@
   color: var(--text-color);
   margin-bottom: var(--sp-md);
 }
-
 .emptyPondMessage {
   text-align: center;
-  color: #ffffff;
+  color: #fff;
   align-self: center;
   margin: auto;
-  /* [CORREÇÃO] Antes era texto solto por cima da ilustração do lago (peixe/garça),
-     ilegível por falta de contraste. Agora tem um fundo discreto + sombra de texto. */
   position: relative;
   z-index: 2;
   max-width: 80%;
   padding: var(--sp-sm) var(--sp-md);
-  background: rgba(0, 0, 0, 0.35);
+  background: #00000059;
   border-radius: var(--border-radius-lg);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
-
-/* .rewardContainer e afins foram removidos — a revelação de sapo agora mora
-   em src/components/FrogRewardModal.tsx, montada globalmente, não só aqui. */
-/* A revelação de sapo coletado agora mora em src/components/FrogRewardModal.tsx,
-   montada globalmente no AppLayout — não só dentro desta tela. */
-
 .collectionCard {
   background: var(--surface-color);
   padding: var(--sp-md);
@@ -164,62 +132,64 @@
   border: 1px solid var(--border-color);
   margin-top: var(--sp-md);
 }
-
 .collectionList {
   display: flex;
   flex-direction: column;
   gap: var(--sp-sm);
 }
-
-/* [NOVO] Estilização para o item da coleção, agora como botão */
 .collectionItem {
-  /* Layout original */
   display: flex;
   align-items: center;
   gap: var(--sp-md);
   padding: var(--sp-sm);
   border-radius: var(--border-radius-md);
-  background-color: rgba(0,0,0,0.1);
-  
-  /* Reset de estilos de botão */
+  background-color: #0000001a;
   border: none;
   width: 100%;
   text-align: left;
   font-family: inherit;
-  
-  /* Interação */
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 .collectionItem:hover {
-  background-color: rgba(0,0,0,0.2); /* Efeito de hover para feedback */
+  background-color: #0003;
 }
-
 .collectionIcon {
   width: 24px;
   height: 24px;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.5);
 }
-
 .collectionName {
   flex-grow: 1;
   color: var(--text-color);
   font-weight: 500;
 }
-
 .collectionCount {
   color: var(--text-color);
   opacity: 0.8;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 1.1rem;
 }
-
-/* botão da Loja do Sapo no topo do Jardim */
 .storeBtn {
-  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 6px 0 14px;
-  border-radius: 999px; border: 1px solid var(--border-color); background: var(--surface-secondary-color);
-  color: var(--text-color); font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 6px 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-secondary-color);
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
 }
-.storeBtn span { padding: 4px 10px; border-radius: 999px; background: var(--accent-color); color: var(--text-on-accent); font-size: .75rem; }
+.storeBtn span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: var(--text-on-accent);
+  font-size: 0.75rem;
+}

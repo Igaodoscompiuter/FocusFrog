@@ -1,309 +1,193 @@
-
-import { isSpecialFrogTask } from '../constants';
-import { useTheme } from '../context/ThemeContext';
-import { OPEN_FROG_PICKER_EVENT } from '../components/FrogWidgetSync';
-import React, { useState, useMemo, useEffect } from 'react';
-import { useTasks } from '../context/TasksContext';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import St from './HomeScreen.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { Capacitor } from '@capacitor/core';
 import { useUI } from '../context/UIContext';
-import { usePomodoro } from '../context/PomodoroContext';
+import { Lt } from '../constants';
 import { useUser } from '../context/UserContext';
-import { TaskModal } from '../components/modals/TaskModal';
-import { useTour } from '../components/tour/TourContext';
-import { MorningReviewModal } from '../components/modals/MorningReviewModal';
-import { QuickCompleteModal } from '../components/modals/QuickCompleteModal';
 import { Icon } from '../components/Icon';
 import { icons } from '../components/Icons';
-import type { Task, Subtask } from '../types';
-import { LeavingHomeChecklist } from '../components/dashboard/LeavingHomeChecklist';
-import { AgendaDeHoje } from '../components/dashboard/AgendaDeHoje';
-import styles from './HomeScreen.module.css';
-import { FaPencilAlt, FaTimes } from 'react-icons/fa';
-import { Capacitor } from '@capacitor/core';
-import { requestPinFrogWidget } from '../widgetBridge';
+import { useTheme } from '../context/ThemeContext';
+import { $n } from '../domain/frogRarity';
+import { dh, ts } from '../domain/taskKinds';
+import { usePomodoro } from '../context/PomodoroContext';
+import { KO } from '../widgets/widgetSync';
+import { useTasks } from '../context/TasksContext';
+import { xd } from '../hooks/useHomeFlow';
+import { Ms } from '../components/ui/Sheet';
+import { C_qS } from '../components/routines/RoutineLibrary';
+import { useTour } from '../components/tour/TourContext';
+import { C_h6 } from '../components/modals/OverdueSheet';
+import { C_w6 } from '../components/modals/QuickCompleteModal';
+import { G6 } from '../components/dashboard/LeavingHomeChecklist';
+import { KM } from '../components/dashboard/AgendaDeHoje';
+import { C_s8 } from '../components/dashboard/RoutineSuggestion';
+import { KL } from '../components/mascot/MascotHome';
 
-// ... (greeting phrases and function remain the same)
-const morningPhrases = [
-    "Vamos fazer acontecer hoje?",
-    "Que a força do sapo esteja com você.",
-    "O dia só começa depois de um bom planejamento.",
-    "Defina suas intenções e vá com tudo!",
-    "Um pequeno passo hoje, um grande salto para seus objetivos."
-];
+const X1 = ["Vamos fazer acontecer hoje?", "Que a força do sapo esteja com você.", "O dia só começa depois de um bom planejamento.", "Defina suas intenções e vá com tudo!", "Um pequeno passo hoje, um grande salto para seus objetivos."];
 
-const afternoonPhrases = [
-    "Mantenha o foco, você está quase lá!",
-    "A tarde é perfeita para concluir tarefas importantes.",
-    "Não desista agora, o sapo está esperando!",
-    "Uma pausa para o café e de volta à produtividade!",
-    "Continue o bom trabalho, seu futuro agradece."
-];
+const ex = ["Mantenha o foco, você está quase lá!", "A tarde é perfeita para concluir tarefas importantes.", "Não desista agora, o sapo está esperando!", "Uma pausa para o café e de volta à produtividade!", "Continue o bom trabalho, seu futuro agradece."];
 
-const nightPhrases = [
-    "A noite é uma criança, planeje seu próximo dia.",
-    "Descanse e recarregue, amanhã tem mais.",
-    "Reflita sobre suas vitórias de hoje.",
-    "Ainda dá tempo de planejar um amanhã incrível.",
-    "Bom descanso, guerreiro do foco!"
-];
-const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return {
-        text: 'Bom dia',
-        icon: icons.sun,
-        gradient: 'linear-gradient(140deg, #5D9CEC 0%, #3C6DB9 100%)',
-        phrase: morningPhrases[Math.floor(Math.random() * morningPhrases.length)]
-    };
-    if (hour < 18) return {
-        text: 'Boa tarde',
-        icon: icons.sun,
-        gradient: 'linear-gradient(140deg, #FFC837 0%, #FF8C00 100%)',
-        phrase: afternoonPhrases[Math.floor(Math.random() * afternoonPhrases.length)]
-    };
-    return {
-        text: 'Boa noite',
-        icon: icons.moon,
-        gradient: 'linear-gradient(140deg, #8A79F7 0%, #624EC2 100%)',
-        phrase: nightPhrases[Math.floor(Math.random() * nightPhrases.length)]
-    };
+const tx = ["A noite é uma criança, planeje seu próximo dia.", "Descanse e recarregue, amanhã tem mais.", "Reflita sobre suas vitórias de hoje.", "Ainda dá tempo de planejar um amanhã incrível.", "Bom descanso, guerreiro do foco!"];
+
+const nx = () => {
+  const e = new Date().getHours();
+  return e < 12 ? {
+    text: "Bom dia",
+    icon: icons.sun,
+    gradient: "linear-gradient(140deg, #5D9CEC 0%, #3C6DB9 100%)",
+    phrase: X1[Math.floor(Math.random() * X1.length)]
+  } : e < 18 ? {
+    text: "Boa tarde",
+    icon: icons.sun,
+    gradient: "linear-gradient(140deg, #FFC837 0%, #FF8C00 100%)",
+    phrase: ex[Math.floor(Math.random() * ex.length)]
+  } : {
+    text: "Boa noite",
+    icon: icons.moon,
+    gradient: "linear-gradient(140deg, #8A79F7 0%, #624EC2 100%)",
+    phrase: tx[Math.floor(Math.random() * tx.length)]
+  };
 };
 
-export const HomeScreen: React.FC = () => {
-    // os temas (inclusive o Claro, verde) pintam o topo com a cor do tema; só o Escuro mantém
-    // o degradê que muda com a hora do dia
-    const { activeThemeId } = useTheme();
-    const usesTimeGradient = activeThemeId === 'dark-theme';
-    const { tasks, tags, frogTaskId, handleSetFrog, handleAddTask, handleUnsetFrog, handleToggleSubtask, handleCompleteTask, leavingHomeItems, handleToggleLeavingHomeItem, handleAddLeavingHomeItem, handleRemoveLeavingHomeItem, handleResetLeavingHomeItems } = useTasks();
-    const { handleNavigate, addNotification, setQuickTaskForCompletion } = useUI();
-    const { activeTaskId, activeTaskTitle, sessionStatus, startPomodoro } = usePomodoro(); 
-    const { userName } = useUser();
-    const [editingTask, setEditingTask] = useState<Partial<Task> | null>(null);
-    const [brainDumpText, setBrainDumpText] = useState('');
-    const { step: tourStep, tourTaskId } = useTour();
-    // tutorial: já deixa uma tarefa comum e rápida escrita (a pessoa pode trocar)
-    useEffect(() => {
-        if (tourStep?.id === 'create') setBrainDumpText(t => t || 'Beber um copo de água 💧');
-    }, [tourStep?.id]);
-    // tutorial: o 1º foco dura só 5s, pra pessoa ver o sapo nascer
-    const tutorialFocus = tourStep?.id === 'start';
-    const [isMorningReviewOpen, setIsMorningReviewOpen] = useState(false);
-    // widget "Sapo do Dia" → "Escolher sapo"/"Escolher outro" abre a escolha aqui
-    useEffect(() => {
-        const open = () => setIsMorningReviewOpen(true);
-        window.addEventListener(OPEN_FROG_PICKER_EVENT, open);
-        return () => window.removeEventListener(OPEN_FROG_PICKER_EVENT, open);
-    }, []);
-    const [selectedFrogId, setSelectedFrogId] = useState<string | null>(null);
-
-    const [greeting, setGreeting] = useState(() => getGreeting());
-
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-                setGreeting(getGreeting());
-            }
-        };
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, []);
-
-    const frogTask = useMemo(() => tasks.find(t => t.id === frogTaskId && t.status !== 'done'), [tasks, frogTaskId]);
-    const eligibleFrogTasks = useMemo(() => tasks.filter(t => t.status !== 'done'), [tasks]);
-    const uncompletedSubtasks = useMemo(() => frogTask?.subtasks?.filter(st => !st.completed).length ?? 0, [frogTask]);
-    const hasSubtasks = useMemo(() => (frogTask?.subtasks?.length ?? 0) > 0, [frogTask]);
-    const isSpecialFrog = isSpecialFrogTask(frogTask);
-    const isFrogFocused = useMemo(() => {
-        if (!frogTask) return false;
-        return frogTask.id === activeTaskId && sessionStatus !== 'idle';
-    }, [frogTask, activeTaskId, sessionStatus]);
-
-    const handleBrainDumpSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (brainDumpText.trim()) {
-            handleAddTask({ title: brainDumpText, quadrant: 'inbox', pomodoroEstimate: 1, energyNeeded: 'medium' });
-            setBrainDumpText('');
-        }
+export const m9 = () => {
+  const {
+      activeThemeId: e
+    } = useTheme(),
+    t = e === "dark-theme",
+    {
+      tasks: n,
+      tags: s,
+      frogTaskId: r,
+      handleSetFrog: o,
+      handleAddTask: a,
+      handleUnsetFrog: l,
+      handleToggleSubtask: c,
+      handleCompleteTask: u,
+      handleCompleteAllSteps: d,
+      startTaskFocus: f,
+      openSteps: h,
+      leavingHomeItems: m,
+      handleToggleLeavingHomeItem: v,
+      handleAddLeavingHomeItem: x,
+      handleRemoveLeavingHomeItem: k,
+      handleResetLeavingHomeItems: y
+    } = useTasks(),
+    {
+      handleNavigate: p,
+      addNotification: g,
+      setQuickTaskForCompletion: b
+    } = useUI(),
+    {
+      activeTaskId: j,
+      activeTaskTitle: C,
+      sessionStatus: S,
+      startPomodoro: T
+    } = usePomodoro(),
+    {
+      userName: P
+    } = useUser(),
+    [O, V] = React.useState(null),
+    [U, E] = React.useState(""),
+    {
+      step: K,
+      tourTaskId: oe
+    } = useTour();
+  React.useEffect(() => {
+    (K == null ? undefined : K.id) === "create" && E(R => R || "Beber um copo de água 💧");
+  }, [K == null ? undefined : K.id]);
+  const ve = (K == null ? undefined : K.id) === "start",
+    [Z, D] = React.useState(false);
+  React.useEffect(() => {
+    const R = () => D(true);
+    return window.addEventListener(xd, R), () => window.removeEventListener(xd, R);
+  }, []);
+  const [q, G] = React.useState(null),
+    [de, re] = React.useState(() => nx());
+  React.useEffect(() => {
+    const R = () => {
+      document.visibilityState === "visible" && re(nx());
     };
-
-    const handleConfirmFrog = () => {
-        const chosen = selectedFrogId ?? (tourStep?.id === 'frog' ? tourTaskId : null);
-        if (chosen) {
-            handleSetFrog(chosen);
-            addNotification('Sapo do Dia definido', '🐸', 'success');
-            setIsMorningReviewOpen(false);
-            setSelectedFrogId(null);
-        }
+    return document.addEventListener("visibilitychange", R), () => {
+      document.removeEventListener("visibilitychange", R);
     };
-
-    const handleNavigateToTasks = () => {
-        setIsMorningReviewOpen(false);
-        handleNavigate('tasks');
-    };
-
-    const handleEatFrog = () => {
-        if (isSpecialFrog) {
-            window.open('https://www.instagram.com/focus.frog/', '_blank');
-            handleCompleteTask(frogTask!.id, 'instagram');
-            return;
+  }, []);
+  const X = React.useMemo(() => n.find(R => R.id === r && R.status !== "done"), [n, r]),
+    Ie = React.useMemo(() => n.filter(R => R.status !== "done"), [n]),
+    $e = React.useMemo(() => {
+      var R;
+      return ((R = X == null ? undefined : X.subtasks) == null ? undefined : R.filter(Ae => !Ae.completed).length) ?? 0;
+    }, [X]),
+    Je = React.useMemo(() => {
+      var R;
+      return (((R = X == null ? undefined : X.subtasks) == null ? undefined : R.length) ?? 0) > 0;
+    }, [X]),
+    z = Lt(X),
+    F = React.useMemo(() => X ? X.id === j && S !== "idle" : false, [X, j, S]),
+    J = R => {
+      R.preventDefault(), U.trim() && (a({
+        title: U,
+        quadrant: "inbox",
+        pomodoroEstimate: 0,
+        energyNeeded: "medium"
+      }), E(""));
+    },
+    pe = () => {
+      const R = q ?? ((K == null ? undefined : K.id) === "frog" ? oe : null);
+      R && (o(R), g("Sapo do Dia escolhido", "🐸", "success"), D(false), G(null));
+    },
+    We = () => {
+      D(false), p("tasks");
+    },
+    Ct = () => {
+      if (z) {
+        window.open("https://www.instagram.com/focus.frog/", "_blank"), u(X.id, "instagram");
+        return;
+      }
+      if (X && !(S !== "idle" && j !== X.id && !window.confirm(`Você já tem um foco em andamento${C ? ` em "${C}"` : ""}. Trocar para "${X.title}" agora? O foco atual será interrompido.`))) {
+        if (ve) {
+          T({
+            mode: "quick",
+            taskId: X.id,
+            taskTitle: X.title,
+            cycles: 1,
+            focusMinutes: 5 / 60
+          }), p("focus");
+          return;
         }
-        if (!frogTask || hasSubtasks) return;
-        // [CORREÇÃO] startPomodoro() sempre chama stopAndReset() primeiro, sem
-        // avisar nada — se já existisse foco rodando em OUTRA tarefa, o botão
-        // "Comer o Sapo" matava essa sessão em silêncio. O TaskCard (tela de
-        // Tarefas) já tinha essa trava correta; aqui na Home faltava.
-        if (sessionStatus !== 'idle' && activeTaskId !== frogTask.id) {
-            const troca = window.confirm(
-                `Você já tem um foco em andamento${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''}. Trocar para "${frogTask.title}" agora? O foco atual será interrompido.`
-            );
-            if (!troca) return;
-        }
-        if (tutorialFocus) {
-            startPomodoro({ mode: 'quick', taskId: frogTask.id, taskTitle: frogTask.title, cycles: 1, focusMinutes: 5 / 60 });
-            handleNavigate('focus');
-            return;
-        }
-        if (frogTask.pomodoroEstimate > 0) {
-            startPomodoro({ 
-                mode: 'classic', 
-                taskId: frogTask.id, 
-                taskTitle: frogTask.title, 
-                cycles: frogTask.pomodoroEstimate, 
-                focusMinutes: frogTask.customDuration
-            });
-            handleNavigate('focus');
-        } else {
-            setQuickTaskForCompletion(frogTask);
-        }
-    };
-
-    const renderSubtask = (subtask: Subtask) => (
-        <div key={subtask.id} className={`${styles.frogSubtaskItem} ${subtask.completed ? styles.completed : ''}`} onClick={() => frogTask && handleToggleSubtask(frogTask.id, subtask.id)}>
-            <div className={styles.frogSubtaskCheckbox}></div>
-            <span>{subtask.text}</span>
-        </div>
-    );
-    
-    const getFrogButtonText = () => {
-        if (isSpecialFrog) return "Visitar o Instagram 🐸";
-        if (isFrogFocused) return <><Icon path={icons.zap} /> Focando no Sapo</>;
-        if (hasSubtasks) {
-            if (uncompletedSubtasks > 1) return `Faltam ${uncompletedSubtasks} subtarefas`;
-            if (uncompletedSubtasks === 1) return 'Falta 1 subtarefa';
-            return 'Sapo comido! 🎉';
-        }
-        return 'Comer o Sapo';
-    };
-
-    return (
-        <div className={styles.container}> 
-            {editingTask && <TaskModal taskToEdit={editingTask} onClose={() => setEditingTask(null)} tags={tags} />}
-            <QuickCompleteModal />
-            
-            <MorningReviewModal 
-                isOpen={isMorningReviewOpen} 
-                onClose={() => setIsMorningReviewOpen(false)}
-                tasks={tourStep?.id === 'frog' && tourTaskId
-                    ? [...eligibleFrogTasks.filter(t => t.id === tourTaskId), ...eligibleFrogTasks.filter(t => t.id !== tourTaskId)]
-                    : eligibleFrogTasks}
-                selectedTask={selectedFrogId ?? (tourStep?.id === 'frog' ? tourTaskId : null)}   
-                onSelectTask={setSelectedFrogId}  
-                onConfirm={handleConfirmFrog}   
-                onNavigateToTasks={handleNavigateToTasks}
-            />
-            
-            {/* A ESTRUTURA FOI SIMPLIFICADA. TUDO DENTRO DE UM ÚNICO WRAPPER. */}
-            <div className={styles.contentWrapper}>
-                <div className={styles.dashboardHeader} style={{ background: usesTimeGradient ? greeting.gradient : 'linear-gradient(140deg, var(--primary-color) 0%, var(--primary-color-hover) 100%)' }}>
-                    <div className={styles.greetingContent}>
-                        <img src="/icon-192.png" alt="FocusFrog App Icon" className={styles.headerIcon} />
-                        <div>
-                            <h2>{greeting.text}, {userName || 'Usuário'}!</h2>
-                            <p>{greeting.phrase}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <form id="tutorial-step1-form" onSubmit={handleBrainDumpSubmit} className={styles.brainDumpForm}>
-                    <input 
-                        type="text" 
-                        placeholder="O que está na sua mente? (Despejo Mental)"
-                        value={brainDumpText}
-                        onChange={(e) => setBrainDumpText(e.target.value)}
-                    />
-                    <button type="submit" disabled={!brainDumpText.trim()}>
-                        <Icon path={icons.plus} />
-                    </button>
-                </form>
-
-                <div id="frog-card" className={`${styles.frogCard} ${frogTask ? styles.hasFrog : ''} ${isFrogFocused ? styles.frogFocused : ''}`}>
-                    <div className={styles.frogCardHeader}>
-                        <h3><Icon path={icons.frog} /> Sapo do Dia</h3>
-                        <div className={styles.frogCardHeaderActions}>
-                            {Capacitor.isNativePlatform() && (
-                                <button className={`btn btn-secondary btn-small ${styles.iconButton}`} title="Widget na tela inicial" aria-label="Adicionar widget do Sapo do Dia"
-                                    onClick={async () => {
-                                        const { supported, reason } = await requestPinFrogWidget();
-                                        if (!supported) addNotification(reason === 'launcher_unsupported'
-                                            ? 'Sua tela inicial não aceita esse atalho: segure um espaço vazio dela e procure "FocusFrog" em Widgets.'
-                                            : 'Não deu pra abrir o atalho do widget agora.', 'ℹ️', 'info');
-                                    }}>
-                                    <Icon path={icons.layoutGrid} />
-                                </button>
-                            )}
-                        {frogTask && (
-                            <>
-                                <button className={`btn btn-secondary btn-small ${styles.iconButton}`} onClick={() => setIsMorningReviewOpen(true)}>
-                                    <FaPencilAlt />
-                                </button>
-                                <button className={`btn btn-secondary btn-icon btn-small ${styles.iconButton}`} onClick={handleUnsetFrog} title="Remover Sapo">
-                                    <FaTimes />
-                                </button>
-                            </>
-                        )}
-                        </div>
-                    </div>
-                    {frogTask ? (
-                        <div>
-                            <div className={styles.frogTitleCard}>
-                                <p className={styles.frogTaskTitle}>{frogTask.title}</p>
-                            </div>
-                            
-                            {hasSubtasks && (
-                                <div className={styles.frogSubtasks}>
-                                    {frogTask.subtasks!.map(renderSubtask)}
-                                </div>
-                            )}
-
-                            <button 
-                                id="eat-the-frog-button"
-                                className="btn btn-primary" 
-                                style={{width: '100%'}} 
-                                onClick={handleEatFrog}
-                                disabled={isFrogFocused || (hasSubtasks && !isSpecialFrog)}
-                            >
-                               {getFrogButtonText()}
-                            </button>
-                        </div>
-                    ) : (
-                        <div id="frog-card-empty-state" className={styles.frogCardContentEmpty} onClick={() => setIsMorningReviewOpen(true)}>
-                            <Icon path={icons.target} size={24} />
-                            <strong>Escolha seu Sapo</strong>
-                            <p>Selecione a tarefa que vai destravar seu dia</p>
-                        </div>
-                    )}
-                </div>
-
-                <LeavingHomeChecklist 
-                    items={leavingHomeItems}
-                    onToggleItem={handleToggleLeavingHomeItem}
-                    onAddItem={handleAddLeavingHomeItem}
-                    onRemoveItem={handleRemoveLeavingHomeItem} 
-                    onResetItems={handleResetLeavingHomeItems}
-                />
-
-                <AgendaDeHoje />
-            </div>
-        </div>
-    );
+        ts(X) ? f(X.id) : $n(X) ? h(X.id) : b(X);
+      }
+    },
+    H = R => {
+      var Ye;
+      if (!X) return;
+      if (c(X.id, R, {
+        autoComplete: false
+      }), ((Ye = X.subtasks) == null ? undefined : Ye.every(rt => rt.id === R ? !rt.completed : rt.completed)) && !F && !z) {
+        const rt = X.id;
+        g("Todos os passos do Sapo marcados", "🐸", "success", {
+          label: "Concluir",
+          onAction: () => d(rt)
+        });
+      }
+    },
+    $ = R => <div key={R.id} className={`${St.frogSubtaskItem} ${R.completed ? St.completed : ""}`} onClick={() => X && H(R.id)}><div className={St.frogSubtaskCheckbox} /><span>{R.text}</span>{!!R.minutes && <small style={{
+        marginLeft: "auto",
+        color: "#8b5cf6",
+        fontWeight: 700
+      }}>{"⏱ "}{R.minutes}{" min"}</small>}</div>,
+    je = () => z ? "Visitar o Instagram 🐸" : F ? <><Icon path={icons.zap} />{" Focando no Sapo"}</> : X && ts(X) ? <><Icon path={icons.play} />{" "}{dh(X)}</> : Je ? $e === 1 ? "Ver passos · falta 1" : `Ver passos · faltam ${$e}` : "Comer o Sapo";
+  return <div className={St.container}>{O && <C_qS taskToEdit={O} onClose={() => V(null)} tags={s} />}<C_w6 /><C_h6 isOpen={Z} onClose={() => D(false)} tasks={(K == null ? undefined : K.id) === "frog" && oe ? [...Ie.filter(R => R.id === oe), ...Ie.filter(R => R.id !== oe)] : Ie} selectedTask={q ?? ((K == null ? undefined : K.id) === "frog" ? oe : null)} onSelectTask={G} onConfirm={pe} onNavigateToTasks={We} /><div className={St.contentWrapper}><div className={St.dashboardHeader} style={{
+        background: t ? de.gradient : "linear-gradient(140deg, var(--primary-color) 0%, var(--primary-color-hover) 100%)"
+      }}><div className={St.greetingContent}><img src="/icon-192.png" alt="FocusFrog App Icon" className={St.headerIcon} /><div><h2>{de.text}{", "}{P || "Usuário"}!</h2><p>{de.phrase}</p></div></div></div><form id="tutorial-step1-form" onSubmit={J} className={St.brainDumpForm}><input type="text" placeholder="O que está na sua mente? (Despejo Mental)" value={U} onChange={R => E(R.target.value)} /><button type="submit" disabled={!U.trim()}><Icon path={icons.plus} /></button></form><C_s8 /><KL /><div id="frog-card" className={`${St.frogCard} ${X ? St.hasFrog : ""} ${F ? St.frogFocused : ""}`}><div className={St.frogCardHeader}><h3><Icon path={icons.frog} />{" Sapo do Dia"}</h3><div className={St.frogCardHeaderActions}>{Capacitor.isNativePlatform() && <button className={`btn btn-secondary btn-small ${St.iconButton}`} title="Widget na tela inicial" aria-label="Adicionar widget do Sapo do Dia" onClick={async () => {
+              const {
+                supported: R,
+                reason: Ae
+              } = await KO();
+              R || g(Ae === "launcher_unsupported" ? 'Sua tela inicial não aceita esse atalho: segure um espaço vazio dela e procure "FocusFrog" em Widgets.' : "Não deu pra abrir o atalho do widget agora.", "ℹ️", "info");
+            }}><Icon path={icons.layoutGrid} /></button>}{X && <><button className={`btn btn-secondary btn-small ${St.iconButton}`} onClick={() => D(true)}><Icon path={icons.pencil} /></button><button className={`btn btn-secondary btn-icon btn-small ${St.iconButton}`} onClick={l} title="Remover Sapo" aria-label="Remover Sapo"><Icon path={icons.close} /></button></>}</div></div>{X ? <div><div className={St.frogTitleCard}><p className={St.frogTaskTitle}>{X.title}</p>{!z && <Ms task={X} />}</div>{Je && <div className={St.frogSubtasks}>{X.subtasks.map($)}</div>}<button id="eat-the-frog-button" className="btn btn-primary" style={{
+            width: "100%"
+          }} onClick={Ct} disabled={F}>{je()}</button></div> : <div id="frog-card-empty-state" className={St.frogCardContentEmpty} onClick={() => D(true)}><Icon path={icons.target} size={24} /><strong>Escolha seu Sapo</strong><p>Selecione a tarefa que vai destravar seu dia</p></div>}</div><G6 items={m} onToggleItem={v} onAddItem={x} onRemoveItem={k} onResetItems={y} /><KM /></div></div>;
 };

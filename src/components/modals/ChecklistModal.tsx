@@ -1,72 +1,22 @@
-import React, { useState } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import lo from './ChecklistModal.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-import type { ChecklistItem } from '../../types';
-import styles from './ChecklistModal.module.css'; 
-import { useClickOutside } from '../../hooks/useClickOutside';
+import { GS } from '../../hooks/useClickOutside';
 
-interface ChecklistModalProps {
-  items: ChecklistItem[];
-  onAddItem: (text: string) => void;
-  onRemoveItem: (id: string) => void;
-  onClose: () => void;
-}
-
-export const ChecklistModal: React.FC<ChecklistModalProps> = ({ items, onAddItem, onRemoveItem, onClose }) => {
-    const [newItemText, setNewItemText] = useState('');
-
-    const modalRef = useClickOutside(onClose);
-
-    const handleAddItem = () => {
-        if (!newItemText.trim()) return;
-        onAddItem(newItemText);
-        setNewItemText('');
+export const N6 = ({
+  items: e,
+  onAddItem: t,
+  onRemoveItem: n,
+  onClose: s
+}) => {
+  const [r, o] = React.useState(""),
+    a = GS(s),
+    l = () => {
+      r.trim() && (t(r), o(""));
     };
-
-    return (
-        <div className="g-modal-overlay"> 
-            <div className="g-modal" ref={modalRef}> 
-                <div className={styles.modalHeader}>
-                    <h3>Gerenciar Itens de Saída</h3>
-                    <p>Adicione ou remova itens da sua lista pessoal.</p>
-                </div>
-                <div className={styles.modalBody}>
-                    <ul className={styles.itemList}>
-                        {items.map(item => (
-                            <li key={item.id} className={styles.item}>
-                                <span>{item.text}</span>
-                                {!item.isDefault && (
-                                    <button 
-                                      onClick={() => onRemoveItem(item.id)} 
-                                      className="btn btn-icon btn-small"
-                                      aria-label={`Remover ${item.text}`}
-                                    >
-                                        <Icon path={icons.trash} />
-                                    </button>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                     <div className={styles.formGroup}>
-                        <label>Adicionar novo item</label>
-                        <div className={styles.inputGroup}>
-                            <input
-                                type="text"
-                                placeholder="Ex: Fone de ouvido"
-                                value={newItemText}
-                                onChange={(e) => setNewItemText(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddItem()}
-                            />
-                            <button onClick={handleAddItem} className="btn btn-primary btn-small">
-                                <Icon path={icons.plus} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className={styles.modalFooter}>
-                    <button className="btn btn-secondary" onClick={onClose}>Fechar</button>
-                </div>
-            </div>
-        </div>
-    );
+  return <div className="g-modal-overlay"><div className="g-modal" ref={a}><div className={lo.modalHeader}><h3>Gerenciar Itens de Saída</h3><p>Adicione ou remova itens da sua lista pessoal.</p></div><div className={lo.modalBody}><ul className={lo.itemList}>{e.map(c => <li key={c.id} className={lo.item}><span>{c.text}</span>{!c.isDefault && <button onClick={() => n(c.id)} className="btn btn-icon btn-small" aria-label={`Remover ${c.text}`}><Icon path={icons.trash} /></button>}</li>)}</ul><div className={lo.formGroup}><label>Adicionar novo item</label><div className={lo.inputGroup}><input type="text" placeholder="Ex: Fone de ouvido" value={r} onChange={c => o(c.target.value)} onKeyPress={c => c.key === "Enter" && l()} /><button onClick={l} className="btn btn-primary btn-small"><Icon path={icons.plus} /></button></div></div></div><div className={lo.modalFooter}><button className="btn btn-secondary" onClick={s}>Fechar</button></div></div></div>;
 };

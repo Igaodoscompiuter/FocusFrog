@@ -1,98 +1,67 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useUserData } from '../hooks/useUserData';
-import { trackFrogCollected } from '../analytics';
-import { frogSpecies } from '../utils/frogSpecies';
+import { FROG_SPECIES } from '../data/frogs';
+import { K2 } from '../hooks/useUserData';
+import { q3 } from '../analytics';
 
-export interface NewlyAcquiredFrogInfo {
-  speciesId: string;
-}
-
-interface UserContextType {
-  userName: string | null;
-  onboardingCompleted: boolean;
-  collectedFrogs: string[];
-  newlyAcquiredFrog: NewlyAcquiredFrogInfo | null;
-  setUserName: (name: string) => void;
-  completeOnboarding: () => void;
-  addFrogToCollection: (speciesId: string) => void;
-  clearNewlyAcquiredFrog: () => void;
-  setCurrentFrogForSession: (speciesId: string) => void;
-  collectCurrentFrog: () => void;
-}
-
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const J2 = React.createContext(undefined);
 
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser deve ser usado dentro de um UserProvider');
-  }
-  return context;
+  const e = React.useContext(J2);
+  if (!e) throw new Error("useUser deve ser usado dentro de um UserProvider");
+  return e;
 };
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [userName, setUserNameInternal] = useLocalStorage<string | null>('focusfrog_userName', null);
-  const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboardingCompleted', false);
-  const { getCollectedFrogs, addFrogToCollection: addFrogToCollectionInternal } = useUserData();
-
-  const [collectedFrogs, setCollectedFrogs] = useState<string[]>([]);
-  const [newlyAcquiredFrog, setNewlyAcquiredFrog] = useState<NewlyAcquiredFrogInfo | null>(null);
-  const [currentFrogForSession, setCurrentFrogForSession] = useState<string | null>(null);
-
-
-  useEffect(() => {
-    setCollectedFrogs(getCollectedFrogs());
-  }, [getCollectedFrogs]);
-
-  const addFrogToCollection = useCallback((speciesId: string) => {
-    // [CORREÇÃO DEFINITIVA] Adiciona uma guarda para garantir que um ID de espécie válido foi fornecido.
-    // Isso impede que `undefined` ou strings vazias sejam adicionadas à coleção.
-    if (!speciesId) {
-      console.error('Tentativa de adicionar um sapo com ID inválido:', speciesId);
-      return; // Interrompe a execução se o ID for inválido.
-    }
-
-    addFrogToCollectionInternal(speciesId);
-    trackFrogCollected(speciesId, frogSpecies[speciesId]?.rarity ?? 'unknown');
-    setCollectedFrogs(getCollectedFrogs());
-    setNewlyAcquiredFrog({ speciesId: speciesId });
-  }, [addFrogToCollectionInternal, getCollectedFrogs]);
-
-  const clearNewlyAcquiredFrog = useCallback(() => {
-    setNewlyAcquiredFrog(null);
-  }, []);
-
-  const collectCurrentFrog = useCallback(() => {
-    if (currentFrogForSession) {
-      addFrogToCollection(currentFrogForSession);
-      setCurrentFrogForSession(null);
-    }
-  }, [currentFrogForSession, addFrogToCollection]);
-
-  const setUserName = (name: string) => {
-    setUserNameInternal(name);
-  };
-
-  const completeOnboarding = () => {
-    setOnboardingCompleted(true);
-  };
-
-  // (removido) o nome NÃO é preenchido com o da conta Google/Facebook:
-  // na conta nova a pessoa escolhe como quer ser chamada.
-
-  const value = {
-    userName,
-    onboardingCompleted,
-    collectedFrogs,
-    newlyAcquiredFrog,
-    setUserName,
-    completeOnboarding,
-    addFrogToCollection,
-    clearNewlyAcquiredFrog,
-    setCurrentFrogForSession,
-    collectCurrentFrog,
-  };
-
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+export const UserProvider = ({
+  children: e
+}) => {
+  const [t, n] = useLocalStorage("focusfrog_userName", null),
+    [s, r] = useLocalStorage("focusfrog_onboardingCompleted", false),
+    {
+      getCollectedFrogs: o,
+      addFrogToCollection: a
+    } = K2(),
+    [l, c] = React.useState([]),
+    [u, d] = React.useState(null),
+    [f, h] = React.useState(null);
+  React.useEffect(() => {
+    c(o());
+  }, [o]);
+  const m = React.useCallback((g, b) => {
+      var j;
+      if (!g) {
+        console.error("Tentativa de adicionar um sapo com ID inválido:", g);
+        return;
+      }
+      a(g), q3(g, ((j = FROG_SPECIES[g]) == null ? undefined : j.rarity) ?? "unknown", !!(b != null && b.guaranteed)), c(o()), d({
+        speciesId: g,
+        ...b
+      });
+    }, [a, o]),
+    v = React.useCallback(() => {
+      d(null);
+    }, []),
+    x = React.useCallback(() => {
+      f && (m(f), h(null));
+    }, [f, m]),
+    p = {
+      userName: t,
+      onboardingCompleted: s,
+      collectedFrogs: l,
+      newlyAcquiredFrog: u,
+      setUserName: g => {
+        n(g);
+      },
+      completeOnboarding: () => {
+        r(true);
+      },
+      addFrogToCollection: m,
+      clearNewlyAcquiredFrog: v,
+      setCurrentFrogForSession: h,
+      collectCurrentFrog: x
+    };
+  return <J2.Provider value={p}>{e}</J2.Provider>;
 };

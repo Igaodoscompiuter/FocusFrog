@@ -1,53 +1,43 @@
-/* ConfirmationModal.module.css */
-
 .confirmationModal {
-    max-width: 420px;
-    text-align: center;
+  max-width: 420px;
+  text-align: center;
 }
-
 .headerIcon {
-    margin: 0 auto 1rem auto;
-    background-color: var(--surface-secondary-color);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--accent-color);
+  margin: 0 auto 1rem;
+  background-color: var(--surface-secondary-color);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
 }
-
 .headerIcon svg {
-    width: 28px;
-    height: 28px;
+  width: 28px;
+  height: 28px;
 }
-
 .confirmationModal .g-modal-header h3 {
-    font-size: 1.3em;
-    margin-bottom: 0.5rem;
+  font-size: 1.3em;
+  margin-bottom: 0.5rem;
 }
-
 .confirmationModal .g-modal-body p {
-    font-size: 1em;
-    color: var(--text-secondary-color);
-    line-height: 1.6;
-    margin: 0;
+  font-size: 1em;
+  color: var(--text-secondary-color);
+  line-height: 1.6;
+  margin: 0;
 }
-
 .confirmationModal .g-modal-footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
-
-/* ESTA É A REGRA QUE FORÇA O VERMELHO */
 .btnDanger {
-    background-color: var(--danger-color); /* Vermelho forte e inequívoco */
-    color: white;
-    border: 1px solid var(--danger-color);
+  background-color: var(--danger-color);
+  color: #fff;
+  border: 1px solid var(--danger-color);
 }
-
 .btnDanger:hover {
-    background-color: var(--danger-color-hover); /* Vermelho mais escuro no hover */
-    border-color: var(--danger-color-hover);
+  background-color: var(--danger-color-hover);
+  border-color: var(--danger-color-hover);
 }

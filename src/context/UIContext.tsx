@@ -1,193 +1,192 @@
-
-import React, { useState, createContext, useContext, ReactNode, useCallback, useReducer, useEffect } from 'react';
-import type { Screen, Task, Notification as NotificationType } from '../types';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { notificationConfig } from '../config/notificationConfig';
-import { Effect } from '../sounds'; // <-- CORRIGIDO: Importa apenas o tipo Effect
 
-// --- ÁUDIO CENTRALIZADO ---
-const AudioEngine: {
-    context: AudioContext | null;
-    effectsGain: GainNode | null;
-} = {
-    context: null,
-    effectsGain: null,
+export const Co = {
+  maxVisible: 2,
+  minForClearAll: 2,
+  duration: {
+    info: 3200,
+    success: 3200,
+    victory: 4200,
+    error: 5e3
+  },
+  actionableDuration: 5500,
+  fastDuration: 1800,
+  fastThreshold: 3
 };
 
-const initializeAudio = () => {
-    if (typeof window !== 'undefined' && !AudioEngine.context) {
-        try {
-            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-            AudioEngine.context = new AudioContext();
-            AudioEngine.effectsGain = AudioEngine.context.createGain();
-            AudioEngine.effectsGain.gain.value = 0.4;
-            AudioEngine.effectsGain.connect(AudioEngine.context.destination);
-        } catch (e) {
-            console.error("Failed to initialize AudioContext:", e);
-        }
-    }
+const Gn = {
+  context: null,
+  effectsGain: null
 };
 
-export type NotificationCategory = 'victory' | 'success' | 'info' | 'error';
-export type FontSize = 'small' | 'normal' | 'large';
-
-export interface Notification extends NotificationType { category: NotificationCategory; }
-
-// --- Reducer (sem alterações) ---
-interface NotificationsState { visible: Notification[]; queue: Notification[]; showClearAll: boolean; }
-type NotificationsAction = | { type: 'ADD_TO_VISIBLE'; payload: Notification } | { type: 'ADD_TO_QUEUE'; payload: Notification } | { type: 'REMOVE'; payload: { id: number } } | { type: 'PROMOTE' } | { type: 'CLEAR_ALL' };
-const createNotificationReducer = (config: typeof notificationConfig) => (state: NotificationsState, action: NotificationsAction): NotificationsState => {
-    let nextState: NotificationsState;
-    switch (action.type) {
-        case 'ADD_TO_VISIBLE': nextState = { ...state, visible: [...state.visible, action.payload] }; break;
-        case 'ADD_TO_QUEUE': nextState = { ...state, queue: [...state.queue, action.payload] }; break;
-        case 'REMOVE': nextState = { ...state, visible: state.visible.filter(n => n.id !== action.payload.id) }; break;
-        case 'PROMOTE':
-            if (state.visible.length < config.maxVisible && state.queue.length > 0) {
-                const [nextInQueue, ...remainingQueue] = state.queue;
-                nextState = { ...state, visible: [...state.visible, nextInQueue], queue: remainingQueue };
-            } else { nextState = state; }
-            break;
-        case 'CLEAR_ALL': return { visible: [], queue: [], showClearAll: false };
-        default: return state;
-    }
-    const total = nextState.visible.length + nextState.queue.length;
-    if (total > 3) { nextState.showClearAll = true; } 
-    else if (total < 2) { nextState.showClearAll = false; } 
-    else { nextState.showClearAll = state.showClearAll; }
-    return nextState;
+const R_ = () => {
+  if (typeof window < "u" && !Gn.context) try {
+    const e = window.AudioContext || window.webkitAudioContext;
+    Gn.context = new e(), Gn.effectsGain = Gn.context.createGain(), Gn.effectsGain.gain.value = 0.4, Gn.effectsGain.connect(Gn.context.destination);
+  } catch (e) {
+    console.error("Failed to initialize AudioContext:", e);
+  }
 };
 
+const w3 = e => (t, n) => {
+  let s;
+  switch (n.type) {
+    case "ADD_TO_VISIBLE":
+      s = {
+        ...t,
+        visible: [...t.visible, n.payload]
+      };
+      break;
+    case "ADD_TO_QUEUE":
+      s = {
+        ...t,
+        queue: [...t.queue, n.payload]
+      };
+      break;
+    case "REMOVE":
+      s = {
+        ...t,
+        visible: t.visible.filter(r => r.id !== n.payload.id)
+      };
+      break;
+    case "PROMOTE":
+      if (t.visible.length < e.maxVisible && t.queue.length > 0) {
+        const [r, ...o] = t.queue;
+        s = {
+          ...t,
+          visible: [...t.visible, r],
+          queue: o
+        };
+      } else s = t;
+      break;
+    case "CLEAR_ALL":
+      return {
+        visible: [],
+        queue: [],
+        showClearAll: false
+      };
+    default:
+      return t;
+  }
+  return s.showClearAll = s.visible.length + s.queue.length >= e.minForClearAll, s;
+};
 
-// --- Tipos e Contexto ---
-export interface UIContextType {
-    activeScreen: Screen;
-    handleNavigate: (screen: Screen, options?: any) => void;
-    taskInFocus: Task | null;
-    setTaskInFocus: React.Dispatch<React.SetStateAction<Task | null>>;
-    subtaskInFocusId: string | null;
-    setSubtaskInFocusId: React.Dispatch<React.SetStateAction<string | null>>;
-    quickTaskForCompletion: Task | null;
-    setQuickTaskForCompletion: React.Dispatch<React.SetStateAction<Task | null>>;
-    notifications: Notification[];
-    queueCount: number;
-    showClearAllButton: boolean;
-    addNotification: (message: string, icon: string, category?: NotificationCategory, action?: { label: string; onAction: () => void; }) => void;
-    removeNotification: (id: number) => void;
-    promoteNotification: () => void;
-    clearAllNotifications: () => void;
-    soundEnabled: boolean;
-    toggleSoundEnabled: () => void;
-    playEffect: (effect: Effect) => void;
-    hapticsEnabled: boolean;
-    setHapticsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-    isImmersiveMode: boolean;
-    setIsImmersiveMode: React.Dispatch<React.SetStateAction<boolean>>;
-    isPWAInstallPopupVisible: boolean;
-    showPWAInstallPopup: () => void;
-    hidePWAInstallPopup: () => void;
-    fontSize: FontSize;
-    setFontSize: React.Dispatch<React.SetStateAction<FontSize>>;
-    devModeEnabled: boolean;
-    setDevModeEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const UIContext = createContext<UIContextType | undefined>(undefined);
+const U2 = React.createContext(undefined);
 
 export const useUI = () => {
-    const context = useContext(UIContext);
-    if (!context) throw new Error('useUI must be used within a UIProvider');
-    return context;
+  const e = React.useContext(U2);
+  if (!e) throw new Error("useUI must be used within a UIProvider");
+  return e;
 };
 
-
-// --- Provedor ---
-export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    useEffect(() => initializeAudio(), []);
-
-    const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
-    const [taskInFocus, setTaskInFocus] = useState<Task | null>(null);
-    const [subtaskInFocusId, setSubtaskInFocusId] = useState<string | null>(null);
-    const [isImmersiveMode, setIsImmersiveMode] = useState(false);
-    const [isPWAInstallPopupVisible, setIsPWAInstallPopupVisible] = useState(false);
-    const [quickTaskForCompletion, setQuickTaskForCompletion] = useState<Task | null>(null);
-
-    const [hapticsEnabled, setHapticsEnabled] = useLocalStorage<boolean>('focusfrog_haptics_enabled', true);
-    const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>('focusfrog_sound_enabled', true);
-    const [fontSize, setFontSize] = useLocalStorage<FontSize>('focusfrog_fontsize', 'normal');
-    const [devModeEnabled, setDevModeEnabled] = useLocalStorage<boolean>('focusfrog_dev_mode', false);
-
-    const notificationReducer = createNotificationReducer(notificationConfig);
-    const [notificationsState, dispatch] = useReducer(notificationReducer, { visible: [], queue: [], showClearAll: false });
-
-    // --- LÓGICA DE ÁUDIO CORRIGIDA ---
-    const playEffect = useCallback((effect: Effect) => {
-        if (soundEnabled && AudioEngine.context && AudioEngine.effectsGain) {
-            // Chama o gerador de som diretamente, que é a "receita" para o som.
-            effect.generator(AudioEngine.context, AudioEngine.effectsGain);
-        } else if (soundEnabled) {
-            console.warn("PlayEffect called, but audio engine not ready.");
+export const UIProvider = ({
+  children: e
+}) => {
+  React.useEffect(() => R_(), []);
+  const [t, n] = React.useState("dashboard"),
+    [s, r] = React.useState(null),
+    [o, a] = React.useState(null),
+    [l, c] = React.useState(false),
+    [u, d] = React.useState(false),
+    [f, h] = React.useState(null),
+    [m, v] = useLocalStorage("focusfrog_haptics_enabled", true),
+    [x, k] = useLocalStorage("focusfrog_sound_enabled", true),
+    [y, p] = useLocalStorage("focusfrog_fontsize", "normal"),
+    [g, b] = useLocalStorage("focusfrog_dev_mode", false),
+    j = w3(Co),
+    [C, S] = React.useReducer(j, {
+      visible: [],
+      queue: [],
+      showClearAll: false
+    }),
+    T = React.useCallback(D => {
+      x && Gn.context && Gn.effectsGain ? D.generator(Gn.context, Gn.effectsGain) : x && console.warn("PlayEffect called, but audio engine not ready.");
+    }, [x]),
+    P = React.useCallback(() => {
+      R_();
+      const D = Gn.context;
+      if (!D) {
+        console.error("Cannot toggle sound, AudioContext failed to initialize.");
+        return;
+      }
+      D.state === "suspended" ? D.resume().then(() => {
+        k(q => !q);
+      }) : k(q => !q);
+    }, [k]),
+    O = React.useCallback((D, q, G = "info", de) => {
+      const re = {
+          id: Date.now() + Math.random(),
+          message: D,
+          icon: q,
+          category: G,
+          action: de
+        },
+        X = [...C.visible, ...C.queue];
+      !de && X.some(Ie => Ie.message === D && !Ie.action) || (C.visible.length < Co.maxVisible ? S({
+        type: "ADD_TO_VISIBLE",
+        payload: re
+      }) : S({
+        type: "ADD_TO_QUEUE",
+        payload: re
+      }), m && navigator.vibrate && navigator.vibrate(50));
+    }, [C.visible, C.queue, m]),
+    V = React.useCallback(D => {
+      S({
+        type: "REMOVE",
+        payload: {
+          id: D
         }
-    }, [soundEnabled]);
-
-    const toggleSoundEnabled = useCallback(() => {
-        initializeAudio();
-        const context = AudioEngine.context;
-        if (!context) {
-            console.error("Cannot toggle sound, AudioContext failed to initialize.");
-            return;
-        }
-        if (context.state === 'suspended') {
-            context.resume().then(() => {
-                setSoundEnabled(current => !current);
-            });
-        } else {
-            setSoundEnabled(current => !current);
-        }
-    }, [setSoundEnabled]);
-
-    const addNotification = useCallback((message: string, icon: string, category: NotificationCategory = 'info', action?: { label: string; onAction: () => void; }) => {
-        const newNotification: Notification = { id: Date.now() + Math.random(), message, icon, category, action };
-        if (notificationsState.visible.length < notificationConfig.maxVisible) {
-            dispatch({ type: 'ADD_TO_VISIBLE', payload: newNotification });
-        } else {
-            dispatch({ type: 'ADD_TO_QUEUE', payload: newNotification });
-        }
-        if (hapticsEnabled && navigator.vibrate) navigator.vibrate(50);
-    }, [notificationsState.visible.length, hapticsEnabled]);
-
-    const removeNotification = useCallback((id: number) => { dispatch({ type: 'REMOVE', payload: { id } }); }, []);
-    const promoteNotification = useCallback(() => { dispatch({ type: 'PROMOTE' }); }, []);
-    const clearAllNotifications = useCallback(() => { dispatch({ type: 'CLEAR_ALL' }); if (hapticsEnabled && navigator.vibrate) navigator.vibrate(20); }, [hapticsEnabled]);
-
-    const handleNavigate = (screen: Screen, options?: any) => {
-        if (activeScreen === 'focus' && screen !== 'focus') setIsImmersiveMode(false);
-        setActiveScreen(screen);
-        if (hapticsEnabled && navigator.vibrate) navigator.vibrate(5);
-    }
-
-    const showPWAInstallPopup = () => setIsPWAInstallPopupVisible(true);
-    const hidePWAInstallPopup = () => setIsPWAInstallPopupVisible(false);
-
-    const value: UIContextType = {
-        activeScreen,
-        handleNavigate,
-        taskInFocus, setTaskInFocus,
-        subtaskInFocusId, setSubtaskInFocusId,
-        quickTaskForCompletion, setQuickTaskForCompletion, 
-        notifications: notificationsState.visible,
-        queueCount: notificationsState.queue.length,
-        showClearAllButton: notificationsState.showClearAll,
-        addNotification, removeNotification, promoteNotification, clearAllNotifications,
-        soundEnabled, 
-        toggleSoundEnabled,
-        playEffect, 
-        hapticsEnabled, setHapticsEnabled,
-        isImmersiveMode, setIsImmersiveMode,
-        isPWAInstallPopupVisible, showPWAInstallPopup, hidePWAInstallPopup,
-        fontSize, setFontSize,
-        devModeEnabled, setDevModeEnabled
+      });
+    }, []),
+    U = React.useCallback(() => {
+      S({
+        type: "PROMOTE"
+      });
+    }, []),
+    E = React.useCallback(() => {
+      S({
+        type: "CLEAR_ALL"
+      }), m && navigator.vibrate && navigator.vibrate(20);
+    }, [m]),
+    K = D => {
+      t === "focus" && D !== "focus" && c(false), n(D), m && navigator.vibrate && navigator.vibrate(5);
+    },
+    oe = () => d(true),
+    ve = () => d(false),
+    Z = {
+      activeScreen: t,
+      handleNavigate: K,
+      taskInFocus: s,
+      setTaskInFocus: r,
+      subtaskInFocusId: o,
+      setSubtaskInFocusId: a,
+      quickTaskForCompletion: f,
+      setQuickTaskForCompletion: h,
+      notifications: C.visible,
+      queueCount: C.queue.length,
+      showClearAllButton: C.showClearAll,
+      addNotification: O,
+      removeNotification: V,
+      promoteNotification: U,
+      clearAllNotifications: E,
+      soundEnabled: x,
+      toggleSoundEnabled: P,
+      playEffect: T,
+      hapticsEnabled: m,
+      setHapticsEnabled: v,
+      isImmersiveMode: l,
+      setIsImmersiveMode: c,
+      isPWAInstallPopupVisible: u,
+      showPWAInstallPopup: oe,
+      hidePWAInstallPopup: ve,
+      fontSize: y,
+      setFontSize: p,
+      devModeEnabled: g,
+      setDevModeEnabled: b
     };
-
-    return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
+  return <U2.Provider value={Z}>{e}</U2.Provider>;
 };

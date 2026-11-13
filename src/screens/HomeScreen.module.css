@@ -1,240 +1,212 @@
-/* HomeScreen.module.css */
-
-/* O .container e o .contentWrapper foram simplificados.
-   O layout de rolagem agora é gerenciado pelo componente pai (DashboardScreen) via .mainContent,
-   e o conteúdo da HomeScreen rola como um bloco único, prevenindo cortes. */
-
 .container {
-    width: 100%;
+  width: 100%;
 }
-
 .contentWrapper {
-    width: 100%;
-    padding: 0 var(--sp-lg);
-    box-sizing: border-box;
+  width: 100%;
+  padding: 0 var(--sp-lg);
+  box-sizing: border-box;
 }
-
 .dashboardHeader {
-    /* [CORREÇÃO] Antes ficava preso ao padding horizontal do .contentWrapper
-       (16px de cada lado), apesar do border-radius já indicar a intenção de
-       ser um cabeçalho full-bleed (o .screen-content pai, aliás, já remove o
-       padding horizontal de propósito pra permitir isso — só o dashboardHeader
-       tinha ficado de fora). A margem negativa "fura" o padding do
-       .contentWrapper; o padding interno compensa pro conteúdo não colar nas
-       bordas. A área segura (notch/status bar) já é tratada pelo .screen-content
-       (padding-top: var(--safe-top)), então não repete aqui. */
-    margin-left: calc(-1 * var(--sp-lg));
-    margin-right: calc(-1 * var(--sp-lg));
-    margin-bottom: var(--sp-lg);
-    padding: var(--sp-xl) var(--sp-lg);
-    color: var(--text-on-primary);
-    border-radius: 0 0 24px 24px;
+  margin-left: calc(-1 * var(--sp-lg));
+  margin-right: calc(-1 * var(--sp-lg));
+  margin-bottom: var(--sp-lg);
+  padding: var(--sp-xl) var(--sp-lg);
+  color: var(--text-on-primary);
+  border-radius: 0 0 24px 24px;
 }
-
 .greetingContent {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
 }
-
 .greetingContent h2 {
-    font-family: var(--font-poppins);
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: var(--sp-sm);
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  font-family: var(--font-poppins);
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: var(--sp-sm);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
 }
-
 .greetingContent p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  font-size: 1.1rem;
+  opacity: 0.9;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
 }
-
 .headerIcon {
-    width: 64px;
-    height: 64px;
-    flex-shrink: 0;
-    border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 50%;
 }
-
 .brainDumpForm {
-    display: flex;
-    gap: var(--sp-sm);
-    /* A margem superior foi removida para usar a margem do dashboardHeader */
-    margin-bottom: var(--sp-lg);
+  display: flex;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-lg);
 }
-
 .brainDumpForm input {
-    flex-grow: 1;
-    padding: var(--sp-md);
-    font-size: 1rem;
-    border-radius: var(--border-radius-lg);
-    background-color: var(--surface-secondary-color);
-    color: var(--text-color);
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-    border: 2px solid transparent;
+  flex-grow: 1;
+  padding: var(--sp-md);
+  font-size: 1rem;
+  border-radius: var(--border-radius-lg);
+  background-color: var(--surface-secondary-color);
+  color: var(--text-color);
+  transition: background-color var(--transition-fast),
+    box-shadow var(--transition-fast), border-color var(--transition-fast);
+  border: 2px solid transparent;
 }
-
 .brainDumpForm input:focus {
-    outline: none;
-    background-color: var(--surface-color);
-    box-shadow: 0 0 0 2px var(--accent-color);
+  outline: none;
+  background-color: var(--surface-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
 }
-
 .frogCard {
-    background-color: var(--surface-color);
-    padding: var(--sp-lg);
-    border-radius: var(--border-radius-lg);
-    border: 2px solid var(--border-color);
-    margin-bottom: var(--sp-lg);
-    transition: border-color var(--transition-slow), box-shadow var(--transition-slow);
+  background-color: var(--surface-color);
+  padding: var(--sp-lg);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--border-color);
+  margin-bottom: var(--sp-lg);
+  transition: border-color var(--transition-slow),
+    box-shadow var(--transition-slow);
 }
-
 .hasFrog {
-    border-color: transparent;
-    box-shadow: 0 0 0 2px var(--accent-color), 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--accent-color), 0 8px 25px #0000001a;
 }
-
 .frogCardHeader {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    margin-bottom: var(--sp-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-md);
 }
-
 .frogCardHeaderActions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-
 .iconButton {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-
 .frogCardHeader h3 {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-sm);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--accent-color);
-    margin-right: auto; 
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-right: auto;
 }
-
 .frogTitleCard {
-    background-color: var(--surface-secondary-color);
-    border-radius: var(--border-radius-md);
-    padding: var(--sp-lg);
-    text-align: center;
-    margin-bottom: var(--sp-md);
+  background-color: var(--surface-secondary-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--sp-lg);
+  text-align: center;
+  margin-bottom: var(--sp-md);
 }
-
 .frogTaskTitle {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-color);
-    word-break: break-word;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  word-break: break-word;
 }
-
 .frogCardContentEmpty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: var(--sp-md) 0;
-    gap: var(--sp-sm);
-    color: var(--text-secondary-color);
-    cursor: pointer;
-    border-radius: var(--border-radius-md);
-    background-color: var(--surface-secondary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--sp-md) 0;
+  gap: var(--sp-sm);
+  color: var(--text-secondary-color);
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  background-color: var(--surface-secondary-color);
 }
-
 .frogCardContentEmpty:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
-
-
-/* --- Seção de Subtarefas --- */
-
 .frogSubtasks {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--sp-sm);
-    margin-bottom: var(--sp-md);
-    border-top: 1px solid var(--border-color);
-    padding-top: var(--sp-md);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--sp-md);
 }
-
 .frogSubtaskItem {
-    display: flex;
-    align-items: center;
-    justify-content: center; 
-    gap: 0.75rem;
-    font-size: 0.875rem;
-    padding: 0.5rem;
-    border-radius: var(--border-radius-md);
-    cursor: pointer;
-    background-color: var(--surface-secondary-color);
-    transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  background-color: var(--surface-secondary-color);
+  transition: background-color 0.15s ease;
 }
-
 .frogSubtaskItem:last-child:nth-child(odd) {
-    grid-column: span 2;
+  grid-column: span 2;
 }
-
 .frogSubtaskItem span {
-    word-break: break-word;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
-
+.frogSubtaskItem small {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .frogSubtaskItem:hover {
-    filter: brightness(1.15);
+  filter: brightness(1.15);
 }
-
 .frogSubtaskItem.completed span {
-    text-decoration: line-through;
-    color: var(--text-secondary-color);
+  text-decoration: line-through;
+  color: var(--text-secondary-color);
 }
-
 .frogSubtaskCheckbox {
-    min-width: 14px;
-    width: 14px;
-    height: 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+  min-width: 14px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-
 .frogSubtaskItem.completed .frogSubtaskCheckbox {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
-    background-position: center;
-    background-repeat: no-repeat;
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
 }
-
-/* Media Query for Mobile Responsiveness */
 @media (max-width: 480px) {
-    .greetingContent {
-        gap: var(--sp-md);
-    }
-
-    .headerIcon {
-        width: 48px;
-        height: 48px;
-    }
-
-    .greetingContent h2 {
-        font-size: 1.5rem;
-    }
-
-    .greetingContent p {
-        font-size: 0.9rem;
-    }
+  .greetingContent {
+    gap: var(--sp-md);
+  }
+  .headerIcon {
+    width: 48px;
+    height: 48px;
+  }
+  .greetingContent h2 {
+    font-size: 1.5rem;
+  }
+  .greetingContent p {
+    font-size: 0.9rem;
+  }
+}
+.frogCardHeaderActions .iconButton {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--surface-secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+}
+.frogCardHeaderActions .iconButton svg {
+  width: 15px;
+  height: 15px;
 }

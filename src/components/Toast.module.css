@@ -1,82 +1,122 @@
-/* Toast.module.css */
-
 .toast {
-    pointer-events: auto;
-    /* Efeito de vidro fosco para semitransparência */
-    background-color: rgba(var(--surface-rgb), 0.75); /* Usa a cor da superfície com 75% de opacidade */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px); /* Compatibilidade com Safari */
-    
-    color: var(--text-color);
-    padding: var(--sp-md) var(--sp-lg);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(var(--text-rgb), 0.1); /* Borda sutil */
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    /* [CORREÇÃO] align-items:center ficava estranho em mensagens de 2-3
-       linhas (ícone flutuando no meio do bloco de texto). flex-start com um
-       pequeno ajuste fino no ícone alinha pela primeira linha, consistente
-       com mensagem curta ou longa. */
-    align-items: flex-start;
-    gap: var(--sp-md);
-    width: 100%;
-    max-width: 420px;
-    /* Nunca mais largo que a viewport, com a margem que o container já dá. */
-    box-sizing: border-box;
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    border-left: 4px solid var(--border-color);
+  --tone: var(--info-color, #3b82f6);
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-color) 92%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--tone) 35%, var(--border-color));
+  box-shadow: 0 12px 32px #00000052;
+  color: var(--text-color);
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
 }
-
-/* --- Estilos por Categoria --- */
 .success {
-    border-left-color: var(--success-color);
+  --tone: var(--success-color, #10b981);
 }
 .info {
-    border-left-color: var(--info-color);
+  --tone: var(--info-color, #3b82f6);
 }
 .error {
-    border-left-color: var(--danger-color);
+  --tone: var(--danger-color, #ef4444);
 }
 .victory {
-    border-left-color: var(--warning-color); 
+  --tone: var(--accent-color, #fbbf24);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tone) 18%, var(--surface-color)),
+    color-mix(in srgb, var(--surface-color) 94%, transparent) 70%
+  );
+  box-shadow: 0 12px 32px #00000052,
+    0 0 0 1px color-mix(in srgb, var(--tone) 30%, transparent),
+    0 0 24px -6px var(--tone);
 }
-.special {
-    border-left-color: var(--primary-color);
-    box-shadow: 0 0 15px -3px var(--primary-color-translucent), var(--shadow-lg);
+.iconTile {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
 }
-
-.toastIcon {
-    flex-shrink: 0;
-    font-size: 1.2rem;
+.victory .iconTile {
+  animation: pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
-
-.toastContent {
-    flex-grow: 1;
-    text-align: left;
+.message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-color);
+  overflow-wrap: anywhere;
 }
-
-.toastContent p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-color);
+.action {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tone) 50%, transparent);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  color: var(--tone);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
 }
-
-.toast.dismissing {
-  opacity: 0;
-  transform: translateY(-20px);
+.progress {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 5px;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  overflow: hidden;
 }
-
-.actionButton {
-    background: transparent;
-    border: none;
-    color: var(--primary-color);
-    font-weight: 600;
-    padding: var(--sp-sm) var(--sp-xs);
-    cursor: pointer;
-    margin-left: auto;
-    flex-shrink: 0;
-    border-radius: var(--border-radius-md);
+.bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--tone);
+  transform-origin: left center;
+  animation-name: drain;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
 }
-.actionButton:hover {
-    background-color: var(--background-color-hover);
+@keyframes drain {
+  0% {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.4) rotate(-12deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .victory .iconTile {
+    animation: none;
+  }
 }

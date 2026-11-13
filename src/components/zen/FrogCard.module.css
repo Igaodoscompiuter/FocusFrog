@@ -1,12 +1,11 @@
-/* [PORTADO EXATO do zen-lake-v3.html — mesmas cores, tamanhos e estrutura,
-   não uma reinterpretação. Paleta fixa do protótipo (não usa os tokens de
-   tema do app) porque a carta é uma peça de identidade visual própria,
-   igual carta de Pokémon/Yu-Gi-Oh — não devia mudar com o tema do app. */
 .overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 2000;
-  background: rgba(0, 0, 0, 0.55);
+  background: #0000008c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,24 +13,38 @@
   opacity: 0;
   animation: backdropIn 0.2s ease forwards;
 }
-@keyframes backdropIn { to { opacity: 1; } }
-
+@keyframes backdropIn {
+  to {
+    opacity: 1;
+  }
+}
 .card {
   position: relative;
   width: 100%;
   max-width: 300px;
   border-radius: 20px;
-  padding: 4px; /* a "moldura" colorida por raridade aparece nesse respiro */
+  padding: 4px;
   transform: scale(0.85) rotateY(90deg);
-  animation: cardReveal 0.5s cubic-bezier(.2, .8, .3, 1.1) forwards;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: cardReveal 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.1) forwards;
+  box-shadow: 0 20px 50px #00000080;
 }
-@keyframes cardReveal { to { transform: scale(1) rotateY(0deg); } }
-
-.card.common { background: linear-gradient(160deg, #6b7d6f, #3c473e); }
-.card.rare   { background: linear-gradient(160deg, #4FC3F7, #0d47a1); }
-.card.epic   { background: linear-gradient(160deg, #FFE082, #B45309); }
-
+@keyframes cardReveal {
+  to {
+    transform: scale(1) rotateY(0);
+  }
+}
+.card.common {
+  background: linear-gradient(160deg, #6b7d6f, #3c473e);
+}
+.card.rare {
+  background: linear-gradient(160deg, #4fc3f7, #0d47a1);
+}
+.card.epic {
+  background: linear-gradient(160deg, #d8b4fe, #6b21a8);
+}
+.card.legendary {
+  background: linear-gradient(160deg, #ffe082, #b45309);
+}
 .cardInner {
   background: #16211e;
   border-radius: 17px;
@@ -42,20 +55,31 @@
   position: relative;
   overflow: hidden;
 }
-
 .shine {
   position: absolute;
   top: -50%;
   left: -60%;
   width: 40%;
   height: 200%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
   transform: rotate(20deg);
   animation: shineSweep 2.6s ease-in-out infinite;
   pointer-events: none;
 }
-@keyframes shineSweep { 0% { left: -60%; } 50%, 100% { left: 140%; } }
-
+@keyframes shineSweep {
+  0% {
+    left: -60%;
+  }
+  50%,
+  to {
+    left: 140%;
+  }
+}
 .topRow {
   display: flex;
   justify-content: space-between;
@@ -72,7 +96,6 @@
   font-weight: 400;
   font-size: 12px;
 }
-
 .badge {
   font-size: 10px;
   font-weight: 700;
@@ -83,11 +106,28 @@
   color: #1b1b1b;
   flex-shrink: 0;
 }
-.badge.common { background: #8BC34A; }
-.badge.rare { background: #4FC3F7; }
-.badge.epic { background: linear-gradient(90deg, #FBBF24, #FFE082); animation: badgeGlow 1.6s ease-in-out infinite; }
-@keyframes badgeGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
-
+.badge.common {
+  background: #8bc34a;
+}
+.badge.rare {
+  background: #4fc3f7;
+}
+.badge.epic {
+  background: linear-gradient(90deg, #a855f7, #d8b4fe);
+}
+.badge.legendary {
+  background: linear-gradient(90deg, #fbbf24, #ffe082);
+  animation: badgeGlow 1.6s ease-in-out infinite;
+}
+@keyframes badgeGlow {
+  0%,
+  to {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.35);
+  }
+}
 .frogStage {
   position: relative;
   border-radius: 14px;
@@ -100,14 +140,52 @@
 }
 .portraitGlow {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   pointer-events: none;
 }
-.frogStage.common .portraitGlow { background: radial-gradient(closest-side, rgba(139, 195, 74, 0.25), transparent 70%); }
-.frogStage.rare .portraitGlow { background: radial-gradient(closest-side, rgba(79, 195, 247, 0.4), transparent 70%); animation: glowPulse 2.2s ease-in-out infinite; }
-.frogStage.epic .portraitGlow { background: radial-gradient(closest-side, rgba(251, 191, 36, 0.5), transparent 70%); animation: glowPulse 1.6s ease-in-out infinite; }
-@keyframes glowPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-
+.frogStage.common .portraitGlow {
+  background: radial-gradient(
+    closest-side,
+    rgba(139, 195, 74, 0.25),
+    transparent 70%
+  );
+}
+.frogStage.rare .portraitGlow {
+  background: radial-gradient(
+    closest-side,
+    rgba(79, 195, 247, 0.4),
+    transparent 70%
+  );
+  animation: glowPulse 2.2s ease-in-out infinite;
+}
+.frogStage.epic .portraitGlow {
+  background: radial-gradient(
+    closest-side,
+    rgba(192, 132, 252, 0.45),
+    transparent 70%
+  );
+  animation: glowPulse 1.9s ease-in-out infinite;
+}
+.frogStage.legendary .portraitGlow {
+  background: radial-gradient(
+    closest-side,
+    rgba(251, 191, 36, 0.55),
+    transparent 70%
+  );
+  animation: glowPulse 1.4s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,
+  to {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
 .flavor {
   font-size: 12.5px;
   font-style: italic;
@@ -115,7 +193,6 @@
   line-height: 1.4;
   margin: 0;
 }
-
 .statsWrap {
   display: flex;
   flex-direction: column;
@@ -128,24 +205,30 @@
   font-size: 11px;
   color: #9db8ac;
 }
-.statLabel { width: 78px; flex-shrink: 0; }
+.statLabel {
+  width: 78px;
+  flex-shrink: 0;
+}
 .statTrack {
   flex: 1;
   height: 6px;
   border-radius: 3px;
-  background: rgba(128, 128, 128, 0.25);
+  background: #80808040;
   overflow: hidden;
 }
 .statFill {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: #FBBF24;
+  background: #fbbf24;
   animation: fillIn 0.7s ease forwards;
   transform-origin: left;
 }
-@keyframes fillIn { from { transform: scaleX(0); } }
-
+@keyframes fillIn {
+  0% {
+    transform: scaleX(0);
+  }
+}
 .closeButton {
   position: absolute;
   top: -14px;
@@ -162,7 +245,6 @@
   justify-content: center;
   cursor: pointer;
 }
-
 .actionsWrap {
   display: flex;
   justify-content: center;
@@ -180,22 +262,96 @@
   border: 1px solid #24352f;
   border-radius: 999px;
 }
-.actionBtn:active { transform: scale(0.97); }
-.actionBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* mascote */
-.mascotLink, .mascotChip {
-  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
-  align-self: flex-start; border-radius: 999px; padding: 4px 10px;
+.actionBtn:active {
+  transform: scale(0.97);
 }
-.mascotLink { background: transparent; color: #9db8ac; border: 1px dashed #24352f; }
-.mascotChip { background: rgba(251, 191, 36, 0.15); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.45); }
-.mascotForm { display: flex; gap: 6px; }
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.mascotLink,
+.mascotChip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.mascotLink {
+  background: transparent;
+  color: #9db8ac;
+  border: 1px dashed #24352f;
+}
+.mascotChip {
+  background: #fbbf2426;
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+}
+.mascotForm {
+  display: flex;
+  gap: 6px;
+}
 .mascotInput {
-  flex: 1; min-width: 0; font: inherit; font-size: 13px; color: #eef5f1;
-  background: rgba(255,255,255,0.06); border: 1px solid #24352f; border-radius: 10px; padding: 6px 10px;
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  color: #eef5f1;
+  background: #ffffff0f;
+  border: 1px solid #24352f;
+  border-radius: 10px;
+  padding: 6px 10px;
 }
 .mascotSave {
-  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
-  background: #FBBF24; color: #1b1405; border: none; border-radius: 10px; padding: 6px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #fbbf24;
+  color: #1b1405;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+.traitLine {
+  margin: -4px 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #eef5f1b8;
+  text-align: center;
+}
+.traitLine b {
+  color: #eef5f1;
+}
+.mascotRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.mascotHint {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: #9db8ac;
+}
+.tip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fbbf2414;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  font-size: 13px;
+  line-height: 1.45;
+  color: #e6f2ec;
+}
+.tipKind {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fbbf24;
 }

@@ -1,587 +1,851 @@
-
-import { routineAsTask, routineMode, routineTemplates } from '../domain/routines';
-import type { ImportPreview } from '../domain/taskImport';
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Capacitor } from '@capacitor/core';
-import { App as CapacitorApp } from '@capacitor/app';
-import type { Task, Tag, Quadrant, TaskTemplate, Routine, ChecklistItem } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { todayISO, toISODate } from '../utils/dates';
 import { useUI } from './UIContext';
+import { A3, C3, D_, Lt, Qc, _m, gf, ul, za } from '../constants';
+import { L3, V3, z3 } from '../analytics';
+import { App as CapApp } from '@capacitor/app';
 import { useTheme } from './ThemeContext';
+import { FI, Wy, uh } from '../domain/routinesLegacy';
+import { Yt } from '../utils/dates';
+import { Ki, Ur, eO, md } from '../domain/frogRarity';
+import { Jy, aO, gS, iO, kn, oO, pa, rO, sO, si, ts, wf } from '../domain/taskKinds';
+import { _O, fO } from '../notifications';
+import { rr } from '../domain/mascotState';
 import { usePomodoro } from './PomodoroContext';
-import { initialRoutines, initialTaskTemplates, defaultTags, focusFrogMarketingTask, FOCUS_FROG_MARKETING_TASK_ID, isSpecialFrogTask } from '../constants';
-import { syncRoutineNotifications, scheduleFrogReminder, cancelFrogReminder } from '../notifications';
-import { syncChecklistToWidget, readChecklistFromWidget } from '../widgetBridge';
+import { GO, HO, qO } from '../widgets/widgetSync';
 
-type CompletionMethod = 'timer' | 'button' | 'subtask' | 'instagram';
+const Cf = "focusfrog_tasksCompletedTotal";
 
-interface TasksContextType {
-    tasks: Task[];
-    tags: Tag[];
-    frogTaskId: string | null;
-    routines: Routine[];
-    taskTemplates: TaskTemplate[];
-    handleAddTask: (task: Omit<Task, 'id' | 'status' | 'displayOrder'>) => void;
-    handleAddTasks: (tasks: Omit<Task, 'id' | 'status' | 'displayOrder'>[]) => void;
-    handleUpdateTask: (updatedTask: Task) => void;
-    handleUpdateTaskQuadrant: (taskId: string, newQuadrant: Quadrant, newIndex: number) => void;
-    handleDeleteTask: (taskId: string) => void;
-    handleCompleteTask: (taskId: string, method: CompletionMethod, subtaskId?: string) => void;
-    handleToggleSubtask: (taskId: string, subtaskId: string) => void;
-    handleSetFrog: (id: string | null) => void;
-    /** restaura o Card Especial FocusFrog (se excluído/concluído) e define como Sapo do Dia */
-    ensureMarketingFrog: () => void;
-    handleUnsetFrog: () => void;
-    handleSaveTag: (tag: Partial<Tag>) => void;
-    handleDeleteTag: (tagId: number) => void;
-    handleDuplicateTask: (taskId: string) => void;
-    handlePostponeTask: (taskId: string, days: number) => void;
-    needsMorningPlan: boolean;
-    handleCreateTemplateFromTask: (task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>, category?: string) => void;
-    handleCreateTemplate: (task: Partial<Omit<Task, 'id'>>, category?: string) => TaskTemplate;
-    handleDeleteTemplate: (templateId: number) => void;
-    /** Adiciona a rotina conforme o modo dela. Em "escolher partes" sem ids, abre a escolha (routineToPick). */
-    handleAddRoutine: (routine: Routine, pickedTemplateIds?: number[]) => void;
-    routineToPick: Routine | null;
-    /** Tira uma parte da tarefa (sem contar como feita). Se só sobrarem partes feitas, a tarefa conclui. */
-    handleSkipSubtask: (taskId: string, subtaskId: string) => void;
-    closeRoutinePick: () => void;
-    handleApplyImport: (preview: ImportPreview, opts?: { skipDuplicates?: boolean }) => { tasks: number; routines: number };
-    handleSaveRoutine: (routine: Routine) => void;
-    handleDeleteRoutine: (routineId: string) => void;
-    handleAddTemplates: (templates: TaskTemplate[]) => void;
-    leavingHomeItems: ChecklistItem[];
-    handleToggleLeavingHomeItem: (itemId: string) => void;
-    handleAddLeavingHomeItem: (text: string) => void;
-    handleRemoveLeavingHomeItem: (itemId: string) => void;
-    handleResetLeavingHomeItems: () => void;
-    triageQueue: Task[];
-    isTriageActive: boolean;
-    startTriage: () => void;
-    processTriage: (quadrant: Quadrant) => void;
-    endTriage: () => void;
-}
+const Tf = "focusfrog_thanksMilestone";
 
-const TasksContext = createContext<TasksContextType | undefined>(undefined);
+const VS = React.createContext(undefined);
 
 export const useTasks = () => {
-    const context = useContext(TasksContext);
-    if (!context) {
-        throw new Error('useTasks must be used within a TasksProvider');
-    }
-    return context;
+  const e = React.useContext(VS);
+  if (!e) throw new Error("useTasks must be used within a TasksProvider");
+  return e;
 };
 
-const defaultLeavingHomeItems: ChecklistItem[] = [
-    { id: 'item-1', text: 'Chaves', completed: false, isDefault: true },
-    { id: 'item-2', text: 'Carteira', completed: false, isDefault: true },
-    { id: 'item-3', text: 'Celular', completed: false, isDefault: true },
-];
+const eR = [{
+  id: "item-1",
+  text: "Chaves",
+  completed: false,
+  isDefault: true
+}, {
+  id: "item-2",
+  text: "Carteira",
+  completed: false,
+  isDefault: true
+}, {
+  id: "item-3",
+  text: "Celular",
+  completed: false,
+  isDefault: true
+}];
 
-export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { addNotification } = useUI();
-    const { setPontosFoco } = useTheme();
-    const { activeTaskId, activeTaskTitle, sessionStatus, stopCycle, lastCompletedFocus, clearLastCompletedFocus } = usePomodoro();
-
-    // Gerador de ID numérico único. Date.now() sozinho colide quando a mesma função
-    // é chamada várias vezes no mesmo milissegundo (ex.: salvar uma rotina com várias
-    // tarefas novas, criadas em loop) — o contador garante unicidade mesmo nesse caso.
-    const idCounterRef = useRef(0);
-    const generateNumericId = useCallback(() => {
-        idCounterRef.current += 1;
-        return Date.now() * 1000 + (idCounterRef.current % 1000);
-    }, []);
-
-    // Instalação nova começa vazia. O Card Especial FocusFrog só entra no fim
-    // do tutorial (passo "presente", ver ensureMarketingFrog), com o convite
-    // pra seguir no Instagram.
-    const [tasks, setTasks] = useLocalStorage<Task[]>('focusfrog_tasks', []);
-    const [tags, setTags] = useLocalStorage<Tag[]>('focusfrog_tags', defaultTags);
-    const [frogTaskId, setFrogTaskId] = useLocalStorage<string | null>('focusfrog_frogTaskId', null);
-    const [onboardingCompleted, setOnboardingCompleted] = useLocalStorage<boolean>('focusfrog_onboarding_completed', false);
-
-    const [routines, setRoutines] = useLocalStorage<Routine[]>('focusfrog_routines', initialRoutines);
-
-    // Sempre que as rotinas mudarem (criar/editar/excluir/definir horário),
-    // ressincroniza as notificações diárias agendadas — nativo apenas.
-    useEffect(() => {
-        syncRoutineNotifications(routines);
-    }, [routines]);
-
-    // Lembrete do Sapo do Dia: se passar um tempo e a tarefa escolhida ainda não
-    // tiver sido concluída, um empurrãozinho. Reagenda sempre que o Sapo do Dia
-    // muda; cancela se a tarefa for concluída, trocada ou removida.
-    const FROG_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000; // 3 horas
-    useEffect(() => {
-        const frogTask = frogTaskId ? tasks.find(t => t.id === frogTaskId) : null;
-        if (frogTask && frogTask.status !== 'done') {
-            scheduleFrogReminder(frogTask.title, FROG_REMINDER_DELAY_MS);
-        } else {
-            cancelFrogReminder();
-        }
-        // Só precisa reagir à troca do Sapo do Dia ou à conclusão da tarefa em si —
-        // não a toda mudança em `tasks` (evitaria reagendar o lembrete a cada edição
-        // de qualquer outra tarefa da lista).
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [frogTaskId, frogTaskId ? tasks.find(t => t.id === frogTaskId)?.status : null]);
-    const [taskTemplates, setTaskTemplates] = useLocalStorage<TaskTemplate[]>('focusfrog_taskTemplates', initialTaskTemplates);
-
-    const [leavingHomeItems, setLeavingHomeItems] = useLocalStorage<ChecklistItem[]>('focusfrog_leavingHomeItems', defaultLeavingHomeItems);
-
-    // Espelha o checklist pro widget de tela inicial sempre que mudar dentro do app.
-    useEffect(() => {
-        syncChecklistToWidget(leavingHomeItems);
-    }, [leavingHomeItems]);
-
-    // Ao voltar ao primeiro plano, lê de volta o que o widget possa ter mudado
-    // enquanto o app estava fechado/minimizado (toques em "Já pegou?" na tela inicial).
-    useEffect(() => {
-        if (!Capacitor.isNativePlatform()) return;
-        const sub = CapacitorApp.addListener('appStateChange', async ({ isActive }) => {
-            if (!isActive) return;
-            const fromWidget = await readChecklistFromWidget();
-            if (fromWidget && JSON.stringify(fromWidget) !== JSON.stringify(leavingHomeItems)) {
-                setLeavingHomeItems(fromWidget);
-            }
-        });
-        return () => { sub.then(s => s.remove()); };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [leavingHomeItems]);
-    const [lastDeletedTask, setLastDeletedTask] = useState<{ task: Task, index: number } | null>(null);
-
-    const [triageQueue, setTriageQueue] = useState<Task[]>([]);
-    const isTriageActive = useMemo(() => triageQueue.length > 0, [triageQueue]);
-
-    // [REMOVIDO] Havia aqui uma "tarefa de boas-vindas": numa instalação nova
-    // (ou depois de resetar os dados) ela criava o Card Especial a partir do
-    // modelo 50 e já o colocava como Sapo do Dia — atrapalhando o tutorial.
-    // Agora o card só entra no fim do tutorial (ensureMarketingFrog).
-
-    const handleAddTask = useCallback((taskData: Omit<Task, 'id' | 'status' | 'displayOrder'>) => {
-        const newTasks: Task[] = [{ ...taskData, id: `task-${Date.now()}`, status: 'todo', displayOrder: 0 }];
-        setTasks(prev => [...prev, ...newTasks].map((t, i) => ({ ...t, displayOrder: i })));
-        if (taskData.quadrant === 'inbox') {
-            addNotification('Nova tarefa capturada na Caixa de Entrada', '📥', 'info');
-        } else {
-            addNotification('Nova tarefa adicionada à sua lista', '✨', 'success');
-        }
-    }, [setTasks, addNotification]);
-
-    const handleAddTasks = useCallback((tasksData: Omit<Task, 'id' | 'status' | 'displayOrder'>[]) => {
-        const newTasks: Task[] = tasksData.map((taskData, index) => ({
-            ...taskData,
-            id: `task-${Date.now()}-${index}`,
-            status: 'todo',
-            displayOrder: 0,
-        }));
-        setTasks(prev => [...prev, ...newTasks].map((t, i) => ({ ...t, displayOrder: i })));
-    }, [setTasks]);
-
-    const handleUpdateTask = useCallback((updatedTask: Task) => {
-        setTasks(prevTasks => prevTasks.map(task => task.id === updatedTask.id ? updatedTask : task));
-        addNotification('Tarefa atualizada com sucesso', '✏️', 'success');
-    }, [setTasks, addNotification]);
-
-    const handleCompleteTask = useCallback((taskId: string, method: CompletionMethod, subtaskId?: string) => {
-        const taskToComplete = tasks.find(t => t.id === taskId);
-        if (!taskToComplete || taskToComplete.status === 'done') return;
-
-        // Card Especial: marcar os passos não conclui. Ele só conclui quando a
-        // pessoa toca em "Visitar o Instagram" (método 'instagram').
-        const isSpecialCard = isSpecialFrogTask(taskToComplete);
-        if (isSpecialCard && method !== 'instagram') {
-            if (subtaskId) {
-                setTasks(prev => prev.map(t => t.id !== taskId ? t : {
-                    ...t, subtasks: t.subtasks?.map(st => st.id === subtaskId ? { ...st, completed: true } : st),
-                }));
-            } else {
-                addNotification('Esse sapo se conclui no botão "Visitar o Instagram"', '🐸', 'info');
-            }
-            return;
-        }
-        if (isSpecialCard) {
-            setTasks(prev => prev.map(t => t.id !== taskId ? t : {
-                ...t, subtasks: t.subtasks?.map(st => ({ ...st, completed: true })), status: 'done', completedAt: new Date().toISOString(),
-            }));
-            setPontosFoco(p => p + 50);
-            addNotification('Valeu por seguir o FocusFrog! +50 pontos', '🐸', 'victory');
-            return;
-        }
-
-        if (taskId === activeTaskId) {
-            stopCycle();
-        }
-
-        const shouldReward = method === 'timer';
-
-        setTasks(prev => prev.map(task => {
-            if (task.id !== taskId) return task;
-
-            let taskCompleted = false;
-            let updatedSubtasks = task.subtasks;
-
-            if (subtaskId) {
-                updatedSubtasks = task.subtasks?.map(st => st.id === subtaskId ? { ...st, completed: true } : st) || [];
-                const allSubtasksDone = updatedSubtasks.every(st => st.completed);
-                if (allSubtasksDone) {
-                    taskCompleted = true;
-                }
-            } else {
-                taskCompleted = true;
-            }
-
-            if (taskCompleted) {
-                if (shouldReward) {
-                    setPontosFoco(p => p + 10); // Recompensa base
-                    if (taskId === frogTaskId) {
-                        addNotification('Sapo do dia engolido!', '🐸', 'victory');
-                        setPontosFoco(p => p + 40); // Bônus pelo sapo
-                    } else {
-                        addNotification('Tarefa concluída com foco!', '🎉', 'success');
-                    }
-                } else {
-                    addNotification('Tarefa concluída!', '✅', 'info');
-                }
-                return { ...task, subtasks: updatedSubtasks, status: 'done', completedAt: new Date().toISOString() };
-            } else {
-                return { ...task, subtasks: updatedSubtasks };
-            }
-        }));
-    }, [tasks, setTasks, addNotification, setPontosFoco, activeTaskId, stopCycle, frogTaskId]);
-
-    useEffect(() => {
-        if (lastCompletedFocus?.taskId) {
-            setTimeout(() => {
-                handleCompleteTask(lastCompletedFocus.taskId, lastCompletedFocus.completionMethod);
-                clearLastCompletedFocus();
-            }, 0);
-        }
-    }, [lastCompletedFocus, handleCompleteTask, clearLastCompletedFocus]);
-
-    const handleUpdateTaskQuadrant = useCallback((taskId: string, newQuadrant: Quadrant, newIndex: number) => {
-        setTasks(prevTasks => {
-            const taskToMove = prevTasks.find(t => t.id === taskId);
-            if (!taskToMove) return prevTasks;
-            const sourceQuadrant = prevTasks.filter(t => t.quadrant === taskToMove.quadrant && t.id !== taskId);
-            const destinationQuadrant = prevTasks.filter(t => t.quadrant === newQuadrant);
-            const otherQuadrants = prevTasks.filter(t => t.quadrant !== taskToMove.quadrant && t.quadrant !== newQuadrant);
-            destinationQuadrant.splice(newIndex, 0, { ...taskToMove, quadrant: newQuadrant });
-            const result = [...otherQuadrants, ...sourceQuadrant, ...destinationQuadrant].map((t, i) => ({ ...t, displayOrder: i }));
-            return result;
-        });
-    }, [setTasks]);
-
-    const handleUndoDelete = useCallback(() => {
-        if (lastDeletedTask) {
-            setTasks(prev => {
-                const newTasks = [...prev];
-                newTasks.splice(lastDeletedTask.index, 0, lastDeletedTask.task);
-                return newTasks;
-            });
-            setLastDeletedTask(null);
-            addNotification('Tarefa restaurada', '↩️', 'info');
-        }
-    }, [lastDeletedTask, setTasks, addNotification]);
-
-    const handleDeleteTask = useCallback((taskId: string) => {
-        if (taskId === activeTaskId) stopCycle();
-        const taskIndex = tasks.findIndex(t => t.id === taskId);
-        if (taskIndex === -1) return;
-        const taskToDelete = tasks[taskIndex];
-        setLastDeletedTask({ task: taskToDelete, index: taskIndex });
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-        addNotification('Tarefa excluída', '🗑️', 'info', { label: 'Desfazer', onAction: handleUndoDelete });
-        setTimeout(() => setLastDeletedTask(null), 5000);
-    }, [tasks, setTasks, addNotification, handleUndoDelete, activeTaskId, stopCycle]);
-
-    const handleToggleSubtask = useCallback((taskId: string, subtaskId: string) => {
-        handleCompleteTask(taskId, 'subtask', subtaskId);
-    }, [handleCompleteTask]);
-
-    // [CORREÇÃO] Mesmo risco do botão "Comer o Sapo": trocar o Sapo do Dia
-    // enquanto ELE MESMO está em foco interrompia o ciclo em silêncio, sem
-    // perguntar nada. Agora confirma antes, igual o botão de comer já faz.
-    const handleSetFrog = useCallback((id: string | null) => {
-        const isFocusingCurrentFrog = frogTaskId === activeTaskId && sessionStatus !== 'idle' && frogTaskId !== id;
-        if (isFocusingCurrentFrog) {
-            const troca = window.confirm(
-                `Você está em foco${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''} agora. Trocar o Sapo do Dia vai interromper esse foco. Continuar?`
-            );
-            if (!troca) return;
-            stopCycle();
-        }
-        setFrogTaskId(id);
-    }, [frogTaskId, activeTaskId, activeTaskTitle, sessionStatus, stopCycle, setFrogTaskId]);
-
-    const handleUnsetFrog = useCallback(() => {
-        const isFocusingCurrentFrog = frogTaskId === activeTaskId && sessionStatus !== 'idle';
-        if (isFocusingCurrentFrog) {
-            const continuar = window.confirm(
-                `Você está em foco${activeTaskTitle ? ` em "${activeTaskTitle}"` : ''} agora. Remover o Sapo do Dia vai interromper esse foco. Continuar?`
-            );
-            if (!continuar) return;
-            stopCycle();
-        }
-        setFrogTaskId(null);
-    }, [frogTaskId, activeTaskId, activeTaskTitle, sessionStatus, stopCycle, setFrogTaskId]);
-
-    const handleSaveTag = useCallback((tag: Partial<Tag>) => {
-        setTags(prev => {
-            if (tag.id) {
-                if (prev.find(t => t.id === tag.id)?.isDefault) {
-                    addNotification("Etiquetas padrão não podem ser editadas.", '🛡️', 'error');
-                    return prev;
-                }
-                addNotification('Etiqueta atualizada', '✏️', 'success');
-                return prev.map(t => t.id === tag.id ? { ...t, ...tag } as Tag : t);
-            }
-            addNotification('Nova etiqueta criada', '✨', 'success');
-            return [...prev, { id: generateNumericId(), name: tag.name!, color: tag.color!, isDefault: false }];
-        });
-    }, [setTags, addNotification, generateNumericId]);
-
-    const handleDeleteTag = useCallback((tagId: number) => {
-        if (tags.find(t => t.id === tagId)?.isDefault) {
-            addNotification("Etiquetas padrão não podem ser excluídas.", '🛡️', 'error');
-            return;
-        }
-        setTags(prev => prev.filter(t => t.id !== tagId));
-        setTasks(prev => prev.map(t => t.tagId === tagId ? { ...t, tagId: undefined } : t));
-        addNotification('Etiqueta excluída', '🗑️', 'info');
-    }, [tags, setTags, setTasks, addNotification]);
-
-    const handleDuplicateTask = useCallback((taskId: string) => {
-        const taskToDuplicate = tasks.find(t => t.id === taskId);
-        if (taskToDuplicate) {
-            handleAddTask({ ...taskToDuplicate, title: `${taskToDuplicate.title} (Cópia)` });
-        }
-    }, [tasks, handleAddTask]);
-
-    const handlePostponeTask = useCallback((taskId: string, days: number) => {
-        setTasks(prev => prev.map(task => {
-            if (task.id === taskId) {
-                const currentDate = task.dueDate ? new Date(task.dueDate + 'T00:00:00') : new Date();
-                currentDate.setDate(currentDate.getDate() + days);
-                return { ...task, dueDate: toISODate(currentDate) };
-            }
-            return task;
-        }));
-        addNotification(`Tarefa adiada por ${days} dia(s)`, '🗓️', 'info');
-    }, [setTasks, addNotification]);
-
-    // [CORREÇÃO] categoria era fixa em 'Personalizado' — agora vem de quem chama
-    const handleCreateTemplate = useCallback((taskData: Partial<Omit<Task, 'id'>>, category: string = 'Personalizado') => {
-        const newTemplate: TaskTemplate = {
-            id: generateNumericId(),
-            title: taskData.title || 'Nova Tarefa',
-            description: taskData.description,
-            quadrant: taskData.quadrant,
-            pomodoroEstimate: taskData.pomodoroEstimate,
-            customDuration: taskData.customDuration,
-            energyNeeded: taskData.energyNeeded,
-            category,
-            subtasks: taskData.subtasks?.map(st => ({ text: st.text })),
-            isDefault: false,
-        };
-        setTaskTemplates(prev => [...prev, newTemplate]);
-        return newTemplate;
-    }, [setTaskTemplates, generateNumericId]);
-
-    const handleCreateTemplateFromTask = useCallback((task: Partial<Omit<Task, 'id' | 'status' | 'displayOrder'>>, category?: string) => {
-        const newTemplate = handleCreateTemplate(task, category);
-        addNotification(`Modelo "${newTemplate.title}" salvo em ${newTemplate.category}.`, '📚', 'success');
-    }, [handleCreateTemplate, addNotification]);
-
-    const handleDeleteTemplate = useCallback((templateId: number) => {
-        if (taskTemplates.find(t => t.id === templateId)?.isDefault) {
-            addNotification("Modelos padrão não podem ser excluídos.", '🛡️', 'error');
-            return;
-        }
-        setTaskTemplates(prev => prev.filter(t => t.id !== templateId));
-        addNotification("Modelo excluído com sucesso.", '🗑️', 'info');
-    }, [taskTemplates, setTaskTemplates, addNotification]);
-
-    const handleAddTemplates = useCallback((templates: TaskTemplate[]) => {
-        // [CORREÇÃO] Antes toda tarefa de rotina ganhava dueDate=hoje automático,
-        // mesmo quando a rotina não tem relação nenhuma com um dia específico —
-        // isso inflava a Agenda de Hoje com tarefas que o usuário não agendou de
-        // propósito. A tarefa continua caindo certinho no quadrante dela (Foco
-        // Imediato, Agendar etc.) — só não reivindica "hoje" sozinha. Quem quiser
-        // mesmo agendar pra hoje ainda pode, editando a tarefa normalmente.
-        const newTasks: Omit<Task, 'id' | 'status' | 'displayOrder'>[] = templates.map(template => ({
-            ...template,
-            quadrant: template.quadrant || 'inbox',
-            pomodoroEstimate: template.pomodoroEstimate ?? 1,
-            subtasks: template.subtasks?.map((st, i) => ({ id: `sub-${Date.now()}-${i}`, text: st.text, completed: false, ...(st.minutes ? { minutes: st.minutes } : {}) })),
-        }));
-        if (newTasks.length > 0) {
-            handleAddTasks(newTasks);
-            addNotification(`${newTasks.length} tarefa(s) adicionada(s) à sua lista`, '✨', 'success');
-        }
-    }, [handleAddTasks, addNotification]);
-
-    const handleSkipSubtask = useCallback((taskId: string, subtaskId: string) => {
-        setTasks(prev => prev.map(t => {
-            if (t.id !== taskId) return t;
-            const rest = (t.subtasks ?? []).filter(st => st.id !== subtaskId);
-            const done = rest.length === 0 || rest.every(st => st.completed);
-            return done
-                ? { ...t, subtasks: rest, status: 'done', completedAt: new Date().toISOString() }
-                : { ...t, subtasks: rest };
-        }));
-    }, [setTasks]);
-
-    const [routineToPick, setRoutineToPick] = useState<Routine | null>(null);
-    const closeRoutinePick = useCallback(() => setRoutineToPick(null), []);
-
-    const handleAddRoutine = useCallback((routine: Routine, pickedTemplateIds?: number[]) => {
-        const mode = routineMode(routine);
-        if (mode === 'pick' && !pickedTemplateIds) { setRoutineToPick(routine); return; }
-        const all = routineTemplates(routine, taskTemplates);
-        const chosen = pickedTemplateIds ? all.filter(t => pickedTemplateIds.includes(t.id)) : all;
-        if (chosen.length === 0) return;
-        if (mode === 'one') {
-            const d = new Date();
-            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            handleAddTasks([routineAsTask(routine, chosen, today)]);
-        } else {
-            handleAddTemplates(chosen);
-        }
-        addNotification(`Rotina '${routine.name}' adicionada`, '🚀', 'success');
-    }, [taskTemplates, handleAddTasks, handleAddTemplates, addNotification]);
-
-    const handleApplyImport = useCallback((preview: ImportPreview, opts?: { skipDuplicates?: boolean }) => {
-        const skip = opts?.skipDuplicates ?? true;
-        const ready = preview.ready.filter(r => !(skip && r.duplicate));
-        if (ready.length) handleAddTasks(ready.map(r => r.task));
-        const routinesToAdd = preview.routines.filter(r => !(skip && r.duplicate));
-        const base = Date.now();
-        let tplId = Math.max(1000, ...taskTemplates.map(t => t.id)) + 1;
-        const newTemplates: TaskTemplate[] = [];
-        const newRoutines: Routine[] = routinesToAdd.map((r, i) => {
-            const ids = r.templates.map(t => { const id = tplId++; newTemplates.push({ ...t, id } as TaskTemplate); return id; });
-            return { ...r.routine, id: `routine-${base}-${i}`, isDefault: false, taskTemplateIds: ids } as Routine;
-        });
-        if (newTemplates.length) setTaskTemplates(prev => [...prev, ...newTemplates]);
-        if (newRoutines.length) setRoutines(prev => [...prev, ...newRoutines]);
-        addNotification(`${ready.length} tarefa(s) e ${newRoutines.length} rotina(s) importadas`, '📥', 'success');
-        return { tasks: ready.length, routines: newRoutines.length };
-    }, [handleAddTasks, taskTemplates, setTaskTemplates, setRoutines, addNotification]);
-
-    const handleSaveRoutine = useCallback((routineToSave: Routine) => {
-        setRoutines(prev => {
-            const existingIndex = prev.findIndex(r => r.id === routineToSave.id);
-            if (existingIndex > -1) {
-                const newRoutines = [...prev];
-                newRoutines[existingIndex] = routineToSave;
-                addNotification(`Rotina '${routineToSave.name}' atualizada!`, '✏️', 'success');
-                return newRoutines;
-            } else {
-                const newRoutine = { ...routineToSave, id: `routine-${Date.now()}`, isDefault: false, taskTemplateIds: routineToSave.taskTemplateIds || [] };
-                addNotification(`Nova rotina '${newRoutine.name}' criada!`, '✨', 'success');
-                return [...prev, newRoutine];
-            }
-        });
-    }, [setRoutines, addNotification]);
-
-    const handleDeleteRoutine = useCallback((routineId: string) => {
-        if (routines.find(r => r.id === routineId)?.isDefault) {
-            addNotification('Rotinas padrão não podem ser excluídas.', '🛡️', 'error');
-            return;
-        }
-        setRoutines(prev => prev.filter(r => r.id !== routineId));
-        addNotification('Rotina excluída com sucesso.', '🗑️', 'info');
-    }, [routines, setRoutines, addNotification]);
-
-    const handleToggleLeavingHomeItem = (itemId: string) => setLeavingHomeItems(prev => prev.map(item => item.id === itemId ? { ...item, completed: !item.completed } : item));
-    const handleAddLeavingHomeItem = (text: string) => setLeavingHomeItems(prev => [...prev, { id: `item-${Date.now()}`, text, completed: false }]);
-    const handleRemoveLeavingHomeItem = (itemId: string) => setLeavingHomeItems(prev => prev.filter(item => item.id !== itemId));
-    const handleResetLeavingHomeItems = () => setLeavingHomeItems(prev => prev.map(item => ({ ...item, completed: false })));
-
-    const startTriage = useCallback(() => {
-        const inboxTasks = tasks.filter(t => t.quadrant === 'inbox');
-        setTriageQueue(inboxTasks);
-        if (inboxTasks.length === 0) {
-            addNotification("Sua caixa de entrada está limpa!", '🎉', 'success');
-        }
-    }, [tasks, addNotification]);
-
-    const endTriage = useCallback(() => setTriageQueue([]), []);
-
-    const processTriage = useCallback((quadrant: Quadrant) => {
-        if (triageQueue.length === 0) return;
-        const taskToTriage = triageQueue[0];
-        handleUpdateTaskQuadrant(taskToTriage.id, quadrant, tasks.filter(t => t.quadrant === quadrant).length);
-        setTriageQueue(prev => prev.slice(1));
-        if (triageQueue.length === 1) {
-            addNotification("Triagem concluída!", '✅', 'success');
-            endTriage();
-        }
-    }, [triageQueue, tasks, handleUpdateTaskQuadrant, endTriage, addNotification]);
-
-    const ensureMarketingFrog = useCallback(() => {
-        // já existe um Card Especial aberto (inclusive um antigo, criado pelo
-        // modelo)? Usa ele em vez de criar outro.
-        const open = tasks.find(t => isSpecialFrogTask(t) && t.status !== 'done');
-        if (open) { setFrogTaskId(open.id); return; }
-        setTasks(prev => {
-            const current = prev.find(t => t.id === FOCUS_FROG_MARKETING_TASK_ID);
-            if (current && current.status !== 'done') return prev;
-            const fresh = { ...focusFrogMarketingTask, subtasks: focusFrogMarketingTask.subtasks?.map(st => ({ ...st, completed: false })) };
-            return [fresh, ...prev.filter(t => t.id !== FOCUS_FROG_MARKETING_TASK_ID)];
-        });
-        setFrogTaskId(FOCUS_FROG_MARKETING_TASK_ID);
-    }, [tasks, setTasks, setFrogTaskId]);
-
-    const needsMorningPlan = useMemo(() => {
-        const today = todayISO();
-        return !tasks.find(t => t.id === frogTaskId && t.dueDate === today);
-    }, [tasks, frogTaskId]);
-
-    const value: TasksContextType = {
-        tasks,
-        tags,
-        frogTaskId,
-        routines,
-        taskTemplates,
-        handleAddTask,
-        handleAddTasks,
-        handleUpdateTask,
-        handleUpdateTaskQuadrant,
-        handleDeleteTask,
-        handleCompleteTask,
-        handleToggleSubtask,
-        handleSetFrog,
-        ensureMarketingFrog,
-        handleUnsetFrog,
-        handleSaveTag,
-        handleDeleteTag,
-        handleDuplicateTask,
-        handlePostponeTask,
-        needsMorningPlan,
-        handleCreateTemplateFromTask,
-        handleCreateTemplate,
-        handleDeleteTemplate,
-        handleAddRoutine,
-        routineToPick,
-        handleSkipSubtask,
-        closeRoutinePick,
-        handleApplyImport,
-        handleSaveRoutine,
-        handleDeleteRoutine,
-        handleAddTemplates,
-        leavingHomeItems,
-        handleToggleLeavingHomeItem,
-        handleAddLeavingHomeItem,
-        handleRemoveLeavingHomeItem,
-        handleResetLeavingHomeItems,
-        triageQueue,
-        isTriageActive,
-        startTriage,
-        processTriage,
-        endTriage,
+export const TasksProvider = ({
+  children: e
+}) => {
+  const {
+      addNotification: t
+    } = useUI(),
+    {
+      setPontosFoco: n
+    } = useTheme(),
+    {
+      activeTaskId: s,
+      activeTaskTitle: r,
+      sessionStatus: o,
+      stopCycle: a,
+      startPomodoro: l,
+      lastCompletedFocus: c,
+      clearLastCompletedFocus: u
+    } = usePomodoro(),
+    {
+      handleNavigate: d
+    } = useUI(),
+    f = React.useRef(0),
+    h = React.useCallback(() => (f.current += 1, Date.now() * 1e3 + f.current % 1e3), []),
+    [m, v] = useLocalStorage("focusfrog_tasks", []),
+    [x, k] = useLocalStorage("focusfrog_tags", C3);
+  React.useEffect(() => {
+    k(A => A.some(N => N.id === 8 && N.name === "Teste") && !m.some(N => N.tagId === 8) ? A.filter(N => !(N.id === 8 && N.name === "Teste")) : A);
+  }, []);
+  const [y, p] = useLocalStorage("focusfrog_frogTaskId", null),
+    [g, b] = useLocalStorage("focusfrog_routines", gf);
+  React.useEffect(() => {
+    _O(g);
+  }, [g]), React.useEffect(() => {
+    fO();
+  }, []);
+  const j = React.useRef(false);
+  React.useEffect(() => {
+    if (j.current || !m.length) return;
+    j.current = true;
+    try {
+      if (localStorage.getItem("focusfrog_streakSeeded") === "1") return;
+      localStorage.setItem("focusfrog_streakSeeded", "1");
+    } catch {}
+    const {
+      days: A,
+      lastDay: N
+    } = qO(m);
+    rr({
+      type: "seedStreak",
+      days: A,
+      lastDay: N
+    }).catch(() => {});
+  }, [m]);
+  const [C, S] = useLocalStorage("focusfrog_taskTemplates", Qc);
+  React.useEffect(() => {
+    if (Qc.every(B => C.some(W => W.id === B.id && W.isDefault && W.title === B.title && W.estMinutes === B.estMinutes && JSON.stringify(W.subtasks || []) === JSON.stringify(B.subtasks || [])))) return;
+    const N = C.filter(B => !B.isDefault && !Qc.some(W => W.id === B.id)),
+      M = new Set(N.map(B => B.id));
+    S([...Qc, ...N]), b(B => [...gf.map(W => {
+      const xe = B.find(ye => ye.id === W.id);
+      if (!xe) return W;
+      const He = (xe.taskTemplateIds || []).filter(ye => M.has(ye));
+      return {
+        ...W,
+        taskTemplateIds: [...W.taskTemplateIds, ...He],
+        scheduledTime: xe.scheduledTime,
+        alarmMode: xe.alarmMode,
+        days: xe.days ?? W.days,
+        asOneTask: xe.asOneTask ?? W.asOneTask,
+        pickSome: xe.pickSome ?? W.pickSome
+      };
+    }), ...B.filter(W => !W.isDefault && !gf.some(xe => xe.id === W.id))]);
+  }, [C]);
+  const [T, P] = useLocalStorage("focusfrog_leavingHomeItems", eR);
+  React.useEffect(() => {
+    HO(T);
+  }, [T]), React.useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const A = CapApp.addListener("appStateChange", async ({
+      isActive: N
+    }) => {
+      if (!N) return;
+      const M = await GO();
+      M && JSON.stringify(M) !== JSON.stringify(T) && P(M);
+    });
+    return () => {
+      A.then(N => N.remove());
     };
-
-    return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;
+  }, [T]);
+  const [O, V] = React.useState(null),
+    [U, E] = React.useState([]),
+    K = React.useMemo(() => U.length > 0, [U]),
+    oe = React.useCallback(A => {
+      const N = [{
+        ...A,
+        id: `task-${Date.now()}`,
+        status: "todo",
+        displayOrder: 0
+      }];
+      v(M => [...M, ...N].map((B, W) => ({
+        ...B,
+        displayOrder: W
+      }))), A.quadrant === "inbox" ? t("Anotado no Despejo mental", "📥", "info") : t("Tarefa criada", "✨", "success");
+    }, [v, t]),
+    ve = React.useCallback(A => {
+      const N = A.map((M, B) => ({
+        ...M,
+        id: `task-${Date.now()}-${B}`,
+        status: "todo",
+        displayOrder: 0
+      }));
+      v(M => [...M, ...N].map((B, W) => ({
+        ...B,
+        displayOrder: W
+      })));
+    }, [v]),
+    Z = React.useCallback(A => {
+      v(N => N.map(M => M.id === A.id ? A : M)), t("Tarefa salva", "✏️", "success");
+    }, [v, t]),
+    [D, q] = useLocalStorage("focusfrog_frogBonusDate", null),
+    [G, de] = useLocalStorage("focusfrog_focusPointsToday", {
+      date: "",
+      points: 0
+    }),
+    [re, X] = useLocalStorage("focusfrog_sessionPrompt", null),
+    [Ie, $e] = React.useState(null),
+    [Je, z] = React.useState(null);
+  React.useEffect(() => {
+    localStorage.getItem("focusfrog_rules_v2") || (v(A => iO(A)), localStorage.setItem("focusfrog_rules_v2", "1"));
+  }, []);
+  const F = React.useCallback(A => {
+      v(N => N.map(M => {
+        if (M.id !== A) return M;
+        let B = M.subtasks;
+        return B && B.length && B.every(W => W.completed) && (B = B.map((W, xe) => xe === B.length - 1 ? {
+          ...W,
+          completed: false
+        } : W)), {
+          ...M,
+          subtasks: B,
+          status: "todo",
+          completedAt: undefined
+        };
+      }));
+    }, [v]),
+    J = React.useCallback(A => {
+      if (Lt(A) || _m(A)) return;
+      let N = Number(localStorage.getItem(Cf)),
+        M = Number(localStorage.getItem(Tf));
+      localStorage.getItem(Cf) || (N = m.filter(W => W.status === "done" && !Lt(W) && !_m(W)).length, M = Math.floor(N / za)), N += 1;
+      const B = Math.floor(N / za);
+      if (localStorage.setItem(Cf, String(N)), B > M && B > 0) {
+        localStorage.setItem(Tf, String(B));
+        const W = A3(B, Yt());
+        v(xe => xe.some(He => He.id === W.id) ? xe : [W, ...xe].map((He, ye) => ({
+          ...He,
+          displayOrder: ye
+        }))), setTimeout(() => t(`${B * za} tarefas concluídas! Chegou um card especial pra você`, "🐸", "victory"), 1200);
+      } else localStorage.setItem(Tf, String(Math.max(M, B)));
+    }, [m, v, t]),
+    pe = React.useCallback((A, N) => {
+      L3(kn(A), N, A.id === y), J(A), rr(A.id === y ? {
+        type: "frog"
+      } : {
+        type: "task",
+        quick: kn(A) === "rapida"
+      }).catch(() => {}), A.id === s && o !== "idle" && a(), v(B => B.map(W => W.id === A.id ? {
+        ...A,
+        status: "done",
+        completedAt: new Date().toISOString()
+      } : W)), $e(B => B === A.id ? null : B);
+      const M = {
+        label: "Desfazer",
+        onAction: () => F(A.id)
+      };
+      if (A.id === y) {
+        const B = Yt();
+        rO(A, B) && D !== B ? (n(W => W + md), q(B), t(`Sapo do dia engolido! +${md} pontos`, "🐸", "victory", M)) : t("Sapo do dia engolido!", "🐸", "victory", M);
+      } else t(N === "focus" ? "Tarefa concluída com foco!" : "Tarefa concluída!", N === "focus" ? "🎉" : "✅", "success", M);
+    }, [s, o, a, v, y, D, q, n, t, F, J]),
+    We = React.useCallback((A, N) => {
+      const M = m.find(B => B.id === A);
+      if (!M || M.status === "done") return false;
+      if (Lt(M)) return N === "instagram" && V3(), N !== "instagram" ? (t('Esse sapo se conclui no botão "Visitar o Instagram"', "🐸", "info"), false) : (v(B => B.map(W => {
+        var xe;
+        return W.id !== A ? W : {
+          ...W,
+          subtasks: (xe = W.subtasks) == null ? undefined : xe.map(He => ({
+            ...He,
+            completed: true
+          })),
+          status: "done",
+          completedAt: new Date().toISOString()
+        };
+      })), n(B => B + 50), t("Valeu por seguir o FocusFrog! +50 pontos", "🐸", "victory"), true);
+      if (!pa(M)) {
+        const B = Jy(M);
+        return t(`Faltam ${B.total - B.done} ${B.total - B.done === 1 ? "passo" : "passos"} pra concluir.`, "👣", "info"), $e(A), false;
+      }
+      return pe(M, N), true;
+    }, [m, v, n, t, pe]),
+    Ct = React.useCallback((A, N, M) => {
+      var ye, Ut;
+      const B = m.find(Ze => Ze.id === A);
+      if (!B) return;
+      const W = aO(B, N),
+        xe = (Ut = (ye = W.subtasks) == null ? undefined : ye.find(Ze => Ze.id === N)) == null ? undefined : Ut.completed;
+      if (B.status === "done" && !xe) {
+        v(Ze => Ze.map(Un => Un.id === A ? {
+          ...W,
+          status: "todo",
+          completedAt: undefined
+        } : Un)), t("Tarefa reaberta: esse passo voltou pra pendente", "↩️", "info");
+        return;
+      }
+      if (((M == null ? undefined : M.autoComplete) ?? true) && B.status !== "done" && !Lt(B) && pa(W)) {
+        pe(W, "steps");
+        return;
+      }
+      v(Ze => Ze.map(Un => Un.id === A ? W : Un));
+    }, [m, v, t, pe]),
+    H = React.useCallback(A => {
+      var M;
+      const N = m.find(B => B.id === A);
+      if (!(!N || N.status === "done")) {
+        if (Lt(N)) {
+          We(A, "button");
+          return;
+        }
+        pe({
+          ...N,
+          subtasks: (M = N.subtasks) == null ? undefined : M.map(B => ({
+            ...B,
+            completed: true
+          }))
+        }, "steps");
+      }
+    }, [m, pe, We]),
+    $ = React.useCallback(A => $e(A), []),
+    je = React.useCallback(A => {
+      $e(null), z(A);
+    }, []),
+    R = React.useCallback((A, N) => {
+      var He;
+      const M = m.find(ye => ye.id === A);
+      if (!M || M.status === "done" || !ts(M) || o !== "idle" && s !== A && !window.confirm(`Você já tem um foco em andamento${r ? ` em "${r}"` : ""}. Trocar para "${M.title}" agora? O foco atual será interrompido.`)) return false;
+      const B = (N == null ? undefined : N.skipped) || [],
+        W = N != null && N.stepId ? (He = M.subtasks) == null ? undefined : He.find(ye => ye.id === N.stepId) : si(M, B);
+      if (kn(M) === "trilha") {
+        if (!W) return t("Todos os passos dessa trilha já foram feitos ou pulados.", "👣", "info"), false;
+        if (!W.minutes && !(N != null && N.minutes)) return $e(null), X({
+          kind: "stop",
+          taskId: A,
+          stepId: W.id,
+          skipped: B
+        }), true;
+      }
+      const xe = kn(M) === "trilha" ? {
+        minutes: (N == null ? undefined : N.minutes) || W.minutes,
+        cycles: 1,
+        stepId: W.id,
+        stepLabel: W.text
+      } : N != null && N.minutes ? {
+        minutes: N.minutes,
+        cycles: 1
+      } : sO(M);
+      return xe ? ($e(null), X(null), localStorage.setItem("focusfrog_trailSkipped", JSON.stringify({
+        taskId: A,
+        skipped: B
+      })), l({
+        mode: xe.cycles > 1 ? "classic" : "quick",
+        taskId: A,
+        taskTitle: M.title,
+        focusMinutes: xe.minutes,
+        cycles: xe.cycles,
+        stepId: xe.stepId,
+        stepLabel: xe.stepLabel
+      }), d("focus"), true) : false;
+    }, [m, o, s, r, l, d, t, X]);
+  React.useEffect(() => {
+    const A = c;
+    if (!A) return;
+    u();
+    const N = Yt(),
+      M = G.date === N ? G.points : 0,
+      B = oO(A.minutes, M),
+      W = Math.round(A.minutes);
+    if (B > 0 ? (n(ye => ye + B), de({
+      date: N,
+      points: M + B
+    }), t(`+${B} pontos · ${W} min focados`, "⏱️", "success")) : A.minutes >= Ki && t(`${W} min focados · teto de pontos de hoje atingido`, "⏱️", "info"), !A.natural && A.minutes < Ki && A.minutes >= 0 && !A.taskId) {
+      t("Começar já conta! A partir de 10 min o foco rende pontos", "🌱", "info");
+      return;
+    }
+    if (!A.taskId) return;
+    const xe = m.find(ye => ye.id === A.taskId);
+    if (!xe || xe.status === "done" || (A.minutes >= Ki && v(ye => ye.map(Ut => Ut.id === xe.id ? {
+      ...Ut,
+      lastFocusDate: N
+    } : Ut)), A.natural && A.minutes < 1)) return;
+    if (!A.natural && A.minutes < Ki) {
+      t("Começar já conta! A partir de 10 min o foco rende pontos", "🌱", "info");
+      return;
+    }
+    let He = [];
+    try {
+      const ye = JSON.parse(localStorage.getItem("focusfrog_trailSkipped") || "null");
+      (ye == null ? undefined : ye.taskId) === xe.id && (He = ye.skipped || []);
+    } catch {}
+    X({
+      kind: "end",
+      taskId: xe.id,
+      stepId: A.stepId,
+      minutes: A.minutes,
+      skipped: He,
+      focos: Math.max(A.natural ? 1 : 0, eO(A.minutes, Ur(xe)))
+    });
+  }, [c]);
+  const Ae = React.useCallback((A, N) => {
+      if (pa(A)) {
+        X(null), pe(A, "focus");
+        return;
+      }
+      const M = si(A, N);
+      if (!M) {
+        X(null), t("Trilha pausada. Os passos pulados continuam pendentes.", "👣", "info");
+        return;
+      }
+      X(M.minutes ? {
+        kind: "next",
+        taskId: A.id,
+        stepId: M.id,
+        skipped: N
+      } : {
+        kind: "stop",
+        taskId: A.id,
+        stepId: M.id,
+        skipped: N
+      });
+    }, [pe, t, X]),
+    Ye = React.useCallback(A => {
+      var He;
+      const N = re;
+      if (!N) return;
+      const M = m.find(ye => ye.id === N.taskId);
+      if (!M || M.status === "done") {
+        X(null);
+        return;
+      }
+      const B = ye => v(Ut => Ut.map(Ze => Ze.id === ye.id ? ye : Ze)),
+        W = N.kind === "end" ? N.focos ?? 1 : 1,
+        xe = ye => ({
+          ...ye,
+          pomodorosDone: (ye.pomodorosDone || 0) + W
+        });
+      switch (A.type) {
+        case "yes":
+          {
+            X(null), pe({
+              ...xe(M),
+              subtasks: (He = M.subtasks) == null ? undefined : He.map(ye => ({
+                ...ye,
+                completed: true
+              }))
+            }, "focus");
+            return;
+          }
+        case "notYet":
+          X(null), B(xe(M)), t(W > 0 ? `Beleza: tarefa aberta, +${gS(W)} contado${W === 1 ? "" : "s"}` : "Beleza: tarefa aberta", "🐸", "info");
+          return;
+        case "blocoDone":
+          {
+            const ye = xe(wf(M, A.stepIds));
+            X(null), pa(ye) ? pe(ye, "focus") : (B(ye), t("Os passos que faltam ficam pra próxima.", "👣", "info"));
+            return;
+          }
+        case "stepYes":
+        case "stopDid":
+          {
+            const ye = N.kind === "end" && N.stepId ? wf(M, [N.stepId]) : N.kind !== "end" ? wf(M, [N.stepId]) : M;
+            pa(ye) || B(ye), Ae(ye, N.skipped);
+            return;
+          }
+        case "stopSkip":
+          N.kind !== "end" && Ae(M, [...N.skipped, N.stepId]);
+          return;
+        case "startNext":
+          N.kind !== "end" && R(M.id, {
+            stepId: N.stepId,
+            skipped: N.skipped
+          });
+          return;
+        case "stepMore":
+          N.stepId && R(M.id, {
+            stepId: N.stepId,
+            skipped: N.skipped,
+            minutes: 5
+          });
+          return;
+        case "stepNo":
+          X(null), t("Tudo bem. O passo continua de onde parou.", "🐸", "info");
+          return;
+        case "end":
+          X(null);
+          return;
+      }
+    }, [re, m, v, X, pe, Ae, R, t]),
+    rt = React.useCallback((A, N, M) => {
+      v(B => {
+        const W = B.find(Ze => Ze.id === A);
+        if (!W) return B;
+        const xe = B.filter(Ze => Ze.quadrant === W.quadrant && Ze.id !== A),
+          He = B.filter(Ze => Ze.quadrant === N),
+          ye = B.filter(Ze => Ze.quadrant !== W.quadrant && Ze.quadrant !== N);
+        return He.splice(M, 0, {
+          ...W,
+          quadrant: N
+        }), [...ye, ...xe, ...He].map((Ze, Un) => ({
+          ...Ze,
+          displayOrder: Un
+        }));
+      });
+    }, [v]),
+    us = React.useCallback(() => {
+      O && (v(A => {
+        const N = [...A];
+        return N.splice(O.index, 0, O.task), N;
+      }), V(null), t("Tarefa de volta", "↩️", "info"));
+    }, [O, v, t]),
+    Es = React.useCallback(A => {
+      A === s && a();
+      const N = m.findIndex(B => B.id === A);
+      if (N === -1) return;
+      const M = m[N];
+      V({
+        task: M,
+        index: N
+      }), v(B => B.filter(W => W.id !== A)), t("Tarefa excluída", "🗑️", "info", {
+        label: "Desfazer",
+        onAction: us
+      }), setTimeout(() => V(null), 5e3);
+    }, [m, v, t, us, s, a]),
+    wi = React.useCallback(A => {
+      if (y === s && o !== "idle" && y !== A) {
+        if (!window.confirm(`Você está em foco${r ? ` em "${r}"` : ""} agora. Trocar o Sapo do Dia vai interromper esse foco. Continuar?`)) return;
+        a();
+      }
+      p(A);
+    }, [y, s, r, o, a, p]),
+    bi = React.useCallback(() => {
+      if (y === s && o !== "idle") {
+        if (!window.confirm(`Você está em foco${r ? ` em "${r}"` : ""} agora. Remover o Sapo do Dia vai interromper esse foco. Continuar?`)) return;
+        a();
+      }
+      p(null);
+    }, [y, s, r, o, a, p]),
+    ki = React.useCallback(A => {
+      if (A.id) return k(M => {
+        var B;
+        return (B = M.find(W => W.id === A.id)) != null && B.isDefault ? (t("Essa etiqueta é padrão e não pode ser editada", "🛡️", "info"), M) : (t("Etiqueta salva", "✏️", "success"), M.map(W => W.id === A.id ? {
+          ...W,
+          ...A
+        } : W));
+      }), A.id;
+      const N = h();
+      return k(M => [...M, {
+        id: N,
+        name: A.name,
+        color: A.color,
+        isDefault: false
+      }]), t("Categoria criada", "✨", "success"), N;
+    }, [k, t, h]),
+    L = React.useCallback(A => {
+      var N;
+      if ((N = x.find(M => M.id === A)) != null && N.isDefault) {
+        t("Essa etiqueta é padrão e não pode ser excluída", "🛡️", "info");
+        return;
+      }
+      k(M => M.filter(B => B.id !== A)), v(M => M.map(B => B.tagId === A ? {
+        ...B,
+        tagId: undefined
+      } : B)), t("Etiqueta excluída", "🗑️", "info");
+    }, [x, k, v, t]),
+    Ce = React.useCallback(A => {
+      var M;
+      const N = m.find(B => B.id === A);
+      if (N) {
+        const {
+          id: B,
+          status: W,
+          displayOrder: xe,
+          completedAt: He,
+          pomodorosDone: ye,
+          lastFocusDate: Ut,
+          ...Ze
+        } = N;
+        oe({
+          ...Ze,
+          title: `${N.title} (Cópia)`,
+          subtasks: (M = Ze.subtasks) == null ? undefined : M.map((Un, tt) => ({
+            ...Un,
+            id: `sub-${Date.now()}-${tt}`,
+            completed: false
+          }))
+        });
+      }
+    }, [m, oe]),
+    Tt = React.useCallback((A, N) => {
+      v(M => M.map(B => {
+        if (B.id === A) {
+          const W = B.dueDate ? new Date(B.dueDate + "T00:00:00") : new Date();
+          return W.setDate(W.getDate() + N), {
+            ...B,
+            dueDate: Wy(W)
+          };
+        }
+        return B;
+      })), t(N === 1 ? "Adiada pra amanhã" : `Adiada ${N} dias`, "🗓️", "info");
+    }, [v, t]),
+    vn = React.useCallback((A, N = "Personalizado") => {
+      var B;
+      const M = {
+        id: h(),
+        title: A.title || "Nova Tarefa",
+        description: A.description,
+        quadrant: A.quadrant,
+        pomodoroEstimate: A.pomodoroEstimate,
+        customDuration: A.customDuration,
+        energyNeeded: A.energyNeeded,
+        category: N,
+        subtasks: (B = A.subtasks) == null ? undefined : B.map(W => ({
+          text: W.text,
+          ...(W.minutes ? {
+            minutes: W.minutes
+          } : {})
+        })),
+        isDefault: false
+      };
+      return S(W => [...W, M]), M;
+    }, [S, h]),
+    Ns = React.useCallback((A, N) => {
+      const M = vn(A, N);
+      t(`Modelo salvo em ${M.category}`, "📚", "success");
+    }, [vn, t]),
+    Ac = React.useCallback(A => {
+      var N;
+      if ((N = C.find(M => M.id === A)) != null && N.isDefault) {
+        t("Esse modelo é padrão e não pode ser excluído", "🛡️", "info");
+        return;
+      }
+      S(M => M.filter(B => B.id !== A)), t("Modelo excluído", "🗑️", "info");
+    }, [C, S, t]),
+    Ko = React.useCallback((A, N) => {
+      const M = Date.now(),
+        B = A.map((W, xe) => {
+          var He;
+          return {
+            title: W.title,
+            description: W.description,
+            quadrant: W.quadrant || "inbox",
+            pomodoroEstimate: W.pomodoroEstimate ?? 0,
+            customDuration: W.customDuration,
+            energyNeeded: W.energyNeeded,
+            timeOfDay: W.timeOfDay,
+            templateId: W.id,
+            ...(N != null && N.dueDate ? {
+              dueDate: N.dueDate
+            } : {}),
+            ...(N != null && N.routineId ? {
+              routineId: N.routineId
+            } : {}),
+            subtasks: (He = W.subtasks) == null ? undefined : He.map((ye, Ut) => ({
+              id: `sub-${M}-${xe}-${Ut}`,
+              text: ye.text,
+              completed: false,
+              ...(ye.minutes ? {
+                minutes: ye.minutes
+              } : {})
+            }))
+          };
+        });
+      B.length > 0 && (ve(B), N != null && N.silent || t(B.length === 1 ? "1 tarefa adicionada" : `${B.length} tarefas adicionadas`, "✨", "success"));
+    }, [ve, t]),
+    [WT, Zv] = useLocalStorage("focusfrog_routinesAddedOn", {}),
+    [HT, Qv] = React.useState(null),
+    Ph = React.useCallback((A, N) => {
+      const M = Yt();
+      if (A.pickSome && !(N != null && N.only)) {
+        Qv(A);
+        return;
+      }
+      const B = m.filter(tt => tt.routineId === A.id && tt.status !== "done"),
+        W = B.filter(tt => tt.dueDate === M);
+      if (!(N != null && N.force) && W.length > 0) {
+        t(`"${A.name}" já está no seu dia (${W.length} em aberto)`, "📋", "info", {
+          label: "Adicionar de novo",
+          onAction: () => Xv.current(A, {
+            force: true,
+            only: N == null ? undefined : N.only
+          })
+        });
+        return;
+      }
+      const xe = uh(A, C),
+        He = N != null && N.only ? xe.filter(tt => N.only.includes(tt.id)) : xe;
+      if (He.length === 0) {
+        t(N != null && N.only ? "Nada marcado pra hoje." : `"${A.name}" está sem tarefas. Edite a rotina pra incluir alguma.`, "ℹ️", "info");
+        return;
+      }
+      const ye = tt => {
+        A.isDefault && z3(A.name), Zv(qn => ({
+          ...qn,
+          [A.id]: M
+        })), t(`"${A.name}" entrou no seu dia${tt}`, "🚀", "success");
+      };
+      if (A.asOneTask) {
+        const tt = N != null && N.force ? undefined : B.find(qn => qn.dueDate !== M && !qn.templateId);
+        tt ? (v(qn => qn.map(Ih => Ih.id === tt.id ? {
+          ...Ih,
+          dueDate: M
+        } : Ih)), ye(" (a de antes, que ficou aberta)")) : (ve([FI(A, He, M)]), ye(""));
+        return;
+      }
+      const Ut = new Map();
+      N != null && N.force || B.filter(tt => tt.dueDate !== M && tt.templateId !== undefined).forEach(tt => {
+        Ut.has(tt.templateId) || Ut.set(tt.templateId, tt.id);
+      });
+      const Ze = new Set([...Ut].filter(([tt]) => He.some(qn => qn.id === tt)).map(([, tt]) => tt));
+      Ze.size && v(tt => tt.map(qn => Ze.has(qn.id) ? {
+        ...qn,
+        dueDate: M
+      } : qn));
+      const Un = He.filter(tt => !Ut.has(tt.id));
+      Un.length && Ko(Un, {
+        silent: true,
+        dueDate: M,
+        routineId: A.id
+      }), ye(Ze.size ? ` (${Ze.size} que tinha ficado em aberto veio junto)` : "");
+    }, [C, Ko, ve, t, Zv, m, v]),
+    GT = React.useCallback(A => {
+      const N = [],
+        M = A.map(({
+          routine: B,
+          templates: W
+        }) => {
+          const xe = W.map(He => {
+            const ye = {
+              ...He,
+              id: h(),
+              isDefault: false
+            };
+            return N.push(ye), ye.id;
+          });
+          return {
+            ...B,
+            id: `routine-${h()}`,
+            isDefault: false,
+            taskTemplateIds: xe
+          };
+        });
+      S(B => [...B, ...N]), b(B => [...B, ...M]);
+    }, [h, S, b]),
+    Xv = React.useRef(Ph);
+  Xv.current = Ph;
+  const KT = React.useCallback(A => {
+      b(N => {
+        const M = N.findIndex(B => B.id === A.id);
+        if (M > -1) {
+          const B = [...N];
+          return B[M] = A, t(`Rotina "${A.name}" salva`, "✏️", "success"), B;
+        } else {
+          const B = {
+            ...A,
+            id: `routine-${h()}`,
+            isDefault: false,
+            taskTemplateIds: A.taskTemplateIds || []
+          };
+          return t(`Rotina "${B.name}" criada`, "✨", "success"), [...N, B];
+        }
+      });
+    }, [b, t, h]),
+    JT = React.useCallback(A => {
+      var N;
+      if ((N = g.find(M => M.id === A)) != null && N.isDefault) {
+        t("Essa rotina é padrão e não pode ser excluída", "🛡️", "info");
+        return;
+      }
+      b(M => M.filter(B => B.id !== A)), t("Rotina excluída", "🗑️", "info");
+    }, [g, b, t]),
+    YT = A => P(N => N.map(M => M.id === A ? {
+      ...M,
+      completed: !M.completed
+    } : M)),
+    ZT = A => P(N => [...N, {
+      id: `item-${Date.now()}`,
+      text: A,
+      completed: false
+    }]),
+    QT = A => P(N => N.filter(M => M.id !== A)),
+    XT = () => P(A => A.map(N => ({
+      ...N,
+      completed: false
+    }))),
+    eE = React.useCallback(() => {
+      const A = m.filter(N => N.quadrant === "inbox");
+      E(A), A.length === 0 && t("Despejo mental vazio. Cabeça leve!", "🎉", "success");
+    }, [m, t]),
+    Si = React.useCallback(() => E([]), []),
+    tE = React.useCallback(A => {
+      if (U.length === 0) return;
+      const N = U[0];
+      rt(N.id, A, m.filter(M => M.quadrant === A).length), E(M => M.slice(1)), U.length === 1 && (t("Despejo organizado!", "✅", "success"), Si());
+    }, [U, m, rt, Si, t]),
+    nE = React.useCallback(() => {
+      var N;
+      if (U.length === 0) return;
+      const A = m.find(M => M.id === U[0].id);
+      A && A.status !== "done" && (Lt(A) ? We(A.id, "triage") : pe({
+        ...A,
+        subtasks: (N = A.subtasks) == null ? undefined : N.map(M => ({
+          ...M,
+          completed: true
+        }))
+      }, "triage")), E(M => M.slice(1)), U.length === 1 && (t("Despejo organizado!", "✅", "success"), Si());
+    }, [U, m, pe, We, t, Si]),
+    sE = React.useCallback(() => {
+      const A = m.find(N => Lt(N) && N.status !== "done");
+      if (A) {
+        p(A.id);
+        return;
+      }
+      v(N => {
+        var W;
+        const M = N.find(xe => xe.id === ul);
+        return M && M.status !== "done" ? N : [{
+          ...D_,
+          subtasks: (W = D_.subtasks) == null ? undefined : W.map(xe => ({
+            ...xe,
+            completed: false
+          }))
+        }, ...N.filter(xe => xe.id !== ul)];
+      }), p(ul);
+    }, [m, v, p]),
+    rE = React.useMemo(() => {
+      const A = Yt();
+      return !m.find(N => N.id === y && N.dueDate === A);
+    }, [m, y]),
+    oE = {
+      tasks: m,
+      tags: x,
+      frogTaskId: y,
+      routines: g,
+      routinesAddedOn: WT,
+      taskTemplates: C,
+      handleAddTask: oe,
+      handleAddTasks: ve,
+      handleUpdateTask: Z,
+      handleUpdateTaskQuadrant: rt,
+      handleDeleteTask: Es,
+      handleCompleteTask: We,
+      handleToggleSubtask: Ct,
+      handleCompleteAllSteps: H,
+      handleReopenTask: F,
+      startTaskFocus: R,
+      sessionPrompt: re,
+      resolvePrompt: Ye,
+      stepsTaskId: Ie,
+      openSteps: $,
+      editingTask: Je,
+      openTaskEditor: je,
+      processTriageDone: nE,
+      handleSetFrog: wi,
+      ensureMarketingFrog: sE,
+      handleUnsetFrog: bi,
+      handleSaveTag: ki,
+      handleDeleteTag: L,
+      handleDuplicateTask: Ce,
+      handlePostponeTask: Tt,
+      needsMorningPlan: rE,
+      handleCreateTemplateFromTask: Ns,
+      handleCreateTemplate: vn,
+      handleDeleteTemplate: Ac,
+      handleAddRoutine: Ph,
+      routinePick: HT,
+      setRoutinePick: Qv,
+      handleImportRoutines: GT,
+      handleSaveRoutine: KT,
+      handleDeleteRoutine: JT,
+      handleAddTemplates: Ko,
+      leavingHomeItems: T,
+      handleToggleLeavingHomeItem: YT,
+      handleAddLeavingHomeItem: ZT,
+      handleRemoveLeavingHomeItem: QT,
+      handleResetLeavingHomeItems: XT,
+      triageQueue: U,
+      isTriageActive: K,
+      startTriage: eE,
+      processTriage: tE,
+      endTriage: Si
+    };
+  return <VS.Provider value={oE}>{e}</VS.Provider>;
 };

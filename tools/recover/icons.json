@@ -1,0 +1,130 @@
+{
+ "JP": {
+  "from": "react-icons/fi",
+  "name": "FiArrowLeft"
+ },
+ "YP": {
+  "from": "react-icons/fi",
+  "name": "FiAward"
+ },
+ "ZP": {
+  "from": "react-icons/fi",
+  "name": "FiBell"
+ },
+ "QP": {
+  "from": "react-icons/fi",
+  "name": "FiCheckCircle"
+ },
+ "XP": {
+  "from": "react-icons/fi",
+  "name": "FiCheckSquare"
+ },
+ "eI": {
+  "from": "react-icons/fi",
+  "name": "FiChevronRight"
+ },
+ "tI": {
+  "from": "react-icons/fi",
+  "name": "FiClock"
+ },
+ "_f": {
+  "from": "react-icons/fi",
+  "name": "FiCloudLightning"
+ },
+ "nI": {
+  "from": "react-icons/fi",
+  "name": "FiCode"
+ },
+ "sI": {
+  "from": "react-icons/fi",
+  "name": "FiCoffee"
+ },
+ "rI": {
+  "from": "react-icons/fi",
+  "name": "FiDatabase"
+ },
+ "oI": {
+  "from": "react-icons/fi",
+  "name": "FiDownload"
+ },
+ "aI": {
+  "from": "react-icons/fi",
+  "name": "FiEdit3"
+ },
+ "iI": {
+  "from": "react-icons/fi",
+  "name": "FiHardDrive"
+ },
+ "lI": {
+  "from": "react-icons/fi",
+  "name": "FiHeart"
+ },
+ "cI": {
+  "from": "react-icons/fi",
+  "name": "FiHelpCircle"
+ },
+ "uI": {
+  "from": "react-icons/fi",
+  "name": "FiHome"
+ },
+ "dI": {
+  "from": "react-icons/fi",
+  "name": "FiInfo"
+ },
+ "hI": {
+  "from": "react-icons/fi",
+  "name": "FiInstagram"
+ },
+ "U_": {
+  "from": "react-icons/fi",
+  "name": "FiLayout"
+ },
+ "fI": {
+  "from": "react-icons/fi",
+  "name": "FiLogOut"
+ },
+ "pI": {
+  "from": "react-icons/fi",
+  "name": "FiPower"
+ },
+ "mI": {
+  "from": "react-icons/fi",
+  "name": "FiSettings"
+ },
+ "gI": {
+  "from": "react-icons/fi",
+  "name": "FiShield"
+ },
+ "yI": {
+  "from": "react-icons/fi",
+  "name": "FiSmile"
+ },
+ "vI": {
+  "from": "react-icons/fi",
+  "name": "FiTarget"
+ },
+ "_I": {
+  "from": "react-icons/fi",
+  "name": "FiTrash2"
+ },
+ "xI": {
+  "from": "react-icons/fi",
+  "name": "FiType"
+ },
+ "wI": {
+  "from": "react-icons/fi",
+  "name": "FiUpload"
+ },
+ "q_": {
+  "from": "react-icons/fi",
+  "name": "FiUser"
+ },
+ "bI": {
+  "from": "react-icons/fi",
+  "name": "FiVolume2"
+ },
+ "kI": {
+  "from": "react-icons/fi",
+  "name": "FiZap"
+ }
+}

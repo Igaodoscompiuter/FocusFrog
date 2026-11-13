@@ -1,267 +1,205 @@
-
-import React, { useState, useRef, useMemo, useEffect } from 'react';
-import type { Task, Tag, Quadrant } from '../../types';
-import { useTasks } from '../../context/TasksContext';
-import { usePomodoro } from '../../context/PomodoroContext';
-import { useUI } from '../../context/UIContext';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import Ke from './TaskCard.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import * as ReactDOM from 'react-dom';
+import { Lt } from '../../constants';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-import styles from './TaskCard.module.css';
-import { useSpring, animated } from '@react-spring/web';
+import { Hy, Yt, hl } from '../../utils/dates';
+import { $n } from '../../domain/frogRarity';
+import { Jy, km, ts, yS } from '../../domain/taskKinds';
+import { usePomodoro } from '../../context/PomodoroContext';
+import { useTasks } from '../../context/TasksContext';
+import { Ms } from '../ui/Sheet';
+import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
-const SubtaskItem: React.FC<any> = ({ subtask, onToggle }) => {
-    return (
-        <div 
-            className={`${styles.subtaskItem} ${subtask.completed ? styles.completed : ''} ${styles.clickable}`}
-            onClick={(e) => { e.stopPropagation(); onToggle(); }}
-        >
-            <div className={styles.subtaskCheckbox}></div>
-            <span>{subtask.text}</span>
-        </div>
-    );
+const FM = e => {
+  if (!e) return null;
+  const t = hl(e);
+  if (t) return {
+    text: t,
+    tone: "carried"
+  };
+  if (e === Yt()) return {
+    text: "Hoje",
+    tone: "today"
+  };
+  if (e === Hy(1)) return {
+    text: "Amanhã",
+    tone: "soon"
+  };
+  const [, n, s] = e.split("-");
+  return {
+    text: `${s}/${n}`,
+    tone: "soon"
+  };
 };
 
-interface TaskCardProps {
-    task: Task;
-    tags: Tag[];
-    onEdit?: (task: Task) => void;
-    onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
-    onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
-    isDragging?: boolean;
-    quadrant: Quadrant;
-    onTriage?: (task: Task) => void;
-}
+const iu = 80;
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, tags, onEdit, onDragStart, onDragEnd, isDragging, quadrant, onTriage }) => {
-    const { handleCompleteTask, handleSetFrog, frogTaskId, handleDeleteTask, handleToggleSubtask } = useTasks();
-    const { startPomodoro, activeTaskId, sessionStatus } = usePomodoro(); 
-    const { addNotification, handleNavigate } = useUI();
+const MM = [{
+  id: "inbox",
+  name: "Despejo mental"
+}, {
+  id: "do",
+  name: "Fazer agora"
+}, {
+  id: "schedule",
+  name: "Planejar"
+}, {
+  id: "someday",
+  name: "Ideias"
+}];
 
-    const [subtasksVisible, setSubtasksVisible] = useState(true);
-    const longPressTimer = useRef<NodeJS.Timeout>();
-    const swipeThreshold = 80;
-
-    const isInInbox = quadrant === 'inbox';
-    const hasPendingSubtasks = useMemo(() => task.subtasks?.some(st => !st.completed) ?? false, [task.subtasks]);
-    const isPomodoroActive = sessionStatus !== 'idle';
-    const [isDraggable, setIsDraggable] = useState(false);
-
-    const isFrog = frogTaskId === task.id;
-
-    const mainActionType = useMemo(() => {
-        if (isInInbox) return 'check';
-        // Uma tarefa é considerada "focável" se tiver uma estimativa de pomodoros
-        if (task.pomodoroEstimate > 0) return 'focus'; 
-        return 'check';
-    }, [task.pomodoroEstimate, isInInbox]);
-
-    const [{ x, scale }, api] = useSpring(() => ({ x: 0, scale: 1 }));
-
-    const showSubtaskWarning = () => {
-        addNotification(
-            'Finalize as subtarefas antes de concluir a tarefa principal.', 
-            '⚠️', 
-            'info'
-        );
+export const Hm = ({
+  task: e,
+  tags: t,
+  quadrant: n,
+  compact: s,
+  onEdit: r
+}) => {
+  const {
+      handleCompleteTask: o,
+      handleSetFrog: a,
+      frogTaskId: l,
+      handleDeleteTask: c,
+      handleUpdateTaskQuadrant: u,
+      handleDuplicateTask: d,
+      handlePostponeTask: f,
+      tasks: h,
+      startTaskFocus: m,
+      openSteps: v,
+      openTaskEditor: x
+    } = useTasks(),
+    {
+      activeTaskId: k,
+      sessionStatus: y
+    } = usePomodoro(),
+    [p, g] = React.useState(false),
+    [b, j] = React.useState({
+      right: 16
+    }),
+    C = React.useRef(null),
+    S = React.useRef(null),
+    T = React.useRef(0),
+    P = l === e.id,
+    O = Lt(e),
+    V = $n(e),
+    U = Jy(e),
+    E = ts(e),
+    K = k === e.id && y !== "idle",
+    oe = yS(e),
+    ve = FM(e.dueDate),
+    Z = e.tagId ? t.find(z => z.id === e.tagId) : null;
+  React.useEffect(() => {
+    if (!p) return;
+    const z = pe => {
+        var Ct, H;
+        const We = pe.target;
+        (Ct = S.current) != null && Ct.contains(We) || (H = C.current) != null && H.contains(We) || g(false);
+      },
+      F = Date.now(),
+      J = pe => {
+        var We;
+        Date.now() - F < 400 || pe && (We = C.current) != null && We.contains(pe.target) || g(false);
+      };
+    return document.addEventListener("mousedown", z), document.addEventListener("touchstart", z), window.addEventListener("scroll", J, true), window.addEventListener("resize", J), () => {
+      document.removeEventListener("mousedown", z), document.removeEventListener("touchstart", z), window.removeEventListener("scroll", J, true), window.removeEventListener("resize", J);
     };
-
-    const handleComplete = () => {
-        if (isFrog) {
-            addNotification("Sapo do Dia Concluído! VITÓRIA!", "🐸", "success");
-        }
-        handleCompleteTask(task.id, 'button');
-    };
-
-    const bind = useDrag(({
-        down, movement: [mx], axis, first, last, event, cancel
+  }, [p]);
+  const D = () => {
+      O || (r ? r(e) : x(e));
+    },
+    q = () => {
+      Date.now() - T.current < 350 || (km(e) === "openSteps" ? v(e.id) : o(e.id, "button"));
+    },
+    [{
+      x: G
+    }, de] = useSpring(() => ({
+      x: 0
+    })),
+    re = useDrag(({
+      down: z,
+      movement: [F],
+      axis: J,
+      last: pe
     }) => {
-        if (isDraggable) return;
-
-        if (first) {
-            longPressTimer.current = setTimeout(() => {
-                if (onDragStart) {
-                    setIsDraggable(true);
-                    const newEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-                    event.target.dispatchEvent(newEvent);
-                    cancel();
-                }
-            }, 400);
+      if (J === "x" && z && de.start({
+        x: F,
+        immediate: true
+      }), pe) {
+        if (J === "x" && (T.current = Date.now()), J === "x" && F > iu) {
+          de.start({
+            x: 0
+          }), T.current = 0, q(), T.current = Date.now();
+          return;
         }
-
-        if (axis) clearTimeout(longPressTimer.current);
-
-        if (mx > 0 && hasPendingSubtasks && !isInInbox) {
-            if (down) {
-                const limitedX = Math.min(mx, swipeThreshold / 2);
-                api.start({ x: limitedX, scale: 1.05, immediate: true });
-            }
-            if (last) {
-                showSubtaskWarning();
-                api.start({ x: 0, scale: 1 });
-            }
-            return;
+        if (J === "x" && F < -iu) {
+          de.start({
+            x: -window.innerWidth,
+            onRest: () => c(e.id)
+          });
+          return;
         }
-
-        if (axis === 'x' && down) {
-            api.start({ x: mx, scale: 1.05, immediate: true });
-        }
-        
-        if (last) {
-            clearTimeout(longPressTimer.current);
-            if (axis === 'x') {
-                if (mx > swipeThreshold) {
-                    api.start({ x: window.innerWidth, onRest: handleComplete });
-                    return;
-                } else if (mx < -swipeThreshold) {
-                    api.start({ x: -window.innerWidth, onRest: () => handleDeleteTask(task.id) });
-                    return;
-                }
-            }
-            api.start({ x: 0, scale: 1 });
-        }
+        de.start({
+          x: 0
+        });
+      }
     }, {
-        axis: 'lock', filterTaps: true, rubberband: true,
-        from: () => [x.get(), 0],
-        eventOptions: { passive: false },
-        threshold: 10,
-    });
-
-    useEffect(() => {
-        if (!isDragging) setIsDraggable(false);
-    }, [isDragging]);
-
-    const handleMainActionClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (hasPendingSubtasks && !isInInbox) {
-            showSubtaskWarning();
-            return;
-        }
-        handleComplete();
+      axis: "lock",
+      filterTaps: true,
+      rubberband: true,
+      from: () => [G.get(), 0],
+      threshold: 10
+    }),
+    X = G.to(z => Math.max(0, z / iu) * 0.85),
+    Ie = G.to(z => Math.max(0, -z / iu) * 0.85),
+    $e = V ? "Ver passos" : n === "inbox" ? "Vitória rápida" : "Concluir",
+    Je = z => {
+      g(false), u(e.id, z, h.filter(F => F.quadrant === z).length);
     };
-
-    const handleFocusClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (isPomodoroActive) return;
-
-        // Lógica que honra as configurações da tarefa
-        const settings = {
-            taskId: task.id,
-            taskTitle: task.title,
-            // Se a tarefa tiver mais de 1 pomodoro, é um clássico. Senão, é rápido.
-            mode: ((task.pomodoroEstimate && task.pomodoroEstimate > 1) ? 'classic' : 'quick') as 'classic' | 'quick',
-            // Usa a duração customizada da tarefa, ou o padrão de 25 min
-            focusMinutes: task.customDuration || 25,
-            // Usa a estimativa de pomodoros como número de ciclos
-            cycles: task.pomodoroEstimate || 1,
-        };
-
-        startPomodoro(settings);
-        handleNavigate('focus');
-    };
-
-    const taskTag = task.tagId ? tags.find(t => t.id === task.tagId) : null;
-    const isCurrentlyFocusedOnThisTask = activeTaskId === task.id;
-    const canBeCompleted = !hasPendingSubtasks || isInInbox;
-    
-    const rightBgText = isInInbox ? "Vitória Rápida" : "Concluir";
-    const rightBgOpacity = x.to(val => (canBeCompleted ? Math.max(0, val / swipeThreshold) * 0.7 : 0));
-    const leftBgOpacity = x.to(val => Math.max(0, -val / swipeThreshold) * 0.7);
-
-    const cardClassName = `
-        ${styles.taskCard}
-        ${task.status === 'done' ? styles.statusDone : ''}
-        ${isDragging ? styles.dragging : ''}
-        ${isInInbox ? styles.inboxCard : ''}
-        ${isFrog ? styles.isFrog : ''}
-    `;
-
-    return (
-        <div className={styles.cardWrapper}>
-            <animated.div className={`${styles.swipeBackground} ${styles.completeBackground}`} style={{ opacity: rightBgOpacity }}>
-                <div className={styles.swipeIcon}><Icon path={icons.check} /><span>{rightBgText}</span></div>
-            </animated.div>
-            <animated.div className={`${styles.swipeBackground} ${styles.deleteBackground}`} style={{ opacity: leftBgOpacity }}>
-                <div className={styles.swipeIcon}><Icon path={icons.trash} /><span>Excluir</span></div>
-            </animated.div>
-
-            <animated.div 
-                {...bind()} 
-                draggable={isDraggable}
-                onDragStart={isDraggable ? onDragStart : undefined}
-                onDragEnd={isDraggable ? (e) => { onDragEnd && onDragEnd(e); setIsDraggable(false); } : undefined}
-                className={cardClassName}
-                style={{ x, scale, touchAction: 'pan-y' }}
-            >
-                <div className={styles.taskCardContent}>
-                    <div className={styles.taskCardHeader}>
-                        <div className={styles.taskCardTitleGroup}>
-                            {mainActionType === 'check' && (
-                                <div 
-                                    className={`${styles.checkbox} ${!canBeCompleted ? styles.disabled : ''}`}
-                                    onClick={handleMainActionClick}
-                                ></div>
-                            )}
-                            {mainActionType === 'focus' && (
-                                <button title={isCurrentlyFocusedOnThisTask && isPomodoroActive ? "Focando" : "Iniciar Foco"} onClick={handleFocusClick}
-                                    className={`icon-button ${styles.headerPlayButton} ${isCurrentlyFocusedOnThisTask && isPomodoroActive ? styles.activeFocus : ''}`}
-                                    disabled={isPomodoroActive}>
-                                    <Icon path={isCurrentlyFocusedOnThisTask && isPomodoroActive ? icons.zap : icons.play} />
-                                </button>
-                            )}
-                            <h4>{task.title}</h4>
-                        </div>
-                        <div className={styles.taskCardActions}>
-                            {isInInbox && onTriage ? (
-                                <button title="Organizar Tarefa" onClick={(e) => {e.stopPropagation(); onTriage(task);}} className="icon-button">
-                                    <Icon path={icons.layoutGrid} />
-                                </button>
-                            ) : (
-                                <> 
-                                    <button 
-                                        title={isFrog ? "Este é o Sapo do Dia" : "Marcar como Sapo do Dia"}
-                                        onClick={(e) => {e.stopPropagation(); handleSetFrog(task.id);}}
-                                        disabled={isFrog}
-                                        className={`icon-button ${isFrog ? styles.frogIconActive : ''}`}>
-                                        <Icon path={icons.frog} />
-                                    </button>
-                                </>                            
-                            )}
-                            {onEdit && task.templateId !== 50 && <button title="Editar Tarefa" onClick={(e) => {e.stopPropagation(); onEdit(task);}} className="icon-button"><Icon path={icons.pencil} /></button>}
-                        </div>
-                    </div>
-
-                    {task.description && !isInInbox && <p className={styles.taskCardDescription}>{task.description}</p>}
-
-                    {task.subtasks && task.subtasks.length > 0 && !isInInbox && (
-                        <div className={`${styles.subtasksSection} ${!subtasksVisible ? styles.collapsed : ''}`}>
-                            <div className={styles.subtasksHeader} onClick={() => setSubtasksVisible(!subtasksVisible)}>
-                                <div>Subtarefas ({task.subtasks.filter(st => st.completed).length}/{task.subtasks.length})</div>
-                                <Icon path={icons.chevronDown} className={styles.collapsibleChevron} />
-                            </div>
-                            {subtasksVisible && (
-                                <div className={styles.subtasksContent}>
-                                    {task.subtasks.map(subtask => (
-                                        <SubtaskItem 
-                                            key={subtask.id} 
-                                            subtask={subtask} 
-                                            onToggle={() => handleToggleSubtask(task.id, subtask.id)} 
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {taskTag && !isInInbox &&
-                        <div className={styles.taskCardFooter}>
-                            <div className={styles.footerTags}>
-                                {taskTag && <div className={styles.footerTag} style={{ backgroundColor: taskTag.color }}>{taskTag.name}</div>}
-                            </div>
-                        </div>
-                    }
-                </div>
-            </animated.div>
-        </div>
-    );
+  return <div className={`${Ke.cardWrapper} ${p ? Ke.raised : ""}`}><animated.div className={`${Ke.swipeBackground} ${Ke.completeBackground}`} style={{
+      opacity: X
+    }}><span className={Ke.swipeIcon}><Icon path={icons.check} />{$e}</span></animated.div><animated.div className={`${Ke.swipeBackground} ${Ke.deleteBackground}`} style={{
+      opacity: Ie
+    }}><span className={Ke.swipeIcon}><Icon path={icons.trash} />Excluir</span></animated.div><animated.div {...re()} style={{
+      x: G,
+      touchAction: "pan-y"
+    }} className={`${Ke.taskCard} ${s ? Ke.compact : ""} ${P ? Ke.isFrog : ""} ${K ? Ke.focusing : ""}`}><button className={`${Ke.checkbox} ${V ? Ke.checkboxSteps : ""}`} onClick={q} aria-label={V ? `Ver passos: ${e.title}` : `Concluir: ${e.title}`}>{V && !s ? `${U.done}/${U.total}` : ""}</button><button className={Ke.body} onClick={D}><span className={Ke.title}>{P && <span className={Ke.frogMark} title="Sapo do Dia">🐸</span>}{e.title}</span>{!s && <span className={Ke.meta}><Ms task={e} />{ve && <span className={`${Ke.due} ${Ke[ve.tone]}`}>{ve.text}</span>}{Z && <span className={Ke.tag}><span className={Ke.tagDot} style={{
+              background: Z.color
+            }} />{Z.name}</span>}</span>}{!s && oe && <span className={Ke.hint}>{oe}</span>}</button>{E && !s && <button className={`${Ke.play} ${K ? Ke.playActive : ""}`} onClick={() => m(e.id)} disabled={K} aria-label={K ? "Focando nesta tarefa" : `Focar: ${e.title}`}><Icon path={K ? icons.zap : icons.play} /></button>}<div className={Ke.menuWrap} ref={S}><button className={Ke.more} onClick={() => {
+          var F;
+          const z = (F = S.current) == null ? undefined : F.getBoundingClientRect();
+          if (z) {
+            const J = Math.max(8, window.innerWidth - z.right);
+            j(z.top > window.innerHeight * 0.5 ? {
+              right: J,
+              bottom: window.innerHeight - z.top + 4
+            } : {
+              right: J,
+              top: z.bottom + 4
+            });
+          }
+          g(J => !J);
+        }} aria-label="Mais ações" aria-expanded={p}>⋯</button>{p && ReactDOM.createPortal(<div ref={C} className={Ke.menu} role="menu" style={{
+          position: "fixed",
+          right: b.right,
+          top: b.top ?? "auto",
+          bottom: b.bottom ?? "auto"
+        }}>{!O && <button role="menuitem" onClick={() => {
+            g(false), D();
+          }}>Editar</button>}{E && s && <button role="menuitem" onClick={() => {
+            g(false), m(e.id);
+          }}>Focar agora</button>}<button role="menuitem" onClick={() => {
+            g(false), a(P ? null : e.id);
+          }}>{P ? "Tirar do Sapo do Dia" : "Virar o Sapo do Dia 🐸"}</button><span className={Ke.menuLabel}>Mover para</span>{MM.filter(z => z.id !== n).map(z => <button key={z.id} role="menuitem" onClick={() => Je(z.id)}>{z.name}</button>)}<span className={Ke.menuSep} /><button role="menuitem" onClick={() => {
+            g(false), f(e.id, 1);
+          }}>Adiar 1 dia</button>{!O && <button role="menuitem" onClick={() => {
+            g(false), d(e.id);
+          }}>Duplicar</button>}<button role="menuitem" className={Ke.danger} onClick={() => {
+            g(false), c(e.id);
+          }}>Excluir</button></div>, document.body)}</div></animated.div></div>;
 };

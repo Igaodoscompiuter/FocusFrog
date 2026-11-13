@@ -1,76 +1,35 @@
-
-import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import Ws from './QuickCompleteModal.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import * as ReactDOM from 'react-dom';
 import { useUI } from '../../context/UIContext';
-import { useTasks } from '../../context/TasksContext';
-import { useClickOutside } from '../../hooks/useClickOutside';
 import { Icon } from '../Icon';
 import { icons } from '../Icons';
-import styles from './QuickCompleteModal.module.css';
+import { useTasks } from '../../context/TasksContext';
+import { GS } from '../../hooks/useClickOutside';
 
-export const QuickCompleteModal: React.FC = () => {
-    const { quickTaskForCompletion, setQuickTaskForCompletion } = useUI();
-    const { handleCompleteTask, frogTaskId, handleUnsetFrog } = useTasks();
-    const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
-
-    useEffect(() => {
-        setModalRoot(document.getElementById('modal-root'));
-    }, []);
-
-    const handleCancel = () => {
-        setQuickTaskForCompletion(null);
+export const C_w6 = () => {
+  const {
+      quickTaskForCompletion: e,
+      setQuickTaskForCompletion: t
+    } = useUI(),
+    {
+      handleCompleteTask: n,
+      frogTaskId: s,
+      handleUnsetFrog: r
+    } = useTasks(),
+    [o, a] = React.useState(null);
+  React.useEffect(() => {
+    a(document.getElementById("modal-root"));
+  }, []);
+  const l = () => {
+      t(null);
+    },
+    c = GS(l, !!e),
+    u = () => {
+      e && (n(e.id, "button"), s === e.id && r(), t(null));
     };
-
-    const modalRef = useClickOutside(handleCancel, !!quickTaskForCompletion);
-
-    const handleConfirm = () => {
-        if (!quickTaskForCompletion) return;
-        
-        handleCompleteTask(quickTaskForCompletion.id, 'button');
-
-        if (frogTaskId === quickTaskForCompletion.id) {
-            handleUnsetFrog();
-        }
-
-        setQuickTaskForCompletion(null);
-    };
-
-    if (!quickTaskForCompletion || !modalRoot) {
-        return null;
-    }
-
-    return createPortal(
-        <div className="g-modal-overlay">
-            <div className={`g-modal ${styles.modalSmall}`} ref={modalRef}>
-                <header className="g-modal-header">
-                    <h3><Icon path={icons.frog} /> Sapo Comido!</h3>
-                    <button onClick={handleCancel} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button>
-                </header>
-                <main className="g-modal-body">
-                    <div className={styles.content}>
-                        <div className={styles.iconContainer}>
-                            <Icon path={icons.checkCircle} size={48} />
-                        </div>
-                        <p className={styles.promptText}>
-                            Você finalizou a tarefa e deu um passo importante no seu dia.
-                        </p>
-                        {/* MODIFICAÇÃO: Usando o estilo de destaque correto */}
-                        <div className={styles.taskHighlightBox}>
-                            {quickTaskForCompletion.title}
-                        </div>
-                    </div>
-                </main>
-                {/* MODIFICAÇÃO: Usando as classes de botão corretas do CSS */}
-                 <footer className="g-modal-footer">
-                    <button className={`${styles.controlButton} ${styles.secondary}`} onClick={handleCancel}>
-                        Ops, ainda não
-                    </button>
-                    <button className={`${styles.controlButton} ${styles.primary}`} onClick={handleConfirm}>
-                        <Icon path={icons.check} /> Confirmar
-                    </button>
-                </footer>
-            </div>
-        </div>,
-        modalRoot
-    );
+  return !e || !o ? null : ReactDOM.createPortal(<div className="g-modal-overlay"><div className={`g-modal ${Ws.modalSmall}`} ref={c}><header className="g-modal-header"><h3><Icon path={icons.frog} />{" Sapo Comido!"}</h3><button onClick={l} className="btn btn-secondary btn-icon"><Icon path={icons.close} /></button></header><main className="g-modal-body"><div className={Ws.content}><div className={Ws.iconContainer}><Icon path={icons.checkCircle} size={48} /></div><p className={Ws.promptText}>Você finalizou a tarefa e deu um passo importante no seu dia.</p><div className={Ws.taskHighlightBox}>{e.title}</div></div></main><footer className="g-modal-footer"><button className={`${Ws.controlButton} ${Ws.secondary}`} onClick={l}>Ops, ainda não</button><button className={`${Ws.controlButton} ${Ws.primary}`} onClick={u}><Icon path={icons.check} />{" Confirmar"}</button></footer></div></div>, o);
 };

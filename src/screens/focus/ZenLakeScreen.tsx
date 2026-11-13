@@ -1,147 +1,154 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { usePomodoro } from '../../context/PomodoroContext';
-import styles from './ZenLakeScreen.module.css';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import Me from './ZenLakeScreen.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { Capacitor } from '@capacitor/core';
+import { useUI } from '../../context/UIContext';
+import { App as CapApp } from '@capacitor/app';
 import { Icon } from '../../components/Icon';
 import { icons } from '../../components/Icons';
-import { FocusFrogLifeCycle } from '../../components/FocusFrogLifeCycle';
-import { ProgressRing } from '../../components/ProgressRing';
-import { motivationalQuotes } from '../../utils/quotes';
-import { ZenFrog } from '../../components/zen/ZenFrog';
-import { useMascot } from '../../hooks/useMascot';
+import { useTheme } from '../../context/ThemeContext';
+import { fl } from '../../data/ambientSounds';
+import { kn } from '../../domain/taskKinds';
+import { usePomodoro } from '../../context/PomodoroContext';
+import { useTasks } from '../../context/TasksContext';
+import { mr } from '../../hooks/useMascot';
+import { C_oi, Ms } from '../../components/ui/Sheet';
+import { C_tB } from './IdleFocusScreen';
+import { Ed, Lj, Mj } from '../../utils/focusMute';
+import { AnimatePresence, motion } from 'framer-motion';
+import { $d, C_rH, C_sH } from '../../components/FocusFrogLifeCycle';
+import { CG, C_ro } from '../../components/zen/FrogSprite';
 
-const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+const TG = () => {
+  const [e] = React.useState(() => $d[Math.floor(Math.random() * $d.length)]),
+    [t] = mr(),
+    [n, s] = React.useState(0);
+  React.useEffect(() => {
+    let E;
+    const K = () => {
+      E = setTimeout(() => {
+        s(oe => oe + 1), K();
+      }, 8e3 + Math.random() * 8e3);
+    };
+    return K(), () => clearTimeout(E);
+  }, []);
+  const {
+      sessionStatus: r,
+      activeTaskTitle: o,
+      timeRemaining: a,
+      isPaused: l,
+      resumeCycle: c,
+      pauseCycle: u,
+      finishSession: d,
+      activeTaskId: f,
+      activeStepId: h,
+      cycleProgress: m,
+      sessionProgress: v,
+      sessionFrog: x
+    } = usePomodoro(),
+    {
+      activeSoundId: k
+    } = useTheme(),
+    {
+      soundEnabled: y
+    } = useUI(),
+    p = y && !!fl.find(E => E.id === k && E.id !== "none" && E.ready) && r === "focus",
+    [g, b] = React.useState(Ed);
+  React.useEffect(() => Lj(() => b(Ed())), []);
+  const {
+      tasks: j,
+      handleToggleSubtask: C
+    } = useTasks(),
+    S = f ? j.find(E => E.id === f) : undefined,
+    T = (S == null ? undefined : S.subtasks) || [],
+    P = S ? kn(S) : null,
+    O = h ? T.find(E => E.id === h) : undefined,
+    [V, U] = React.useState(true);
+  return <motion.main className={`${Me.lakeScreen} ${Me[r]}`} initial={{
+    opacity: 0
+  }} animate={{
+    opacity: 1
+  }} transition={{
+    duration: 1
+  }}><div className={Me.focusPanel}><div className={Me.taskCard}>{r === "focus" ? <AnimatePresence mode="wait"><motion.div key={o || "no-task"} className={Me.taskContent} initial={{
+            opacity: 0,
+            y: -10
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} exit={{
+            opacity: 0,
+            y: 10
+          }} transition={{
+            duration: 0.3
+          }}><span className={Me.taskLabel}>FOCANDO EM:</span><span className={Me.taskTitleText}>{o || "Sessão Livre"}</span>{O && <span className={Me.stepNow}>{"Passo "}{T.indexOf(O) + 1}{" de "}{T.length}{" · "}{O.text}</span>}</motion.div></AnimatePresence> : <div className={Me.breakMessage}>Pausa para recarregar.</div>}{S && T.length > 0 && (P === "bloco" || P === "trilha") && <div className={Me.stepsPanel}><button className={Me.stepsToggle} onClick={() => U(E => !E)} aria-expanded={V}><Ms task={S} /><span>{P === "bloco" ? "Passos · marque durante o foco" : "Trilha"}</span><span aria-hidden="true">{V ? "▴" : "▾"}</span></button>{V && T.map(E => <button key={E.id} className={`${Me.stepItem} ${E.id === h ? Me.stepItemNow : ""}`} disabled={P !== "bloco"} onClick={() => C(S.id, E.id, {
+            autoComplete: false
+          })}><span className={`${Me.stepBox} ${E.completed ? Me.stepBoxOn : ""}`}>{E.completed && <C_oi />}</span><span className={E.completed ? Me.stepDone : ""}>{E.text}</span><small>{E.minutes ? `${E.minutes} min` : "rápido"}</small></button>)}</div>}</div></div><div className={Me.stage}><div className={Me.timerContainer}><C_rH progress={m} /><C_sH progress={v} speciesId={x == null ? undefined : x.speciesId} /><div className={Me.timerContentContainer}><div className={Me.timerDisplay}>{CG(a)}</div></div></div><div className={Me.controlsZone}><motion.div initial={{
+          opacity: 0
+        }} animate={{
+          opacity: 1
+        }} transition={{
+          delay: 0.4
+        }}><button className={Me.secondaryActionButton} onClick={d} aria-label="Parar Sessão"><Icon path={icons.square} /></button></motion.div><motion.div initial={{
+          opacity: 0,
+          scale: 0.5
+        }} animate={{
+          opacity: 1,
+          scale: 1
+        }} transition={{
+          delay: 0.2
+        }}>{l ? <button className={`${Me.mainActionButton} ${Me.play}`} onClick={c} aria-label="Continuar ciclo"><Icon path={icons.play} /></button> : <button className={Me.mainActionButton} onClick={u} aria-label="Pausar ciclo"><Icon path={icons.pause} /></button>}</motion.div><motion.div initial={{
+          opacity: 0
+        }} animate={{
+          opacity: 1
+        }} transition={{
+          delay: 0.4
+        }}>{l && r === "focus" && o ? <button className={Me.secondaryActionButton} onClick={d} aria-label="Terminei"><Icon path={icons.checkCircle} /></button> : p ? <button className={`${Me.secondaryActionButton} ${g ? Me.mutedOn : ""}`} onClick={() => Mj(!g)} aria-label={g ? "Ligar o som de fundo" : "Silenciar o som de fundo"} aria-pressed={g}><Icon path={g ? icons.volumeX : icons.volume2} /></button> : <div className={Me.placeholder} />}</motion.div></div></div><motion.div className={Me.frogTip} initial={{
+      opacity: 0,
+      y: 12
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      delay: 0.6
+    }}><div className={Me.frogTipAvatar} onClick={() => s(E => E + 1)}><C_ro speciesId={(t == null ? undefined : t.speciesId) || "JUNGLE"} stage="adult" size={58} clickable={false} top={0} left={n} /></div><p className={Me.frogTipBubble}>{t && <span className={Me.frogTipName}>{t.name}</span>}{e}</p></motion.div></motion.main>;
 };
 
-export const ZenLakeScreen: React.FC = () => {
-    // [NOVO] Fica fixa durante toda a sessão (sorteada uma vez por montagem,
-    // não a cada re-render) — preenche o espaço vazio abaixo dos controles
-    // com algo útil, no mesmo tom das frases já usadas em Estatísticas.
-    const [quote] = React.useState(() => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
-    const [mascot] = useMascot();
-    // O mascote dá um pulinho de vez em quando (8–16s) e quando é tocado:
-    // o ZenFrog pula sempre que a "posição" recebida muda.
-    const [hopTick, setHopTick] = React.useState(0);
-    React.useEffect(() => {
-        let t: ReturnType<typeof setTimeout>;
-        const schedule = () => { t = setTimeout(() => { setHopTick(h => h + 1); schedule(); }, 8000 + Math.random() * 8000); };
-        schedule();
-        return () => clearTimeout(t);
-    }, []);
-
-    // HOOK CENTRALIZADO PARA DADOS DA SESSÃO
-    const {
-        sessionStatus,
-        activeTaskTitle,
-        timeRemaining,
-        isPaused,
-        stopCycle,
-        resumeCycle,
-        pauseCycle,
-        completeTask,
-        cycleProgress,      // Progresso do ciclo ATUAL (para o anel)
-        sessionProgress,    // Progresso da sessão TOTAL (para o sapo)
-        sessionFrog,        // Objeto do sapo da sessão (ID da espécie)
-    } = usePomodoro();
-
-    // Renderização principal do componente
-    return (
-        <motion.main
-            className={`${styles.lakeScreen} ${styles[sessionStatus]}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-        >
-            <div className={styles.focusPanel}>
-                <div className={styles.taskCard}>
-                    {sessionStatus === 'focus' ? (
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTaskTitle || 'no-task'}
-                                className={styles.taskContent}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <span className={styles.taskLabel}>FOCANDO EM:</span>
-                                <span className={styles.taskTitleText}>
-                                    {activeTaskTitle || 'Sessão Livre'}
-                                </span>
-                            </motion.div>
-                        </AnimatePresence>
-                    ) : (
-                        <div className={styles.breakMessage}>Pausa para recarregar.</div>
-                    )}
-                </div>
-            </div>
-
-            {/* palco central: cronômetro + controles centrados no espaço que sobra */}
-            <div className={styles.stage}>
-                <div className={styles.timerContainer}>
-                    {/* O anel usa o progresso do CICLO ATUAL */}
-                    <ProgressRing progress={cycleProgress} />
-                    
-                    {/* O sapo usa o progresso da SESSÃO INTEIRA e o ID da espécie do contexto */}
-                    <FocusFrogLifeCycle progress={sessionProgress} speciesId={sessionFrog?.speciesId} />
-                    
-                    <div className={styles.timerContentContainer}>
-                        <div className={styles.timerDisplay}>
-                            {formatTime(timeRemaining)}
-                        </div>
-                    </div>
-                </div>
-
-            <div className={styles.controlsZone}>
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-                    <button className={styles.secondaryActionButton} onClick={stopCycle} aria-label="Parar Sessão">
-                        <Icon path={icons.square} />
-                    </button>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
-                    {isPaused ? (
-                        <button className={`${styles.mainActionButton} ${styles.play}`} onClick={resumeCycle} aria-label='Continuar ciclo'>
-                            <Icon path={icons.play} />
-                        </button>
-                    ) : (
-                        <button className={styles.mainActionButton} onClick={pauseCycle} aria-label="Pausar ciclo">
-                            <Icon path={icons.pause} />
-                        </button>
-                    )}
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-                    {isPaused && sessionStatus === 'focus' && activeTaskTitle ? (
-                         <button className={styles.secondaryActionButton} onClick={completeTask} aria-label="Concluir tarefa">
-                            <Icon path={icons.checkCircle} />
-                        </button>
-                    ) : (
-                        <div className={styles.placeholder} />
-                    )}
-                </motion.div>
-            </div>
-
-            </div>
-
-            {/* sapinho da sessão falando a frase de incentivo */}
-            <motion.div
-                className={styles.frogTip}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-            >
-                <div className={styles.frogTipAvatar} onClick={() => setHopTick(h => h + 1)}>
-                    <ZenFrog speciesId={mascot?.speciesId || sessionFrog?.speciesId || 'JUNGLE'} stage="adult" size={58} clickable={false} top={0} left={hopTick} />
-                </div>
-                <p className={styles.frogTipBubble}>
-                    {mascot && <span className={styles.frogTipName}>{mascot.name}</span>}
-                    {quote}
-                </p>
-            </motion.div>
-        </motion.main>
-    );
+export const EG = () => {
+  const {
+      sessionStatus: e,
+      startPomodoro: t
+    } = usePomodoro(),
+    n = s => {
+      t({
+        taskId: null,
+        ...s
+      });
+    };
+  return e === "idle" ? <C_tB onStart={n} /> : <TG />;
 };
+
+export const NG = "https://focusfrog.netlify.app/update.json";
+
+export const Aw = "focusfrog_update_lastCheck";
+
+export const CT = "focusfrog_update_snooze";
+
+export const AG = 60 * 60 * 1e3;
+
+export const PG = 3 * 24 * 60 * 60 * 1e3;
+
+export async function TT() {
+  if (!Capacitor.isNativePlatform()) return null;
+  try {
+    const e = await CapApp.getInfo();
+    return {
+      versionCode: parseInt(e.build, 10) || 0,
+      versionName: e.version
+    };
+  } catch {
+    return null;
+  }
+}

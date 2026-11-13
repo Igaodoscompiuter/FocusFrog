@@ -1,100 +1,88 @@
-import React, { useEffect, useState } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import nn from './TourOverlay.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { mr } from '../../hooks/useMascot';
+import { useTour, wd } from './TourContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTour, TOUR_STEPS } from './TourContext';
-import { ZenFrog } from '../zen/ZenFrog';
-import { useMascot } from '../../hooks/useMascot';
-import styles from './TourOverlay.module.css';
+import { C_ro } from '../zen/FrogSprite';
 
-type Rect = { top: number; left: number; width: number; height: number };
-
-/**
- * Camada do tutorial: escurece a tela deixando um "buraco" iluminado no
- * elemento do passo, e o sapinho (o mascote, se houver) explica num balão.
- * Não bloqueia toques — a pessoa interage com o app normalmente.
- */
-export const TourOverlay: React.FC = () => {
-  const { active, step, stepIndex, next, skip } = useTour();
-  const [mascot] = useMascot();
-  const [rect, setRect] = useState<Rect | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [hop, setHop] = useState(0);
-  const [hidden, setHidden] = useState(false);
-
-  // acompanha o elemento alvo (posição muda com rolagem/teclado/layout)
-  useEffect(() => {
-    if (!active || !step) return;
-    let scrolled = false;
-    const tick = () => {
-      setModalOpen(!!document.querySelector('.g-modal-overlay'));
-      setHidden(!!document.querySelector('[data-tour-hide]')); // aviso de sapo ganho na frente
-      if (!step.target) { setRect(null); return; }
-      const el = document.querySelector(step.target) as HTMLElement | null;
-      if (!el) { setRect(null); return; }
-      if (!scrolled) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); scrolled = true; }
-      const r = el.getBoundingClientRect();
-      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+export const SX = () => {
+  const {
+      active: e,
+      step: t,
+      stepIndex: n,
+      next: s,
+      skip: r
+    } = useTour(),
+    [o] = mr(),
+    [a, l] = React.useState(null),
+    [c, u] = React.useState(false),
+    [d, f] = React.useState(0),
+    [h, m] = React.useState(false);
+  if (React.useEffect(() => {
+    if (!e || !t) return;
+    let C = false;
+    const S = () => {
+      if (u(!!document.querySelector(".g-modal-overlay")), m(!!document.querySelector("[data-tour-hide]")), !t.target) {
+        l(null);
+        return;
+      }
+      const P = document.querySelector(t.target);
+      if (!P) {
+        l(null);
+        return;
+      }
+      C || (P.scrollIntoView({
+        block: "center",
+        behavior: "smooth"
+      }), C = true);
+      const O = P.getBoundingClientRect();
+      l({
+        top: O.top,
+        left: O.left,
+        width: O.width,
+        height: O.height
+      });
     };
-    tick();
-    const id = setInterval(tick, 250);
-    setHop(h => h + 1); // o sapinho pula a cada passo novo
-    return () => clearInterval(id);
-  }, [active, step]);
-
-  // modal aberto (ex.: seletor do Sapo): o balão não pode ficar por cima
-  // interceptando toques — o próprio modal já é autoexplicativo
-  if (!active || !step || hidden || modalOpen) return null;
-
-  const pad = 8;
-  const hole = rect && !modalOpen ? { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 } : null;
-  // balão no lado com mais espaço livre; se o alvo for alto demais pra caber
-  // balão em qualquer lado, fica fixo embaixo, logo acima da barra de navegação
-  const BUBBLE_H = 190, NAV = 80;
-  const spaceAbove = hole ? hole.top : 0;
-  const spaceBelow = hole ? window.innerHeight - NAV - (hole.top + hole.height) : 0;
-  const bubbleStyle: React.CSSProperties = modalOpen
-    ? { top: 'calc(var(--safe-top, 0px) + 12px)' }
-    : !hole
-      ? { top: '50%', transform: 'translateY(-50%)' }
-      : spaceBelow >= BUBBLE_H && spaceBelow >= spaceAbove
-        ? { top: hole.top + hole.height + 14 }
-        : spaceAbove >= BUBBLE_H
-          ? { bottom: window.innerHeight - hole.top + 14 }
-          : { bottom: `calc(${NAV + 8}px + var(--safe-bottom, 0px))` };
-  const actionStep = !step.button;
-
-  return (
-    <div className={styles.root}>
-      {!modalOpen && (hole
-        ? <div className={styles.hole} style={hole}><div className={styles.ring} /></div>
-        : <div className={styles.dim} />)}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step.id}
-          className={styles.bubbleWrap}
-          style={bubbleStyle}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          <div className={styles.avatar} onClick={() => setHop(h => h + 1)}>
-            <ZenFrog speciesId={mascot?.speciesId || 'JUNGLE'} stage="adult" size={60} clickable={false} top={0} left={hop} />
-          </div>
-          <div className={styles.bubble}>
-            <div className={styles.progress}>
-              {TOUR_STEPS.map((_, i) => <span key={i} className={i <= stepIndex ? styles.dotOn : styles.dot} />)}
-            </div>
-            <strong className={styles.title}>{step.title}</strong>
-            <p className={styles.text}>{step.text}</p>
-            <div className={styles.actions}>
-              <button className={styles.skip} onClick={skip}>{stepIndex === TOUR_STEPS.length - 1 ? '' : 'Pular tutorial'}</button>
-              {actionStep
-                ? <span className={styles.waiting}>esperando você ✨</span>
-                : <button className={styles.primary} onClick={next}>{step.button}</button>}
-            </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
+    S();
+    const T = setInterval(S, 250);
+    return f(P => P + 1), () => clearInterval(T);
+  }, [e, t]), !e || !t || h || c) return null;
+  const v = 8,
+    x = a && !c ? {
+      top: a.top - v,
+      left: a.left - v,
+      width: a.width + v * 2,
+      height: a.height + v * 2
+    } : null,
+    k = 190,
+    y = 80,
+    p = x ? x.top : 0,
+    g = x ? window.innerHeight - y - (x.top + x.height) : 0,
+    b = c ? {
+      top: "calc(var(--safe-top, 0px) + 12px)"
+    } : x ? g >= k && g >= p ? {
+      top: x.top + x.height + 14
+    } : p >= k ? {
+      bottom: window.innerHeight - x.top + 14
+    } : {
+      bottom: `calc(${y + 8}px + var(--safe-bottom, 0px))`
+    } : {
+      top: "50%",
+      transform: "translateY(-50%)"
+    },
+    j = !t.button;
+  return <div className={nn.root}>{!c && (x ? <div className={nn.hole} style={x}><div className={nn.ring} /></div> : <div className={nn.dim} />)}<AnimatePresence mode="wait"><motion.div key={t.id} className={nn.bubbleWrap} style={b} initial={{
+        opacity: 0,
+        y: 10
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} exit={{
+        opacity: 0
+      }} transition={{
+        duration: 0.25
+      }}><div className={nn.avatar} onClick={() => f(C => C + 1)}><C_ro speciesId={(o == null ? undefined : o.speciesId) || "JUNGLE"} stage="adult" size={60} clickable={false} top={0} left={d} /></div><div className={nn.bubble}><div className={nn.progress}>{wd.map((C, S) => <span key={S} className={S <= n ? nn.dotOn : nn.dot} />)}</div><strong className={nn.title}>{t.title}</strong><p className={nn.text}>{t.text}</p><div className={nn.actions}><button className={nn.skip} onClick={r}>{n === wd.length - 1 ? "" : "Pular tutorial"}</button>{j ? <span className={nn.waiting}>esperando você ✨</span> : <button className={nn.primary} onClick={s}>{t.button}</button>}</div></div></motion.div></AnimatePresence></div>;
 };

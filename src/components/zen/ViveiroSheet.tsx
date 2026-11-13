@@ -1,96 +1,121 @@
-import React, { useState } from 'react';
-import { frogSpecies } from '../../utils/frogSpecies';
-import { useZenPond, PondFrog } from '../../context/ZenPondContext';
-import { ZenFrog } from './ZenFrog';
-import { FrogCard } from './FrogCard';
-import styles from './ViveiroSheet.module.css';
-import { useBackHandler } from '../../hooks/useBackHandler';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import Re from './ViveiroSheet.module.css';
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { FROG_SPECIES, Kr, ld, q2 } from '../../data/frogs';
+import { yn } from '../ui/Sheet';
+import { Nc } from '../../context/ZenContext';
+import { Nh } from './FrogCard';
+import { C_ro } from './FrogSprite';
 
-const rarityRank: Record<string, number> = { epic: 0, rare: 1, common: 2 };
-export const RARITY_LABEL: Record<string, string> = { common: 'Comum', rare: 'Rara', epic: 'Épica' };
-export const RARITY_COLOR: Record<string, string> = { common: '#8BC34A', rare: '#4FC3F7', epic: '#FBBF24' };
+const LT = Object.fromEntries(Object.entries(ld).map(([e, t]) => [e, t.label]));
 
-interface ViveiroSheetProps {
-    onClose: () => void;
-}
+const BT = Object.fromEntries(Object.entries(ld).map(([e, t]) => [e, t.color]));
 
-/**
- * [PORTADO de lagoa-zen-index.html — terrário] Mesmo renderSheet/miniCard do
- * arquivo: "Na lagoa" / "No viveiro", cartão inteiro abre a carta completa,
- * raridade escrita colorida, botão Guardar/Soltar em cada um.
- * Deliberadamente SEM o botão "✨ Fundir iguais" do arquivo (pedido do
- * usuário) — a fusão continua só a natural, dentro da lagoa.
- */
-export const ViveiroSheet: React.FC<ViveiroSheetProps> = ({ onClose }) => {
-    useBackHandler(onClose);
-    const { pondFrogs, storageFrogs, maxPond, sendToStorage, releaseToPond } = useZenPond();
-    const [cardFrog, setCardFrog] = useState<PondFrog | null>(null);
+const nb = e => {
+  const t = new Map();
+  return e.forEach(n => {
+    FROG_SPECIES[n.speciesId] && t.set(n.speciesId, [...(t.get(n.speciesId) || []), n]);
+  }), [...t.entries()].map(([n, s]) => ({
+    speciesId: n,
+    frogs: s.sort((r, o) => o.count - r.count)
+  })).sort((n, s) => q2(FROG_SPECIES[n.speciesId], FROG_SPECIES[s.speciesId]));
+};
 
-    const activePond = pondFrogs.filter(f => !f.merging);
-    const pondFull = activePond.length >= maxPond;
+export const XZ = ({
+  onClose: e
+}) => {
+  var y;
+  yn(e);
+  const {
+      pondFrogs: t,
+      storageFrogs: n,
+      maxPond: s,
+      sendToStorage: r,
+      releaseToPond: o
+    } = Nc(),
+    [a, l] = React.useState(null),
+    c = t.filter(p => !p.merging),
+    u = c.length >= s,
+    d = React.useMemo(() => {
+      const p = {};
+      return n.forEach(g => {
+        var j;
+        const b = (j = FROG_SPECIES[g.speciesId]) == null ? undefined : j.habitat;
+        b && (p[b] = p[b] || []).push(g);
+      }), p;
+    }, [n]),
+    f = (y = Kr.find(p => {
+      var g;
+      return (g = d[p.id]) == null ? undefined : g.length;
+    })) == null ? undefined : y.id,
+    [h, m] = React.useState(f || "lagoa"),
+    v = nb(h === "lagoa" ? c : d[h] || []),
+    x = [{
+      id: "lagoa",
+      label: "Lagoa",
+      emoji: "🌊",
+      n: c.length
+    }, ...Kr.map(p => {
+      var g;
+      return {
+        id: p.id,
+        label: p.label,
+        emoji: p.emoji,
+        n: ((g = d[p.id]) == null ? undefined : g.length) || 0
+      };
+    })],
+    k = x.find(p => p.id === h);
+  return <div className={Re.backdrop} onClick={p => {
+    p.target === p.currentTarget && e();
+  }}><div className={Re.sheet}><div className={Re.header}><div><div className={Re.title}>🧺 Viveiro</div><div className={Re.subtitle}>{"Lagoa "}{c.length}/{s}{" · "}{n.length}{" guardado"}{n.length === 1 ? "" : "s"}</div></div><button className={Re.closeBtn} onClick={e}>Fechar</button></div><div className={Re.boxTabs} role="tablist">{x.map(p => <button key={p.id} role="tab" aria-selected={h === p.id} className={`${Re.boxTab} ${h === p.id ? Re.boxTabOn : ""}`} onClick={() => m(p.id)}><span>{p.emoji}</span>{p.label}<b>{p.n}</b></button>)}</div><div className={Re.boxFrame} data-box={h}><div className={Re.boxTitle}>{k.emoji}{" "}{h === "lagoa" ? `Na lagoa agora · ${c.length}/${s}` : `Caixa ${k.label} · ${k.n} sapo${k.n === 1 ? "" : "s"}`}</div>{v.length === 0 ? <p className={Re.empty}>{h === "lagoa" ? "A lagoa está vazia. Solte um sapo de uma caixa." : "Nenhum sapo guardado aqui. Os sapos deste habitat aparecem quando você guarda um da lagoa."}</p> : <div className={Re.grid}>{v.map(({
+            speciesId: p,
+            frogs: g
+          }) => {
+            const b = FROG_SPECIES[p],
+              j = g[0],
+              C = h === "lagoa";
+            return <div key={p} className={`${Re.mini} ${Re[b.rarity]}`} onClick={() => l(j)}>{g.length > 1 && <span className={Re.stackBadge}>×{g.length}</span>}<div className={Re.miniPic}><C_ro speciesId={b.id} stage="adult" size={46} clickable={false} /></div><div className={Re.miniName}>{b.name}</div><div className={Re.miniTag} style={{
+                color: BT[b.rarity]
+              }}>{LT[b.rarity]}</div><button className={Re.miniBtn} disabled={!C && u} onClick={S => {
+                S.stopPropagation(), C ? r(j.id) : o(j.id);
+              }}>{C ? "Guardar" : u ? "Lagoa cheia" : "Soltar"}</button></div>;
+          })}</div>}</div></div>{a && <Nh speciesId={a.speciesId} frogId={a.id} onClose={() => l(null)} />}</div>;
+};
 
-    const sorter = (a: PondFrog, b: PondFrog) => {
-        const sa = frogSpecies[a.speciesId], sb = frogSpecies[b.speciesId];
-        return (rarityRank[sa?.rarity] ?? 9) - (rarityRank[sb?.rarity] ?? 9) || (sa?.name || '').localeCompare(sb?.name || '');
-    };
+const eQ = {
+  primary: "#0b1512",
+  secondary: "#101c18",
+  accent: "#0b1512"
+};
 
-    const sections: [string, PondFrog[]][] = [
-        ['Na lagoa', [...activePond].sort(sorter)],
-        ['No viveiro', [...storageFrogs].sort(sorter)],
-    ];
-
-    return (
-        <div className={styles.backdrop} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className={styles.sheet}>
-                <div className={styles.header}>
-                    <div>
-                        <div className={styles.title}>Coleção</div>
-                        <div className={styles.subtitle}>Lagoa {activePond.length}/{maxPond} · Viveiro {storageFrogs.length}</div>
-                    </div>
-                    <button className={styles.closeBtn} onClick={onClose}>Fechar</button>
-                </div>
-
-                {sections.map(([label, frogs]) => (
-                    <div key={label}>
-                        <div className={styles.sectionTitle}>{label}</div>
-                        {frogs.length === 0 ? (
-                            <p className={styles.empty}>Nenhum sapo aqui.</p>
-                        ) : (
-                            <div className={styles.grid}>
-                                {frogs.map(frog => {
-                                    const species = frogSpecies[frog.speciesId];
-                                    if (!species) return null;
-                                    const blocked = frog.location === 'storage' && pondFull;
-                                    return (
-                                        <div key={frog.id} className={`${styles.mini} ${styles[species.rarity]}`} onClick={() => setCardFrog(frog)}>
-                                            <div className={styles.miniPic}>
-                                                <ZenFrog speciesId={species.id} stage="adult" size={46} clickable={false} />
-                                            </div>
-                                            <div className={styles.miniName}>
-                                                {species.name}{frog.count > 1 ? ` ×${frog.count}` : ''}
-                                            </div>
-                                            <div className={styles.miniTag} style={{ color: RARITY_COLOR[species.rarity] }}>
-                                                {RARITY_LABEL[species.rarity]}
-                                            </div>
-                                            <button
-                                                className={styles.miniBtn}
-                                                disabled={blocked}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (frog.location === 'pond') sendToStorage(frog.id); else releaseToPond(frog.id);
-                                                }}
-                                            >
-                                                {frog.location === 'pond' ? 'Guardar' : 'Soltar'}
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
-            {cardFrog && <FrogCard speciesId={cardFrog.speciesId} frogId={cardFrog.id} onClose={() => setCardFrog(null)} />}
-        </div>
-    );
+export const C_tQ = ({
+  collectedFrogs: e,
+  onClose: t
+}) => {
+  yn(t);
+  const [n, s] = React.useState(null),
+    r = new Set(e.map(u => u.speciesId)),
+    o = {};
+  e.forEach(u => {
+    o[u.speciesId] = (o[u.speciesId] || 0) + 1;
+  });
+  const a = Object.values(FROG_SPECIES).sort(q2),
+    l = a.filter(u => r.has(u.id)).length,
+    c = a.length > 0 ? l / a.length * 100 : 0;
+  return <div className={Re.backdrop} onClick={u => {
+    u.target === u.currentTarget && t();
+  }}><div className={Re.sheet}><div className={Re.header}><div><div className={Re.title}>📖 Álbum</div><div className={Re.subtitle}>{l}/{a.length}{" espécies descobertas"}</div></div><button className={Re.closeBtn} onClick={t}>Fechar</button></div><div className={Re.albumBar}><span style={{
+          width: `${c}%`
+        }} /></div>{Kr.map(u => {
+        const d = a.filter(h => h.habitat === u.id),
+          f = d.filter(h => r.has(h.id)).length;
+        return <div key={u.id}><div className={Re.habitatHead}>{u.emoji}{" "}{u.label}<span>{f}/{d.length}</span></div><div className={Re.grid}>{d.map(h => {
+              const m = r.has(h.id);
+              return <div key={h.id} className={`${Re.mini} ${m ? Re[h.rarity] : Re.locked}`} onClick={() => m && s(h.id)}><div className={Re.miniPic}><C_ro speciesId={h.id} stage="adult" size={46} clickable={false} forceColors={m ? undefined : eQ} /></div><div className={Re.miniName}>{m ? h.name : "???"}</div><div className={Re.miniTag} style={{
+                  color: BT[h.rarity]
+                }}>{LT[h.rarity]}{m && o[h.id] > 1 ? ` · ×${o[h.id]}` : ""}</div></div>;
+            })}</div></div>;
+      })}</div>{n && <Nh speciesId={n} onClose={() => s(null)} />}</div>;
 };

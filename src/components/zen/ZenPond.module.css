@@ -1,0 +1,273 @@
+@keyframes ripple-effect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.6;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(7);
+    opacity: 0;
+  }
+}
+@keyframes driftShine {
+  0% {
+    transform: translate(0) rotate(0);
+  }
+  to {
+    transform: translate(3%, -4%) rotate(6deg);
+  }
+}
+@keyframes waveDrift {
+  0%,
+  to {
+    transform: translate(0) scaleY(1);
+  }
+  50% {
+    transform: translate(2%) scaleY(1.15);
+  }
+}
+.zenPondContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: var(--sp-sm);
+}
+.water {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 3 / 4;
+  border-radius: 24px;
+  overflow: hidden;
+  background: radial-gradient(
+    120% 90% at 30% 15%,
+    #1b7568,
+    #114f49 45%,
+    #0a3733
+  );
+  box-shadow: inset 0 0 60px #00000073, 0 8px 30px #00000059;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shine {
+  position: absolute;
+  top: -20%;
+  right: -20%;
+  bottom: -20%;
+  left: -20%;
+  background: radial-gradient(
+      35% 18% at 20% 20%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      25% 14% at 70% 55%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      30% 16% at 45% 80%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
+  animation: driftShine 22s ease-in-out infinite alternate;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  z-index: 1;
+}
+.wavelines {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.35;
+  width: 100%;
+  height: 100%;
+}
+.wavelines path {
+  animation: waveDrift 9s ease-in-out infinite;
+}
+.wavelines path:nth-child(2) {
+  animation-delay: -3s;
+  opacity: 0.6;
+}
+.wavelines path:nth-child(3) {
+  animation-delay: -6s;
+  opacity: 0.4;
+}
+.shore {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14%;
+  z-index: 2;
+  background: radial-gradient(
+    80% 100% at 50% 100%,
+    #2c4a35 0%,
+    #1c3323 70%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  pointer-events: none;
+}
+.ripple {
+  position: absolute;
+  z-index: 3;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple-effect 1.8s ease-out both;
+  pointer-events: none;
+}
+.ringGold {
+  width: 12px;
+  height: 12px;
+  border-color: #fbbf24d9;
+  border-width: 2px;
+}
+.ambientRipple {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  animation: ripple-effect 4s linear forwards;
+  pointer-events: none;
+}
+.frogWrapper {
+  position: absolute;
+  z-index: 4;
+  width: 0;
+  height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.collisionBarrier {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  z-index: -1;
+}
+.rarityGlow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+.rarityGlow.rare {
+  background: radial-gradient(
+    closest-side,
+    rgba(79, 195, 247, 0.45),
+    transparent 72%
+  );
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+.rarityGlow.epic {
+  background: radial-gradient(
+    closest-side,
+    rgba(192, 132, 252, 0.5),
+    transparent 72%
+  );
+  animation: glowPulse 2s ease-in-out infinite;
+}
+.rarityGlow.legendary {
+  background: radial-gradient(
+    closest-side,
+    rgba(251, 191, 36, 0.6),
+    transparent 72%
+  );
+  animation: glowPulse 1.6s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,
+  to {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+.spark {
+  position: absolute;
+  z-index: 6;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 6px 1px #fbbf24;
+  transform: translate(-50%, -50%);
+  animation: sparkOut 0.65s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes sparkOut {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      scale(0.2);
+    opacity: 0;
+  }
+}
+.floatText {
+  position: absolute;
+  z-index: 7;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 800;
+  color: #fbbf24;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  animation: floatUp 1s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1.15);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -160%) scale(1);
+  }
+}
+.mascotTag {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translate(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+  font-size: 10px;
+  font-weight: 700;
+  color: #1b1405;
+  background: #fbbf24;
+  border-radius: 999px;
+  padding: 1px 7px;
+  box-shadow: 0 2px 6px #00000059;
+}

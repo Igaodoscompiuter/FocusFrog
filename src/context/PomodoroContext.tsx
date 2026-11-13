@@ -1,422 +1,256 @@
-
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Capacitor } from '@capacitor/core';
-import { App as CapacitorApp } from '@capacitor/app';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { G3, K3, U3 } from '../analytics';
 import { useUser } from './UserContext';
+import { App as CapApp } from '@capacitor/app';
 import { useTheme } from './ThemeContext';
-import { playEventEffect } from '../store/soundCatalog';
-import { postMessageToSW } from '../sw-helpers';
-import { schedulePhaseEndNotification, startOrUpdateFocusForegroundService, cancelPomodoroNotifications, scheduleSessionDoneNotification, finishPomodoroNotifications, getFocusDistractionMs, resetFocusDistraction, isDistractionGuardOn, setDistractionGuard } from '../notifications';
-import { frogSpecies } from '../utils/frogSpecies';
-import { trackFocusComplete } from '../analytics';
+import { Di } from '../utils/effects';
+import { JI, KI, YI, bm, gd, vc } from '../domain/frogRarity';
+import { $i, Cm, ES, X_, _S, cO, dO, e1, uO, wO, xO } from '../notifications';
+import { r1 } from '../domain/focusToday';
+import { rr } from '../domain/mascotState';
 
-export type PomodoroMode = 'quick' | 'classic';
-export type PomodoroSessionStatus = 'idle' | 'focus' | 'break';
+const d1 = 25 * 60;
 
-const DEFAULT_FOCUS_DURATION = 25 * 60;
-const DEFAULT_BREAK_DURATION = 5 * 60;
+const MO = 5 * 60;
 
-interface SessionFrog {
-    speciesId: keyof typeof frogSpecies;
-    isCollected: boolean;
-}
-
-interface PomodoroSettings {
-    mode: PomodoroMode;
-    taskId: string;
-    taskTitle: string;
-    cycles?: number;
-    focusMinutes?: number;
-    breakMinutes?: number;
-}
-
-interface LastCompletedFocus {
-    taskId: string | null;
-    completionMethod: 'timer' | 'button';
-}
-
-interface PomodoroContextType {
-    /** sessão terminou mas as distrações passaram do limite → sem sapo */
-    scaredOutcome: ScaredOutcome | null;
-    clearScaredOutcome: () => void;
-    pomodorosCompleted: number;
-    activeTaskId: string | null;
-    /** fim da fase atual (foco ou pausa), em ms — null parado */
-    sessionEndsAt: number | null;
-    activeTaskTitle: string | null;
-    mode: PomodoroMode | null;
-    sessionStatus: PomodoroSessionStatus;
-    isPaused: boolean;
-    timeRemaining: number;
-    focusDuration: number;
-    breakDuration: number;
-    totalCycles: number;
-    currentCycle: number;
-    startPomodoro: (settings: PomodoroSettings) => void;
-    pauseCycle: () => void;
-    resumeCycle: () => void;
-    stopCycle: () => void;
-    completeTask: () => void;
-    lastCompletedFocus: LastCompletedFocus | null;
-    clearLastCompletedFocus: () => void;
-    distractionNotes: string;
-    setDistractionNotes: (notes: string) => void;
-    /** Progresso geral da sessão (0 a 1), considerando todos os ciclos. Usado para o ciclo de vida do sapo. */
-    sessionProgress: number;
-    /** Progresso do ciclo de foco/pausa atual (0 a 1). Usado para o anel de progresso. */
-    cycleProgress: number;
-    sessionFrog: SessionFrog | null;
-}
-
-const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined);
+const LS = React.createContext(undefined);
 
 export const usePomodoro = () => {
-    const context = useContext(PomodoroContext);
-    if (!context) {
-        throw new Error('usePomodoro must be used within a PomodoroProvider');
-    }
-    return context;
+  const e = React.useContext(LS);
+  if (!e) throw new Error("usePomodoro must be used within a PomodoroProvider");
+  return e;
 };
 
-/**
- * Sorteio do sapo da sessão respeitando a raridade.
- * [CORREÇÃO] Antes todas as espécies tinham a mesma chance: com 2 épicas em
- * 6 espécies, 1 a cada 3 sapos era "épico" e a raridade não significava nada.
- * Agora cada raridade tem uma chance total, dividida entre as suas espécies.
- */
-export const RARITY_CHANCE: Record<string, number> = { common: 0.65, rare: 0.25, epic: 0.10 };
-export const getRandomFrog = (rand: () => number = Math.random): keyof typeof frogSpecies => {
-    const all = Object.values(frogSpecies);
-    const weights = all.map(s => {
-        const sameRarity = all.filter(o => o.rarity === s.rarity).length;
-        return (RARITY_CHANCE[s.rarity] ?? 0.1) / sameRarity;
-    });
-    const total = weights.reduce((a, b) => a + b, 0);
-    let r = rand() * total;
-    for (let i = 0; i < all.length; i++) { r -= weights[i]; if (r < 0) return all[i].id; }
-    return all[all.length - 1].id;
-};
+const LO = "MYSTERY";
 
-/**
- * [CORREÇÃO] Aviso do FIM de cada fase, agendado já no INÍCIO dela (dispara
- * pelo AlarmManager mesmo com o app congelado). O texto descreve o que
- * acontece naquele momento:
- *   fim de um foco intermediário → "Hora da pausa"
- *   fim de uma pausa             → "De volta ao foco"
- *   fim do ÚLTIMO foco           → "Foco concluído" (número próprio, 9004)
- * Antes o aviso de pausa dizia "Hora da pausa" no FIM da pausa, e retomar
- * de uma pausa não reagendava nada no celular.
- */
-/** Sapo só pra foco limpo: até 10% do tempo total de foco em outros apps. */
-export const MAX_DISTRACTION_RATIO = 0.10;
+const BO = 6e4;
 
-/** Resultado de uma sessão em que as distrações passaram do limite. */
-export interface ScaredOutcome { speciesId: string; distractedMs: number; focusMs: number; }
+const h1 = "focusfrog_tutorialFrogGiven";
 
-function scheduleEndAlert(phase: 'focus' | 'break', endsAt: number, isFinalFocus: boolean, taskTitle: string | null, breakSec: number, focusSec: number) {
-    if (phase === 'focus' && isFinalFocus) {
-        scheduleSessionDoneNotification('✅ Foco concluído!', taskTitle ? `Você terminou seu foco em "${taskTitle}". Toque pra ver como foi 🐸` : 'Você terminou seu bloco de foco. Toque pra ver como foi 🐸', endsAt);
-    } else if (phase === 'focus') {
-        schedulePhaseEndNotification('☕ Hora da pausa', `Bom trabalho! Descanse ${Math.round(breakSec / 60)} min.`, endsAt);
-    } else {
-        schedulePhaseEndNotification('🐸 De volta ao foco!', `Hora do próximo bloco de ${Math.round(focusSec / 60)} min.`, endsAt);
-    }
+const zO = "JUNGLE";
+
+export const BS = 0.1;
+
+const VO = 3 * 60 * 1e3;
+
+function ou(e, t, n, s, r, o) {
+  e === "focus" && n ? uO("✅ Foco concluído!", s ? `Você terminou seu foco em "${s}". Toque pra ver como foi 🐸` : "Você terminou seu bloco de foco. Toque pra ver como foi 🐸", t) : e === "focus" ? X_("☕ Hora da pausa", `Bom trabalho! Descanse ${Math.round(r / 60)} min.`, t) : X_("🐸 Hora de voltar ao foco", `Hora do próximo bloco de ${Math.round(o / 60)} min.`, t);
 }
 
-export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { activeEffectId, isUnlocked } = useTheme();
-    const { addFrogToCollection } = useUser();
-
-    const [pomodorosCompleted, setPomodorosCompleted] = useLocalStorage('focusfrog_pomodorosCompleted', 0);
-    const [activeTaskId, setActiveTaskId] = useLocalStorage<string | null>('focusfrog_activeTaskId', null);
-    const [activeTaskTitle, setActiveTaskTitle] = useLocalStorage<string | null>('focusfrog_activeTaskTitle', null);
-    // [NOVO] Horário absoluto (epoch ms) em que a fase atual termina, persistido.
-    // É a peça que permite recuperar a sessão se o app for fechado/morto em segundo
-    // plano: em vez de confiar num contador de JS que para de rodar, recalculamos
-    // o tempo restante a partir desse relógio sempre que o app volta ao primeiro plano.
-    const [sessionEndsAt, setSessionEndsAt] = useLocalStorage<number | null>('focusfrog_sessionEndsAt', null);
-    const [lastCompletedFocus, setLastCompletedFocus] = useState<LastCompletedFocus | null>(null);
-    const [distractionNotes, setDistractionNotes] = useState('');
-
-    const [mode, setMode] = useLocalStorage<PomodoroMode | null>('focusfrog_pomodoroMode', null);
-    const [sessionStatus, setSessionStatus] = useLocalStorage<PomodoroSessionStatus>('focusfrog_sessionStatus', 'idle');
-    const [isPaused, setIsPaused] = useState(false);
-    const [timeRemaining, setTimeRemaining] = useState(DEFAULT_FOCUS_DURATION);
-    const [focusDuration, setFocusDuration] = useLocalStorage('focusfrog_focusDuration', DEFAULT_FOCUS_DURATION);
-    const [breakDuration, setBreakDuration] = useLocalStorage('focusfrog_breakDuration', DEFAULT_BREAK_DURATION);
-    const [totalCycles, setTotalCycles] = useLocalStorage('focusfrog_totalCycles', 1);
-    const [currentCycle, setCurrentCycle] = useLocalStorage('focusfrog_currentCycle', 1);
-
-    const [totalSessionTime, setTotalSessionTime] = useLocalStorage('focusfrog_totalSessionTime', 0);
-    const [sessionProgress, setSessionProgress] = useState(0);
-    const [cycleProgress, setCycleProgress] = useState(0);
-    const [sessionFrog, setSessionFrog] = useLocalStorage<SessionFrog | null>('focusfrog_sessionFrog', null);
-
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const heartbeatTick = useRef(0);
-    const [scaredOutcome, setScaredOutcome] = useState<ScaredOutcome | null>(null);
-    const clearScaredOutcome = useCallback(() => setScaredOutcome(null), []);
-
-    const clearLastCompletedFocus = useCallback(() => setLastCompletedFocus(null), []);
-
-    const stopAndReset = useCallback((opts?: { finished?: boolean }) => {
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
+export const PomodoroProvider = ({
+  children: e
+}) => {
+  const {
+      activeEffectId: t,
+      isUnlocked: n
+    } = useTheme(),
+    {
+      addFrogToCollection: s,
+      collectedFrogs: r
+    } = useUser(),
+    [o, a] = useLocalStorage("focusfrog_pomodorosCompleted", 0),
+    [l, c] = useLocalStorage("focusfrog_activeTaskId", null),
+    [u, d] = useLocalStorage("focusfrog_activeTaskTitle", null),
+    [f, h] = useLocalStorage("focusfrog_sessionEndsAt", null),
+    [m, v] = React.useState(null),
+    [x, k] = useLocalStorage("focusfrog_activeStepId", null),
+    [y, p] = useLocalStorage("focusfrog_activeStepLabel", null),
+    [g, b] = React.useState(""),
+    [j, C] = useLocalStorage("focusfrog_pomodoroMode", null),
+    [S, T] = useLocalStorage("focusfrog_sessionStatus", "idle"),
+    [P, O] = React.useState(false),
+    [V, U] = React.useState(d1),
+    [E, K] = useLocalStorage("focusfrog_focusDuration", d1),
+    [oe, ve] = useLocalStorage("focusfrog_breakDuration", MO),
+    [Z, D] = useLocalStorage("focusfrog_totalCycles", 1),
+    [q, G] = useLocalStorage("focusfrog_currentCycle", 1),
+    [de, re] = useLocalStorage("focusfrog_totalSessionTime", 0),
+    [X, Ie] = React.useState(0),
+    [$e, Je] = React.useState(0),
+    [z, F] = useLocalStorage("focusfrog_sessionFrog", null),
+    J = React.useRef(null),
+    pe = React.useRef(0),
+    [We, Ct] = React.useState(null),
+    H = React.useCallback(() => Ct(null), []),
+    $ = React.useCallback(() => v(null), []),
+    je = React.useCallback(L => {
+      J.current && clearInterval(J.current), T("idle"), O(false), C(null), U(E), c(null), d(null), k(null), p(null), G(1), D(1), Ie(0), Je(0), F(null), h(null), L != null && L.finished ? dO() : e1();
+    }, [E, c, d, k, p, h, F, C, T, G, D]),
+    R = React.useCallback(() => {
+      if (S === "idle") return 0;
+      const L = (q - 1) * E,
+        Ce = S === "focus" ? Math.max(0, E - V) : E;
+      return (L + Ce) / 60;
+    }, [S, q, E, V]),
+    Ae = React.useCallback(() => {
+      if (S === "idle") return;
+      v({
+        taskId: l,
+        stepId: x,
+        minutes: R(),
+        natural: false
+      }), K3(R()), R() >= 10 && r1(R());
+      const L = E > 0 ? Math.floor((R() * 60 + 1) / E) : 0;
+      L >= 1 && E >= 60 && rr({
+        type: "focus",
+        focos: L
+      }).catch(() => {}), Di("end", n, t), je();
+    }, [S, l, x, R, je, n, t, E]),
+    Ye = Ae;
+  React.useEffect(() => {
+    if ((S === "focus" || S === "break") && !P) {
+      const L = S === "focus" ? E : q % bm === 0 ? gd * 60 : oe,
+        Ce = L - V,
+        Tt = L > 0 ? Ce / L : 0;
+      if (Je(Math.min(Tt, 1)), S === "focus") {
+        const Ns = (q - 1) * E + (E - V),
+          Ac = de > 0 ? Ns / de : 0;
+        Ie(Math.min(Ac, 1));
+      }
+    }
+  }, [V, S, P, q, E, oe, de]);
+  const rt = React.useCallback(() => {
+    if (J.current && clearInterval(J.current), S === "focus") {
+      if (a(L => L + 1), j === "quick" || q >= Z) {
+        const L = (j === "quick" ? 1 : Z) * E * 1e3;
+        if (l && z && !z.isCollected && L < BO) localStorage.getItem(h1) !== "1" && r.length === 0 && (localStorage.setItem(h1, "1"), s(zO));else if (l && z && !z.isCollected) {
+          const Ce = L,
+            Tt = JI(),
+            vn = KI({
+              minutes: Ce / 6e4,
+              hour: new Date().getHours(),
+              discovered: new Set(r),
+              pity: Tt
+            }),
+            Ns = vn.speciesId;
+          (Cm() && Ce >= VO ? xO() : Promise.resolve(0)).then(Ko => {
+            Ko <= Ce * BS ? (YI(vn.pity), s(Ns, {
+              guaranteed: vn.guaranteed,
+              luck: vn.luck
+            })) : Ct({
+              speciesId: Ns,
+              distractedMs: Ko,
+              focusMs: Ce
+            });
+          });
         }
-        setSessionStatus('idle');
-        setIsPaused(false);
-        setMode(null);
-        setTimeRemaining(focusDuration);
-        setActiveTaskId(null);
-        setActiveTaskTitle(null);
-        setCurrentCycle(1);
-        setTotalCycles(1);
-        setSessionProgress(0);
-        setCycleProgress(0);
-        setSessionFrog(null);
-        setSessionEndsAt(null);
-        // terminou naturalmente → preserva o "Foco concluído" já agendado
-        if (opts?.finished) finishPomodoroNotifications(); else cancelPomodoroNotifications();
-    }, [focusDuration, setActiveTaskId, setActiveTaskTitle, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setCurrentCycle, setTotalCycles]);
-
-    const completeTask = useCallback(() => {
-        if (activeTaskId) {
-            setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'button' });
-        }
-        playEventEffect('end', isUnlocked, activeEffectId);
-        stopAndReset();
-    }, [activeTaskId, stopAndReset, isUnlocked, activeEffectId]);
-
-    // Efeito para calcular o progresso do ciclo e da sessão
-    useEffect(() => {
-        // Calcula o progresso para qualquer ciclo ativo (foco ou pausa)
-        if ((sessionStatus === 'focus' || sessionStatus === 'break') && !isPaused) {
-            // Determina a duração total do ciclo atual (seja foco ou pausa)
-            const currentCycleDuration = sessionStatus === 'focus' ? focusDuration : breakDuration;
-
-            // --- Cálculo do Progresso do CICLO ATUAL (para o anel) ---
-            const elapsedTimeInCurrentCycle = currentCycleDuration - timeRemaining;
-            const currentCycleCompletion = currentCycleDuration > 0 ? elapsedTimeInCurrentCycle / currentCycleDuration : 0;
-            setCycleProgress(Math.min(currentCycleCompletion, 1));
-
-            // --- Cálculo do Progresso da SESSÃO TOTAL (para o sapo) ---
-            // Este cálculo só faz sentido durante o ciclo de FOCO, pois representa o avanço na tarefa.
-            if (sessionStatus === 'focus') {
-                const completedCyclesTime = (currentCycle - 1) * focusDuration;
-                const totalElapsedTime = completedCyclesTime + (focusDuration - timeRemaining);
-                const overallSessionCompletion = totalSessionTime > 0 ? totalElapsedTime / totalSessionTime : 0;
-                setSessionProgress(Math.min(overallSessionCompletion, 1));
-            }
-        }
-    }, [timeRemaining, sessionStatus, isPaused, currentCycle, focusDuration, breakDuration, totalSessionTime]);
-
-    // [CORREÇÃO] Antes, a lógica de "fase terminou" (dar ponto, coletar sapo,
-    // trocar pra pausa) só existia DENTRO do tick do setInterval. Se o Android
-    // suspendesse o timer de JS em segundo plano (comum — é exatamente pra
-    // isso que existe o throttling de timer em WebView/Chrome), o app voltava
-    // ao primeiro plano, o listener de appStateChange só ATUALIZAVA O
-    // MOSTRADOR pro tempo certo (inclusive "00:00"), mas a conclusão de
-    // verdade nunca rodava — sem pontos, sem sapo, sem transição de fase.
-    // Agora essa lógica mora numa função só, chamada tanto pelo tick normal
-    // quanto diretamente ao retomar o app, então ela roda de qualquer jeito.
-    const handlePhaseEnd = useCallback(() => {
-        if (timerRef.current) clearInterval(timerRef.current);
-
-        if (sessionStatus === 'focus') {
-            setPomodorosCompleted(p => p + 1);
-
-            // --- Lógica de Conclusão de Ciclo de Foco ---
-            if (mode === 'quick' || currentCycle >= totalCycles) {
-                // [NOVO] Foco limpo: o sapo só vem se a distração (tela ligada em
-                // outro app, medida no lado nativo) ficou até 10% do tempo de foco.
-                // O tempo e a conclusão da tarefa contam de qualquer jeito.
-                if (activeTaskId && sessionFrog && !sessionFrog.isCollected) {
-                    const speciesId = sessionFrog.speciesId;
-                    const focusMs = (mode === 'quick' ? 1 : totalCycles) * focusDuration * 1000;
-                    const guard = isDistractionGuardOn(); // desligado: sapo garantido
-                    (guard ? getFocusDistractionMs() : Promise.resolve(0)).then(distractedMs => {
-                        if (distractedMs <= focusMs * MAX_DISTRACTION_RATIO) {
-                            addFrogToCollection(speciesId);
-                        } else {
-                            setScaredOutcome({ speciesId, distractedMs, focusMs });
-                        }
-                    });
-                }
-
-                if (activeTaskId) {
-                    setLastCompletedFocus({ taskId: activeTaskId, completionMethod: 'timer' });
-                }
-                trackFocusComplete(Math.round(((mode === 'quick' ? 1 : totalCycles) * focusDuration) / 60), false);
-
-                playEventEffect('end', isUnlocked, activeEffectId);
-                // O "Foco concluído" já foi agendado no INÍCIO deste bloco pro
-                // horário exato do fim — aqui só encerra preservando ele.
-                stopAndReset({ finished: true });
-
-            } else {
-                playEventEffect('break', isUnlocked);
-                setSessionStatus('break');
-                setTimeRemaining(breakDuration);
-                const endsAt = Date.now() + breakDuration * 1000;
-                setSessionEndsAt(endsAt);
-                // [CORREÇÃO] Antes essa notificação dizia "Pausa Merecida!" tanto
-                // aqui (começo da pausa) quanto era confundida com "foco terminado"
-                // pelo usuário — o título agora deixa claro que é uma MUDANÇA de
-                // estado (foco -> pausa), não o fim de tudo.
-                scheduleEndAlert('break', endsAt, false, activeTaskTitle, breakDuration, focusDuration);
-                startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'break', endsAt);
-            }
-        } else if (sessionStatus === 'break') {
-            // --- Fim da Pausa ---
-            playEventEffect('start', isUnlocked);
-            setCurrentCycle(c => c + 1);
-            setSessionStatus('focus');
-            setTimeRemaining(focusDuration);
-            const endsAt = Date.now() + focusDuration * 1000;
-            setSessionEndsAt(endsAt);
-            scheduleEndAlert('focus', endsAt, currentCycle + 1 >= totalCycles, activeTaskTitle, breakDuration, focusDuration);
-            startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', 'focus', endsAt);
-        }
-
-        setTimeRemaining(0);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mode, sessionStatus, activeTaskId, activeTaskTitle, breakDuration, currentCycle, totalCycles, focusDuration, isUnlocked, setPomodorosCompleted, stopAndReset, addFrogToCollection, sessionFrog, setSessionEndsAt, activeEffectId]);
-
-    // Efeito principal do temporizador
-    useEffect(() => {
-        if (sessionStatus === 'idle' || isPaused) {
-            return; // Não faz nada se o timer estiver parado ou pausado
-        }
-
-        timerRef.current = setInterval(() => {
-            // Recalcula a partir do relógio absoluto (sessionEndsAt) sempre que
-            // ele existe — corrige deriva/throttling em vez de só decrementar.
-            const real = sessionEndsAt !== null
-                ? Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000))
-                : null;
-
-            if (real !== null && real <= 0) {
-                handlePhaseEnd();
-                return;
-            }
-
-            // [CORREÇÃO] setOngoing(true) deveria bastar pra notificação não sumir,
-            // mas alguns fabricantes ignoram isso no botão "limpar tudo" do sistema.
-            // A cada ~30s reposta ela de novo como rede de segurança — mesmo que
-            // alguém consiga descartá-la, ela volta sozinha logo em seguida, em vez
-            // de ficar ausente até a próxima troca de fase (até 25min de distância).
-            heartbeatTick.current += 1;
-            if (heartbeatTick.current % 30 === 0 && sessionEndsAt !== null) {
-                startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', sessionStatus === 'break' ? 'break' : 'focus', sessionEndsAt);
-            }
-
-            setTimeRemaining(prev => (real !== null ? real : Math.max(0, prev - 1)));
-        }, 1000);
-
-        return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-        };
-    }, [sessionStatus, isPaused, sessionEndsAt, handlePhaseEnd, activeTaskTitle]);
-
-    // Quando o app volta ao primeiro plano, força uma reavaliação imediata —
-    // se a fase já tiver terminado enquanto o app estava fora do ar, completa
-    // de verdade (pontos, sapo, transição) em vez de só corrigir o mostrador.
-    useEffect(() => {
-        if (!Capacitor.isNativePlatform()) return;
-        const sub = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-            if (!isActive || sessionStatus === 'idle' || isPaused || sessionEndsAt === null) return;
-            const real = Math.max(0, Math.round((sessionEndsAt - Date.now()) / 1000));
-            if (real <= 0) {
-                handlePhaseEnd();
-            } else {
-                setTimeRemaining(real);
-            }
+        v({
+          taskId: l,
+          stepId: x,
+          minutes: (j === "quick" ? 1 : Z) * E / 60,
+          natural: true
+        }), r1((j === "quick" ? 1 : Z) * E / 60), E >= 60 && rr({
+          type: "focus",
+          focos: j === "quick" ? 1 : Z
+        }).catch(() => {}), U3(Math.round((j === "quick" ? 1 : Z) * E / 60), (() => {
+          try {
+            return JSON.parse(localStorage.getItem("focusfrog_frogTaskId") || "null") === l;
+          } catch {
+            return false;
+          }
+        })()), Di("end", n, t), je({
+          finished: true
         });
-        return () => { sub.then(s => s.remove()); };
-    }, [sessionStatus, isPaused, sessionEndsAt, handlePhaseEnd]);
-
-    const startPomodoro = useCallback((settings: PomodoroSettings) => {
-        stopAndReset();
-
-        const newFocusDuration = (settings.focusMinutes || 25) * 60;
-        const newBreakDuration = (settings.breakMinutes || 5) * 60;
-        const newTotalCycles = settings.mode === 'classic' ? (settings.cycles || 1) : 1;
-        
-        setMode(settings.mode);
-        setActiveTaskId(settings.taskId);
-        setActiveTaskTitle(settings.taskTitle);
-        setFocusDuration(newFocusDuration);
-        setBreakDuration(newBreakDuration);
-        setTotalCycles(newTotalCycles);
-        setTimeRemaining(newFocusDuration);
-        setTotalSessionTime(newFocusDuration * newTotalCycles);
-        setSessionFrog({ speciesId: getRandomFrog(), isCollected: false });
-        
-        setCurrentCycle(1);
-        setSessionStatus('focus');
-        setIsPaused(false);
-        
-        playEventEffect('start', isUnlocked);
-        const endsAt = Date.now() + newFocusDuration * 1000;
-        setSessionEndsAt(endsAt);
-        resetFocusDistraction();
-        setDistractionGuard(isDistractionGuardOn()); // mantém o lado nativo sincronizado
-        scheduleEndAlert('focus', endsAt, newTotalCycles <= 1, settings.taskTitle, newBreakDuration, newFocusDuration);
-        startOrUpdateFocusForegroundService(settings.taskTitle, 'focus', endsAt);
-    }, [isUnlocked, setActiveTaskId, setActiveTaskTitle, stopAndReset, setSessionEndsAt, setSessionFrog, setMode, setSessionStatus, setFocusDuration, setBreakDuration, setTotalCycles, setCurrentCycle, setTotalSessionTime]);
-
-    const pauseCycle = useCallback(() => {
-        if (sessionStatus !== 'idle') {
-            setIsPaused(true);
-            cancelPomodoroNotifications();
-        }
-    }, [sessionStatus]);
-
-    const resumeCycle = useCallback(() => {
-        if (sessionStatus !== 'idle') {
-            setIsPaused(false);
-            // Pausar "congela" o relógio; ao retomar, o fim da fase desloca pra
-            // frente pelo tanto que ficou pausado — recalculado a partir do
-            // timeRemaining atual, que é a fonte confiável durante a pausa.
-            const endsAt = Date.now() + timeRemaining * 1000;
-            setSessionEndsAt(endsAt);
-            startOrUpdateFocusForegroundService(activeTaskTitle || 'Tarefa', sessionStatus === 'focus' ? 'focus' : 'break', endsAt);
-            // [CORREÇÃO] antes só reagendava pelo service worker (PWA) — no
-            // celular, depois de uma pausa a sessão terminava sem aviso nenhum
-            scheduleEndAlert(sessionStatus === 'focus' ? 'focus' : 'break', endsAt,
-                mode === 'quick' || currentCycle >= totalCycles, activeTaskTitle, breakDuration, focusDuration);
-        }
-    }, [sessionStatus, timeRemaining, activeTaskTitle, mode, currentCycle, totalCycles, breakDuration, focusDuration]);
-
-    const value: PomodoroContextType = {
-        pomodorosCompleted,
-        activeTaskId,
-        sessionEndsAt,
-        activeTaskTitle,
-        scaredOutcome,
-        clearScaredOutcome,
-        mode,
-        sessionStatus,
-        isPaused,
-        timeRemaining,
-        focusDuration,
-        breakDuration,
-        totalCycles,
-        currentCycle,
-        startPomodoro,
-        pauseCycle,
-        resumeCycle,
-        stopCycle: stopAndReset,
-        completeTask,
-        lastCompletedFocus,
-        clearLastCompletedFocus,
-        distractionNotes,
-        setDistractionNotes,
-        sessionProgress,
-        cycleProgress,
-        sessionFrog,
+      } else {
+        Di("break", n), T("break");
+        const L = q % bm === 0 ? gd * 60 : oe;
+        U(L);
+        const Ce = Date.now() + L * 1e3;
+        h(Ce), ou("break", Ce, false, u, L, E), $i(u || "Tarefa", "break", Ce);
+      }
+    } else if (S === "break") {
+      Di("start", n), rr({
+        type: "break"
+      }).catch(() => {}), G(Ce => Ce + 1), T("focus"), U(E);
+      const L = Date.now() + E * 1e3;
+      h(L), ou("focus", L, q + 1 >= Z, u, oe, E), $i(u || "Tarefa", "focus", L);
+    }
+    U(0);
+  }, [j, S, l, x, u, oe, q, Z, E, n, a, je, s, r, z, h, t]);
+  React.useEffect(() => {
+    if (!(S === "idle" || P)) return J.current = setInterval(() => {
+      const L = f !== null ? Math.max(0, Math.round((f - Date.now()) / 1e3)) : null;
+      if (L !== null && L <= 0) {
+        rt();
+        return;
+      }
+      pe.current += 1, pe.current % 30 === 0 && f !== null && $i(u || "Tarefa", S === "break" ? "break" : "focus", f), U(Ce => L !== null ? L : Math.max(0, Ce - 1));
+    }, 1e3), () => {
+      J.current && clearInterval(J.current);
     };
-
-    return <PomodoroContext.Provider value={value}>{children}</PomodoroContext.Provider>;
+  }, [S, P, f, rt, u]), React.useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const L = CapApp.addListener("appStateChange", ({
+      isActive: Ce
+    }) => {
+      if (!Ce || S === "idle" || P || f === null) return;
+      const Tt = Math.max(0, Math.round((f - Date.now()) / 1e3));
+      Tt <= 0 ? rt() : U(Tt);
+    });
+    return () => {
+      L.then(Ce => Ce.remove());
+    };
+  }, [S, P, f, rt]);
+  const us = React.useCallback(L => {
+      je();
+      const Ce = (L.focusMinutes || 25) * 60,
+        Tt = (L.breakMinutes || vc) * 60,
+        vn = L.mode === "classic" && L.cycles || 1;
+      C(L.mode), c(L.taskId), d(L.taskTitle), k(L.stepId ?? null), p(L.stepLabel ?? null), K(Ce), ve(Tt), D(vn), U(Ce), re(Ce * vn), F({
+        speciesId: LO,
+        isCollected: false
+      }), G(1), T("focus"), O(false), Di("start", n);
+      const Ns = Date.now() + Ce * 1e3;
+      h(Ns), G3(Math.round(Ce * vn / 60), L.mode, !!L.stepId), wO(), ES(Cm()), ou("focus", Ns, vn <= 1, L.taskTitle, Tt, Ce), $i(L.taskTitle, "focus", Ns);
+    }, [n, c, d, k, p, je, h, F, C, T, K, ve, D, G, re]),
+    Es = React.useCallback(L => {
+      _S() ? us(L) : cO().finally(() => us(L));
+    }, [us]),
+    wi = React.useCallback(() => {
+      S !== "idle" && (O(true), e1());
+    }, [S]),
+    bi = React.useCallback(() => {
+      if (S !== "idle") {
+        O(false);
+        const L = Date.now() + V * 1e3;
+        h(L), $i(u || "Tarefa", S === "focus" ? "focus" : "break", L), ou(S === "focus" ? "focus" : "break", L, j === "quick" || q >= Z, u, oe, E);
+      }
+    }, [S, V, u, j, q, Z, oe, E, h]),
+    ki = {
+      pomodorosCompleted: o,
+      activeTaskId: l,
+      sessionEndsAt: f,
+      activeTaskTitle: u,
+      scaredOutcome: We,
+      clearScaredOutcome: H,
+      mode: j,
+      sessionStatus: S,
+      isPaused: P,
+      timeRemaining: V,
+      focusDuration: E,
+      breakDuration: oe,
+      totalCycles: Z,
+      currentCycle: q,
+      startPomodoro: Es,
+      pauseCycle: wi,
+      resumeCycle: bi,
+      stopCycle: je,
+      finishSession: Ae,
+      completeTask: Ye,
+      activeStepId: x,
+      activeStepLabel: y,
+      lastCompletedFocus: m,
+      clearLastCompletedFocus: $,
+      distractionNotes: g,
+      setDistractionNotes: b,
+      sessionProgress: X,
+      cycleProgress: $e,
+      sessionFrog: z
+    };
+  return <LS.Provider value={ki}>{e}</LS.Provider>;
 };

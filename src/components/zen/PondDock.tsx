@@ -1,39 +1,21 @@
-import React from 'react';
-import { frogSpecies } from '../../utils/frogSpecies';
-import { useZenPond, FrogInput } from '../../context/ZenPondContext';
-import styles from './PondDock.module.css';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import ca from './PondDock.module.css';
+import * as jsxRuntime from 'react/jsx-runtime';
+import { FROG_SPECIES } from '../../data/frogs';
+import { Nc } from '../../context/ZenContext';
 
-interface PondDockProps {
-    collectedFrogs: FrogInput[];
-    onOpenViveiro: () => void;
-    onOpenAlbum: () => void;
-}
-
-/**
- * [PORTADO de lagoa-zen-index.html] Linha "Lagoa X/8 · dica" + dock sob a
- * lagoa. Só os botões que não dependem da economia de pétalas (Viveiro e
- * Álbum) — "＋ Vaga", "Chamar sapo", "Diário" e "Postar" ficam de fora até
- * a decisão sobre gamificação/moeda.
- */
-export const PondDock: React.FC<PondDockProps> = ({ collectedFrogs, onOpenViveiro, onOpenAlbum }) => {
-    const { pondFrogs, storageFrogs, maxPond } = useZenPond();
-    const totalSpecies = Object.keys(frogSpecies).length;
-    const foundSpecies = new Set(collectedFrogs.map(f => f.speciesId)).size;
-
-    return (
-        <>
-            <div className={styles.chipRow}>
-                <span className={styles.count}>Lagoa {pondFrogs.filter(f => !f.merging).length}/{maxPond}</span>
-                <span className={styles.tip}>Toque nos sapos · iguais se fundem ✨</span>
-            </div>
-            <div className={styles.dock}>
-                <button className={styles.dockBtn} onClick={onOpenViveiro}>
-                    <i>🧺</i>Viveiro <b>{storageFrogs.length}</b>
-                </button>
-                <button className={styles.dockBtn} onClick={onOpenAlbum}>
-                    <i>📖</i>Álbum <b>{foundSpecies}/{totalSpecies}</b>
-                </button>
-            </div>
-        </>
-    );
+export const C_iQ = ({
+  collectedFrogs: e,
+  onOpenViveiro: t,
+  onOpenAlbum: n
+}) => {
+  const {
+      pondFrogs: s,
+      storageFrogs: r,
+      maxPond: o
+    } = Nc(),
+    a = Object.keys(FROG_SPECIES).length,
+    l = new Set(e.map(c => c.speciesId)).size;
+  return <><div className={ca.chipRow}><span className={ca.count}>{"Lagoa "}{s.filter(c => !c.merging).length}/{o}</span><span className={ca.tip}>Toque nos sapos · iguais se fundem ✨</span></div><div className={ca.dock}><button className={ca.dockBtn} onClick={t}><i>🧺</i>{"Viveiro "}<b>{r.length}</b></button><button className={ca.dockBtn} onClick={n}><i>📖</i>Álbum{" "}<b>{l}/{a}</b></button></div></>;
 };

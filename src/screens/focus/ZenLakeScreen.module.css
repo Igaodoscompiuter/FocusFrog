@@ -1,155 +1,336 @@
-/* ZEN LAKE SCREEN ... */
-
 .lakeScreen {
-    /* [AJUSTE] justify-content:center deixava toda a sobra de espaço
-       concentrada embaixo em vez de distribuída — trocado por flex-start
-       com um respiro fixo do topo, mais previsível. O espaço que sobra
-       agora vira lugar pra frase de incentivo (.encouragementQuote) em vez
-       de ficar vazio sem função nenhuma. */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    min-height: 100%;
-    /* 3 faixas: cartão no topo, palco (flex:1) no meio, sapinho embaixo */
-    box-sizing: border-box;
-    padding: var(--sp-lg);
-    padding-top: var(--sp-xl);
-    /* o espaço reservado pra barra de navegação agora fica DENTRO desta tela
-       (ver .screen-focus .screen-content em App.css), então o fundo dela vai
-       até a barra em vez de parar 100px antes */
-    padding-bottom: calc(80px + var(--safe-bottom) + var(--sp-md));
-    gap: var(--sp-xl);
-    background-color: var(--background-color);
-    transition: background-color 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: var(--sp-lg);
+  padding-top: var(--sp-xl);
+  padding-bottom: calc(80px + var(--safe-bottom) + var(--sp-md));
+  gap: var(--sp-xl);
+  background-color: var(--background-color);
+  transition: background-color 0.5s ease;
 }
-
 .encouragementQuote {
-    margin-top: auto;
-    margin-bottom: var(--sp-lg);
-    padding: 0 var(--sp-lg);
-    text-align: center;
-    font-style: italic;
-    font-size: 0.9rem;
-    color: var(--text-secondary-color);
-    max-width: 320px;
+  margin-top: auto;
+  margin-bottom: var(--sp-lg);
+  padding: 0 var(--sp-lg);
+  text-align: center;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  max-width: 320px;
 }
-
-/* [CORREÇÃO] O degradê era 'ellipse at bottom' — o ponto MAIS CLARO ficava
-   colado na borda de baixo, exatamente onde a tela era cortada, gerando uma
-   linha reta visível antes da barra de navegação. Agora fica centrado atrás
-   do cronômetro e chega à cor de fundo antes de qualquer borda — não existe
-   mais ponto de corte visível, seja qual for a altura do aparelho. */
-.lakeScreen.focus { background: radial-gradient(ellipse 120% 60% at 50% 40%, var(--surface-secondary-color) 0%, var(--background-color) 75%); }
-.lakeScreen.break { background: radial-gradient(ellipse 120% 60% at 50% 40%, var(--surface-color) 0%, var(--background-color) 75%); }
-.focusPanel { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xl); width: 100%; }
-.taskCard { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: var(--sp-md) var(--sp-lg); box-shadow: 0 4px 10px rgba(0,0,0,0.08); min-height: 60px; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 380px; }
-.taskContent { display: flex; flex-direction: column; align-items: center; gap: var(--sp-xxs); }
-.taskLabel { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary-color); letter-spacing: 0.8px; text-transform: uppercase; }
-.taskTitleText { font-family: var(--font-poppins); font-size: 1.1rem; font-weight: 600; color: var(--text-color); text-align: center; }
-.breakMessage { font-size: 1.1rem; font-weight: 500; color: var(--text-secondary-color); }
-
-/* Contêiner do Timer (O Lago) */
+.lakeScreen.focus {
+  background: radial-gradient(
+    ellipse 120% 60% at 50% 40%,
+    var(--surface-secondary-color) 0%,
+    var(--background-color) 75%
+  );
+}
+.lakeScreen.break {
+  background: radial-gradient(
+    ellipse 120% 60% at 50% 40%,
+    var(--surface-color) 0%,
+    var(--background-color) 75%
+  );
+}
+.focusPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-xl);
+  width: 100%;
+}
+.taskCard {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--sp-md) var(--sp-lg);
+  box-shadow: 0 4px 10px #00000014;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  max-width: 380px;
+  box-sizing: border-box;
+}
+.taskCard > * {
+  align-self: center;
+}
+.taskCard > .stepsPanel {
+  align-self: stretch;
+}
+.taskContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-xxs);
+}
+.taskLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.taskTitleText {
+  font-family: var(--font-poppins);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+}
+.breakMessage {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-secondary-color);
+}
 .timerContainer {
-    position: relative;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--primary-color-hover) 0%, var(--primary-color) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid var(--primary-color);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 3px 5px rgba(0,0,0,0.2);
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--primary-color-hover) 0%,
+    var(--primary-color) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--primary-color);
+  box-shadow: 0 10px 30px #0003, inset 0 3px 5px #0003;
 }
-
 .timerContentContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 2;
-    padding: 25px 0;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  padding: 25px 0;
+  box-sizing: border-box;
 }
-
 .timerDisplay {
-    font-family: var(--font-poppins);
-    font-size: 3.8rem;
-    font-weight: 700;
-    color: #FFFFFF;
-    line-height: 1;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    padding-bottom: 15px; 
+  font-family: var(--font-poppins);
+  font-size: 3.8rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  padding-bottom: 15px;
 }
-
-.controlsZone { display: flex; justify-content: center; align-items: center; gap: var(--sp-lg); width: 100%; }
-.mainActionButton, .secondaryActionButton { all: unset; box-sizing: border-box; border-radius: var(--border-radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
-.mainActionButton { width: 72px; height: 72px; background-color: var(--surface-color); color: var(--text-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
-.mainActionButton:hover { transform: scale(1.05); }
-.mainActionButton:active { transform: scale(0.98); }
-.mainActionButton.play { background-color: var(--accent-color); color: var(--text-on-accent, #fff); border-color: var(--accent-color-hover); }
-.mainActionButton > svg { width: 40px; height: 40px; }
-.secondaryActionButton { width: 56px; height: 56px; background-color: var(--surface-secondary-color); color: var(--text-secondary-color); border: 1px solid var(--border-color); }
-.secondaryActionButton:hover { background-color: var(--surface-color); color: var(--text-color); }
-.secondaryActionButton > svg { width: 28px; height: 28px; }
-.placeholder { width: 56px; }
-
-/* [NOVO] cronômetro + controles centralizados no espaço entre o cartão do
-   topo e o sapinho — antes ficavam grudados logo abaixo do cartão */
+.controlsZone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--sp-lg);
+  width: 100%;
+}
+.mainActionButton,
+.secondaryActionButton {
+  all: unset;
+  box-sizing: border-box;
+  border-radius: var(--border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mainActionButton {
+  width: 72px;
+  height: 72px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  box-shadow: 0 4px 12px #0000001a;
+  border: 1px solid var(--border-color);
+}
+.mainActionButton:hover {
+  transform: scale(1.05);
+}
+.mainActionButton:active {
+  transform: scale(0.98);
+}
+.mainActionButton.play {
+  background-color: var(--accent-color);
+  color: var(--text-on-accent, #fff);
+  border-color: var(--accent-color-hover);
+}
+.mainActionButton > svg {
+  width: 40px;
+  height: 40px;
+}
+.secondaryActionButton {
+  width: 56px;
+  height: 56px;
+  background-color: var(--surface-secondary-color);
+  color: var(--text-secondary-color);
+  border: 1px solid var(--border-color);
+}
+.secondaryActionButton:hover {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+.secondaryActionButton > svg {
+  width: 28px;
+  height: 28px;
+}
+.placeholder {
+  width: 56px;
+}
 .stage {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--sp-xl);
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xl);
 }
-
-/* [NOVO] sapinho da sessão falando a frase de incentivo num balão */
 .frogTip {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    width: 100%;
-    max-width: 380px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
 }
-.frogTipAvatar { flex-shrink: 0; }
+.frogTipAvatar {
+  flex-shrink: 0;
+}
 .frogTipBubble {
-    position: relative;
-    flex: 1;
-    margin: 0 0 14px;
-    padding: 12px 14px;
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: 16px 16px 16px 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    font-size: 0.9rem;
-    font-style: italic;
-    line-height: 1.4;
-    color: var(--text-secondary-color);
+  position: relative;
+  flex: 1;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 4px 12px #00000026;
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text-secondary-color);
 }
-/* rabinho do balão apontando pro sapo */
-.frogTipBubble::before {
-    content: '';
-    position: absolute;
-    left: -7px;
-    bottom: 10px;
-    width: 12px;
-    height: 12px;
-    background: var(--surface-color);
-    border-left: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-    transform: rotate(45deg);
+.frogTipBubble:before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  bottom: 10px;
+  width: 12px;
+  height: 12px;
+  background: var(--surface-color);
+  border-left: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  transform: rotate(45deg);
 }
-
-.frogTipAvatar { cursor: pointer; }
+.frogTipAvatar {
+  cursor: pointer;
+}
 .frogTipName {
-    display: block; font-style: normal; font-weight: 700; font-size: 0.75rem;
-    color: var(--accent-color); margin-bottom: 2px;
+  display: block;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--accent-color);
+  margin-bottom: 2px;
+}
+.stepNow {
+  display: block;
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+.stepsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(var(--surface-rgb, 17, 24, 39), 0.55);
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.stepsToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary-color);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.stepsToggle span:nth-child(2) {
+  flex: 1;
+}
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+.stepItem:disabled {
+  cursor: default;
+}
+.stepItem small {
+  margin-left: auto;
+  color: var(--text-secondary-color);
+  font-size: 0.72rem;
+}
+.stepItemNow {
+  background: color-mix(in srgb, var(--accent-color) 16%, transparent);
+  font-weight: 700;
+}
+.stepBox {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-radius: 7px;
+  border: 2px solid var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.stepBoxOn {
+  background: var(--success-color);
+  border-color: var(--success-color);
+}
+.stepDone {
+  color: var(--text-secondary-color);
+  text-decoration: line-through;
+}
+.secondaryActionButton.mutedOn {
+  background-color: color-mix(
+    in srgb,
+    #fbbf24 18%,
+    var(--surface-secondary-color)
+  );
+  color: #fbbf24;
+  border-color: #fbbf2480;
 }

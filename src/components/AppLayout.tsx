@@ -1,88 +1,108 @@
-
-import React, { useEffect } from 'react';
-import { BottomNav } from './BottomNav';
-import { HomeScreen } from '../screens/HomeScreen';
-import { TasksScreen } from '../screens/TasksScreen';
-import { FocusScreen } from '../screens/FocusScreen';
-import { RewardsScreen } from '../screens/RewardsScreen';
-import { StatsScreen } from '../screens/StatsScreen';
-import { MoodboardScreen } from '../screens/MoodboardScreen';
-import { useUI } from '../context/UIContext';
-import type { Screen } from '../types';
-import { NotificationContainer } from './NotificationContainer';
-import { FrogRewardModal } from './FrogRewardModal';
-import { FrogScaredModal } from './FrogScaredModal';
-import { UpdateAvailableModal } from './UpdateAvailableModal';
-import { TourProvider } from './tour/TourContext';
-import { TourOverlay } from './tour/TourOverlay';
-import UpdatePrompt from './UpdatePrompt';
+// @ts-nocheck
+// Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
+import * as React from 'react';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Capacitor } from '@capacitor/core';
-import { useAndroidBackButton } from '../hooks/useBackHandler';
-import { FrogWidgetSync } from './FrogWidgetSync';
-import { AmbientSoundPlayer } from './AmbientSoundPlayer';
-import { NotificationActionHandler } from './NotificationActionHandler';
-import { trackPageView } from '../analytics';
-import { StoreScreen, OPEN_STORE_EVENT } from '../screens/store/StoreScreen';
+import { useUI } from '../context/UIContext';
+import { D3 } from '../analytics';
+import { II } from './BottomNav';
+import { C_sR } from '../hooks/useHomeFlow';
+import { RR } from './ui/Sheet';
+import { KD } from './tour/TourContext';
+import { Km, Y8 } from '../screens/store/StoreScreen';
+import { C_tK } from './UpdateAvailableModal';
+import { ET } from '../screens/RewardsScreen';
+import { YQ } from './NotificationContainer';
+import { C_aX, C_iX } from './FrogRewardModal';
+import { SX } from './tour/TourOverlay';
+import { AX, PX } from './UpdatePrompt';
+import { IX } from './NotificationActionHandler';
+import { C_zX } from './Celebration';
+import { C_qX, HX, UX, VX, WX } from './app/Overlays';
 
-// Nota de arquitetura: o TasksProvider NÃO é montado aqui — ele já envolve toda a
-// árvore lá em cima, em index.tsx. Montá-lo de novo aqui criava um segundo estado de
-// tarefas desconectado do resto do app.
-const screenMap: Record<Screen, React.ComponentType> = {
-    dashboard: HomeScreen,
-    tasks: TasksScreen,
-    focus: FocusScreen,
-    stats: StatsScreen,
-    rewards: RewardsScreen,
-    moodboard: MoodboardScreen,
+export const GX = () => {
+  const {
+      activeScreen: e,
+      isImmersiveMode: t,
+      handleNavigate: n
+    } = useUI(),
+    [s, r] = React.useState(false);
+  React.useEffect(() => {
+    const a = () => r(true);
+    return window.addEventListener(Km, a), () => window.removeEventListener(Km, a);
+  }, []), RR(() => t ? false : e !== "dashboard" ? (n("dashboard"), true) : false), React.useEffect(() => {
+    D3({
+      dashboard: "Início",
+      tasks: "Tarefas",
+      focus: "Foco",
+      stats: "Jardim",
+      rewards: "Ajustes",
+      moodboard: "Moodboard"
+    }[e] || e);
+  }, [e]);
+  const Xo1 = HX[e];
+  return <KD><div className={`app-container screen-${e} ${t ? "immersive-mode" : ""}`}><div className="screen-content">{Xo1 ? <Xo1 /> : <div>Ecrã não encontrado</div>}</div>{!t && <II />}<YQ /><C_aX /><C_iX /><C_tK /><C_sR /><PX /><IX /><C_zX /><VX /><UX /><C_qX /><WX />{s && <Y8 onClose={() => r(false)} />}{!Capacitor.isNativePlatform() && <AX />}<SX /></div></KD>;
 };
 
-export const AppLayout: React.FC = () => {
-    const { activeScreen, isImmersiveMode, handleNavigate } = useUI();
-    const [storeOpen, setStoreOpen] = React.useState(false);
-    React.useEffect(() => {
-        const open = () => setStoreOpen(true);
-        window.addEventListener(OPEN_STORE_EVENT, open);
-        return () => window.removeEventListener(OPEN_STORE_EVENT, open);
-    }, []);
-
-    // voltar do Android: fecha o que estiver aberto; numa aba volta pra Home;
-    // na Home (ou no meio de um foco) minimiza (ver hooks/useBackHandler.ts)
-    useAndroidBackButton(() => {
-        if (isImmersiveMode) return false;
-        if (activeScreen !== 'dashboard') { handleNavigate('dashboard'); return true; }
-        return false;
-    });
-
-    // uma visualização por tela no GA4 (o app é uma tela só, sem troca de URL)
-    useEffect(() => {
-        const nomes: Record<string, string> = { dashboard: 'Início', tasks: 'Tarefas', focus: 'Foco', stats: 'Jardim', rewards: 'Ajustes', moodboard: 'Moodboard' };
-        trackPageView(nomes[activeScreen] || activeScreen);
-    }, [activeScreen]);
-
-    const ActiveScreenComponent = screenMap[activeScreen];
-
-    return (
-        <TourProvider>
-        <div className={`app-container screen-${activeScreen} ${isImmersiveMode ? 'immersive-mode' : ''}`}>
-            <div className="screen-content">
-                {ActiveScreenComponent ? <ActiveScreenComponent /> : <div>Ecrã não encontrado</div>}
-            </div>
-
-            {!isImmersiveMode && <BottomNav />}
-
-            {/* Containers de notificação globais */}
-            <NotificationContainer />
-            <FrogRewardModal />
-            <FrogScaredModal />
-            <UpdateAvailableModal />
-            <FrogWidgetSync />
-            <AmbientSoundPlayer />
-            <NotificationActionHandler />
-            {storeOpen && <StoreScreen onClose={() => setStoreOpen(false)} />}
-            {/* aviso de nova versão é só do PWA — no APK quem atualiza é a instalação */}
-            {!Capacitor.isNativePlatform() && <UpdatePrompt />}
-            <TourOverlay />
-        </div>
-        </TourProvider>
-    );
-};
+export const YX = ({
+  show: e,
+  onInstall: t,
+  onDismiss: n
+}) => e ? <div style={{
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 2e3
+}}><div style={{
+    backgroundColor: "rgba(44, 62, 80, 0.75)",
+    color: "white",
+    padding: "30px",
+    borderRadius: "20px",
+    textAlign: "center",
+    maxWidth: "340px",
+    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid rgba(255, 255, 255, 0.18)"
+  }}><img src={ET} alt="Mascote FocusFrog com uma chávena de café" style={{
+      width: "120px",
+      height: "120px",
+      borderRadius: "50%",
+      objectFit: "cover",
+      marginBottom: "20px",
+      border: "2px solid rgba(255, 255, 255, 0.2)"
+    }} /><h3 style={{
+      marginTop: 0,
+      fontSize: "1.5rem",
+      fontWeight: 600
+    }}>Instale o FocusFrog</h3><p style={{
+      opacity: 0.9,
+      lineHeight: 1.6
+    }}>Leve seus focos para qualquer lugar. Instale o app em seu dispositivo para uma experiência mais rápida e integrada.</p><div style={{
+      display: "flex",
+      justifyContent: "space-around",
+      marginTop: "30px"
+    }}><button onClick={n} style={{
+        padding: "12px 24px",
+        border: "1px solid rgba(255, 255, 255, 0.5)",
+        backgroundColor: "transparent",
+        color: "#ecf0f1",
+        borderRadius: "10px",
+        cursor: "pointer",
+        fontSize: "1rem"
+      }}>Agora não</button><button onClick={t} style={{
+        padding: "12px 24px",
+        border: "none",
+        backgroundColor: "#f1c40f",
+        color: "#2c3e50",
+        borderRadius: "10px",
+        cursor: "pointer",
+        fontWeight: "bold",
+        fontSize: "1.1rem"
+      }}>Instalar</button></div></div></div> : null;
