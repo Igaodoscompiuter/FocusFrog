@@ -1,18 +1,18 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
-import * as React from 'react';
-import * as jsxRuntime from 'react/jsx-runtime';
-import { Capacitor } from '@capacitor/core';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { G3, K3, U3 } from '../analytics';
-import { useUser } from './UserContext';
-import { App as CapApp } from '@capacitor/app';
-import { useTheme } from './ThemeContext';
-import { Di } from '../utils/effects';
-import { JI, KI, YI, bm, gd, vc } from '../domain/frogRarity';
-import { $i, Cm, ES, X_, _S, cO, dO, e1, uO, wO, xO } from '../notifications';
-import { r1 } from '../domain/focusToday';
-import { rr } from '../domain/mascotState';
+import * as React from "react";
+import * as jsxRuntime from "react/jsx-runtime";
+import { Capacitor } from "@capacitor/core";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { G3, K3, U3 } from "../analytics";
+import { useUser } from "./UserContext";
+import { App as CapApp } from "@capacitor/app";
+import { useTheme } from "./ThemeContext";
+import { Di } from "../utils/effects";
+import { JI, KI, YI, bm, gd, vc } from "../domain/frogRarity";
+import { $i, Cm, ES, X_, _S, cO, dO, e1, uO, wO, xO } from "../notifications";
+import { r1 } from "../domain/focusToday";
+import { rr } from "../domain/mascotState";
 
 const d1 = 25 * 60;
 
@@ -39,20 +39,30 @@ export const BS = 0.1;
 const VO = 3 * 60 * 1e3;
 
 function ou(e, t, n, s, r, o) {
-  e === "focus" && n ? uO("✅ Foco concluído!", s ? `Você terminou seu foco em "${s}". Toque pra ver como foi 🐸` : "Você terminou seu bloco de foco. Toque pra ver como foi 🐸", t) : e === "focus" ? X_("☕ Hora da pausa", `Bom trabalho! Descanse ${Math.round(r / 60)} min.`, t) : X_("🐸 Hora de voltar ao foco", `Hora do próximo bloco de ${Math.round(o / 60)} min.`, t);
+  e === "focus" && n
+    ? uO(
+        "✅ Foco concluído!",
+        s
+          ? `Você terminou seu foco em "${s}". Toque pra ver como foi 🐸`
+          : "Você terminou seu bloco de foco. Toque pra ver como foi 🐸",
+        t
+      )
+    : e === "focus"
+    ? X_(
+        "☕ Hora da pausa",
+        `Bom trabalho! Descanse ${Math.round(r / 60)} min.`,
+        t
+      )
+    : X_(
+        "🐸 Hora de voltar ao foco",
+        `Hora do próximo bloco de ${Math.round(o / 60)} min.`,
+        t
+      );
 }
 
-export const PomodoroProvider = ({
-  children: e
-}) => {
-  const {
-      activeEffectId: t,
-      isUnlocked: n
-    } = useTheme(),
-    {
-      addFrogToCollection: s,
-      collectedFrogs: r
-    } = useUser(),
+export const PomodoroProvider = ({ children: e }) => {
+  const { activeEffectId: t, isUnlocked: n } = useTheme(),
+    { addFrogToCollection: s, collectedFrogs: r } = useUser(),
     [o, a] = useLocalStorage("focusfrog_pomodorosCompleted", 0),
     [l, c] = useLocalStorage("focusfrog_activeTaskId", null),
     [u, d] = useLocalStorage("focusfrog_activeTaskTitle", null),
@@ -78,9 +88,27 @@ export const PomodoroProvider = ({
     [We, Ct] = React.useState(null),
     H = React.useCallback(() => Ct(null), []),
     $ = React.useCallback(() => v(null), []),
-    je = React.useCallback(L => {
-      J.current && clearInterval(J.current), T("idle"), O(false), C(null), U(E), c(null), d(null), k(null), p(null), G(1), D(1), Ie(0), Je(0), F(null), h(null), L != null && L.finished ? dO() : e1();
-    }, [E, c, d, k, p, h, F, C, T, G, D]),
+    je = React.useCallback(
+      (L) => {
+        J.current && clearInterval(J.current),
+          T("idle"),
+          O(false),
+          C(null),
+          U(E),
+          c(null),
+          d(null),
+          k(null),
+          p(null),
+          G(1),
+          D(1),
+          Ie(0),
+          Je(0),
+          F(null),
+          h(null),
+          L != null && L.finished ? dO() : e1();
+      },
+      [E, c, d, k, p, h, F, C, T, G, D]
+    ),
     R = React.useCallback(() => {
       if (S === "idle") return 0;
       const L = (q - 1) * E,
@@ -93,13 +121,19 @@ export const PomodoroProvider = ({
         taskId: l,
         stepId: x,
         minutes: R(),
-        natural: false
-      }), K3(R()), R() >= 10 && r1(R());
+        natural: false,
+      }),
+        K3(R()),
+        R() >= 10 && r1(R());
       const L = E > 0 ? Math.floor((R() * 60 + 1) / E) : 0;
-      L >= 1 && E >= 60 && rr({
-        type: "focus",
-        focos: L
-      }).catch(() => {}), Di("end", n, t), je();
+      L >= 1 &&
+        E >= 60 &&
+        rr({
+          type: "focus",
+          focos: L,
+        }).catch(() => {}),
+        Di("end", n, t),
+        je();
     }, [S, l, x, R, je, n, t, E]),
     Ye = Ae;
   React.useEffect(() => {
@@ -107,7 +141,7 @@ export const PomodoroProvider = ({
       const L = S === "focus" ? E : q % bm === 0 ? gd * 60 : oe,
         Ce = L - V,
         Tt = L > 0 ? Ce / L : 0;
-      if (Je(Math.min(Tt, 1)), S === "focus") {
+      if ((Je(Math.min(Tt, 1)), S === "focus")) {
         const Ns = (q - 1) * E + (E - V),
           Ac = de > 0 ? Ns / de : 0;
         Ie(Math.min(Ac, 1));
@@ -115,47 +149,67 @@ export const PomodoroProvider = ({
     }
   }, [V, S, P, q, E, oe, de]);
   const rt = React.useCallback(() => {
-    if (J.current && clearInterval(J.current), S === "focus") {
-      if (a(L => L + 1), j === "quick" || q >= Z) {
+    if ((J.current && clearInterval(J.current), S === "focus")) {
+      if ((a((L) => L + 1), j === "quick" || q >= Z)) {
         const L = (j === "quick" ? 1 : Z) * E * 1e3;
-        if (l && z && !z.isCollected && L < BO) localStorage.getItem(h1) !== "1" && r.length === 0 && (localStorage.setItem(h1, "1"), s(zO));else if (l && z && !z.isCollected) {
+        if (l && z && !z.isCollected && L < BO)
+          localStorage.getItem(h1) !== "1" &&
+            r.length === 0 &&
+            (localStorage.setItem(h1, "1"), s(zO));
+        else if (l && z && !z.isCollected) {
           const Ce = L,
             Tt = JI(),
             vn = KI({
               minutes: Ce / 6e4,
               hour: new Date().getHours(),
               discovered: new Set(r),
-              pity: Tt
+              pity: Tt,
             }),
             Ns = vn.speciesId;
-          (Cm() && Ce >= VO ? xO() : Promise.resolve(0)).then(Ko => {
-            Ko <= Ce * BS ? (YI(vn.pity), s(Ns, {
-              guaranteed: vn.guaranteed,
-              luck: vn.luck
-            })) : Ct({
-              speciesId: Ns,
-              distractedMs: Ko,
-              focusMs: Ce
-            });
+          (Cm() && Ce >= VO ? xO() : Promise.resolve(0)).then((Ko) => {
+            Ko <= Ce * BS
+              ? (YI(vn.pity),
+                s(Ns, {
+                  guaranteed: vn.guaranteed,
+                  luck: vn.luck,
+                }))
+              : Ct({
+                  speciesId: Ns,
+                  distractedMs: Ko,
+                  focusMs: Ce,
+                });
           });
         }
         v({
           taskId: l,
           stepId: x,
-          minutes: (j === "quick" ? 1 : Z) * E / 60,
-          natural: true
-        }), r1((j === "quick" ? 1 : Z) * E / 60), E >= 60 && rr({
-          type: "focus",
-          focos: j === "quick" ? 1 : Z
-        }).catch(() => {}), U3(Math.round((j === "quick" ? 1 : Z) * E / 60), (() => {
-          try {
-            return JSON.parse(localStorage.getItem("focusfrog_frogTaskId") || "null") === l;
-          } catch {
-            return false;
-          }
-        })()), Di("end", n, t), je({
-          finished: true
-        });
+          minutes: ((j === "quick" ? 1 : Z) * E) / 60,
+          natural: true,
+        }),
+          r1(((j === "quick" ? 1 : Z) * E) / 60),
+          E >= 60 &&
+            rr({
+              type: "focus",
+              focos: j === "quick" ? 1 : Z,
+            }).catch(() => {}),
+          U3(
+            Math.round(((j === "quick" ? 1 : Z) * E) / 60),
+            (() => {
+              try {
+                return (
+                  JSON.parse(
+                    localStorage.getItem("focusfrog_frogTaskId") || "null"
+                  ) === l
+                );
+              } catch {
+                return false;
+              }
+            })()
+          ),
+          Di("end", n, t),
+          je({
+            finished: true,
+          });
       } else {
         Di("break", n), T("break");
         const L = q % bm === 0 ? gd * 60 : oe;
@@ -164,53 +218,90 @@ export const PomodoroProvider = ({
         h(Ce), ou("break", Ce, false, u, L, E), $i(u || "Tarefa", "break", Ce);
       }
     } else if (S === "break") {
-      Di("start", n), rr({
-        type: "break"
-      }).catch(() => {}), G(Ce => Ce + 1), T("focus"), U(E);
+      Di("start", n),
+        rr({
+          type: "break",
+        }).catch(() => {}),
+        G((Ce) => Ce + 1),
+        T("focus"),
+        U(E);
       const L = Date.now() + E * 1e3;
       h(L), ou("focus", L, q + 1 >= Z, u, oe, E), $i(u || "Tarefa", "focus", L);
     }
     U(0);
   }, [j, S, l, x, u, oe, q, Z, E, n, a, je, s, r, z, h, t]);
   React.useEffect(() => {
-    if (!(S === "idle" || P)) return J.current = setInterval(() => {
-      const L = f !== null ? Math.max(0, Math.round((f - Date.now()) / 1e3)) : null;
-      if (L !== null && L <= 0) {
-        rt();
-        return;
-      }
-      pe.current += 1, pe.current % 30 === 0 && f !== null && $i(u || "Tarefa", S === "break" ? "break" : "focus", f), U(Ce => L !== null ? L : Math.max(0, Ce - 1));
-    }, 1e3), () => {
-      J.current && clearInterval(J.current);
-    };
-  }, [S, P, f, rt, u]), React.useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-    const L = CapApp.addListener("appStateChange", ({
-      isActive: Ce
-    }) => {
-      if (!Ce || S === "idle" || P || f === null) return;
-      const Tt = Math.max(0, Math.round((f - Date.now()) / 1e3));
-      Tt <= 0 ? rt() : U(Tt);
-    });
-    return () => {
-      L.then(Ce => Ce.remove());
-    };
-  }, [S, P, f, rt]);
-  const us = React.useCallback(L => {
-      je();
-      const Ce = (L.focusMinutes || 25) * 60,
-        Tt = (L.breakMinutes || vc) * 60,
-        vn = L.mode === "classic" && L.cycles || 1;
-      C(L.mode), c(L.taskId), d(L.taskTitle), k(L.stepId ?? null), p(L.stepLabel ?? null), K(Ce), ve(Tt), D(vn), U(Ce), re(Ce * vn), F({
-        speciesId: LO,
-        isCollected: false
-      }), G(1), T("focus"), O(false), Di("start", n);
-      const Ns = Date.now() + Ce * 1e3;
-      h(Ns), G3(Math.round(Ce * vn / 60), L.mode, !!L.stepId), wO(), ES(Cm()), ou("focus", Ns, vn <= 1, L.taskTitle, Tt, Ce), $i(L.taskTitle, "focus", Ns);
-    }, [n, c, d, k, p, je, h, F, C, T, K, ve, D, G, re]),
-    Es = React.useCallback(L => {
-      _S() ? us(L) : cO().finally(() => us(L));
-    }, [us]),
+    if (!(S === "idle" || P))
+      return (
+        (J.current = setInterval(() => {
+          const L =
+            f !== null ? Math.max(0, Math.round((f - Date.now()) / 1e3)) : null;
+          if (L !== null && L <= 0) {
+            rt();
+            return;
+          }
+          (pe.current += 1),
+            pe.current % 30 === 0 &&
+              f !== null &&
+              $i(u || "Tarefa", S === "break" ? "break" : "focus", f),
+            U((Ce) => (L !== null ? L : Math.max(0, Ce - 1)));
+        }, 1e3)),
+        () => {
+          J.current && clearInterval(J.current);
+        }
+      );
+  }, [S, P, f, rt, u]),
+    React.useEffect(() => {
+      if (!Capacitor.isNativePlatform()) return;
+      const L = CapApp.addListener("appStateChange", ({ isActive: Ce }) => {
+        if (!Ce || S === "idle" || P || f === null) return;
+        const Tt = Math.max(0, Math.round((f - Date.now()) / 1e3));
+        Tt <= 0 ? rt() : U(Tt);
+      });
+      return () => {
+        L.then((Ce) => Ce.remove());
+      };
+    }, [S, P, f, rt]);
+  const us = React.useCallback(
+      (L) => {
+        je();
+        const Ce = (L.focusMinutes || 25) * 60,
+          Tt = (L.breakMinutes || vc) * 60,
+          vn = (L.mode === "classic" && L.cycles) || 1;
+        C(L.mode),
+          c(L.taskId),
+          d(L.taskTitle),
+          k(L.stepId ?? null),
+          p(L.stepLabel ?? null),
+          K(Ce),
+          ve(Tt),
+          D(vn),
+          U(Ce),
+          re(Ce * vn),
+          F({
+            speciesId: LO,
+            isCollected: false,
+          }),
+          G(1),
+          T("focus"),
+          O(false),
+          Di("start", n);
+        const Ns = Date.now() + Ce * 1e3;
+        h(Ns),
+          G3(Math.round((Ce * vn) / 60), L.mode, !!L.stepId),
+          wO(),
+          ES(Cm()),
+          ou("focus", Ns, vn <= 1, L.taskTitle, Tt, Ce),
+          $i(L.taskTitle, "focus", Ns);
+      },
+      [n, c, d, k, p, je, h, F, C, T, K, ve, D, G, re]
+    ),
+    Es = React.useCallback(
+      (L) => {
+        _S() ? us(L) : cO().finally(() => us(L));
+      },
+      [us]
+    ),
     wi = React.useCallback(() => {
       S !== "idle" && (O(true), e1());
     }, [S]),
@@ -218,7 +309,16 @@ export const PomodoroProvider = ({
       if (S !== "idle") {
         O(false);
         const L = Date.now() + V * 1e3;
-        h(L), $i(u || "Tarefa", S === "focus" ? "focus" : "break", L), ou(S === "focus" ? "focus" : "break", L, j === "quick" || q >= Z, u, oe, E);
+        h(L),
+          $i(u || "Tarefa", S === "focus" ? "focus" : "break", L),
+          ou(
+            S === "focus" ? "focus" : "break",
+            L,
+            j === "quick" || q >= Z,
+            u,
+            oe,
+            E
+          );
       }
     }, [S, V, u, j, q, Z, oe, E, h]),
     ki = {
@@ -250,7 +350,7 @@ export const PomodoroProvider = ({
       setDistractionNotes: b,
       sessionProgress: X,
       cycleProgress: $e,
-      sessionFrog: z
+      sessionFrog: z,
     };
   return <LS.Provider value={ki}>{e}</LS.Provider>;
 };

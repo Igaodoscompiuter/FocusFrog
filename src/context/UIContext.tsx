@@ -1,8 +1,8 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
-import * as React from 'react';
-import * as jsxRuntime from 'react/jsx-runtime';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import * as React from "react";
+import * as jsxRuntime from "react/jsx-runtime";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 export const Co = {
   maxVisible: 2,
@@ -11,46 +11,50 @@ export const Co = {
     info: 3200,
     success: 3200,
     victory: 4200,
-    error: 5e3
+    error: 5e3,
   },
   actionableDuration: 5500,
   fastDuration: 1800,
-  fastThreshold: 3
+  fastThreshold: 3,
 };
 
 const Gn = {
   context: null,
-  effectsGain: null
+  effectsGain: null,
 };
 
 const R_ = () => {
-  if (typeof window < "u" && !Gn.context) try {
-    const e = window.AudioContext || window.webkitAudioContext;
-    Gn.context = new e(), Gn.effectsGain = Gn.context.createGain(), Gn.effectsGain.gain.value = 0.4, Gn.effectsGain.connect(Gn.context.destination);
-  } catch (e) {
-    console.error("Failed to initialize AudioContext:", e);
-  }
+  if (typeof window < "u" && !Gn.context)
+    try {
+      const e = window.AudioContext || window.webkitAudioContext;
+      (Gn.context = new e()),
+        (Gn.effectsGain = Gn.context.createGain()),
+        (Gn.effectsGain.gain.value = 0.4),
+        Gn.effectsGain.connect(Gn.context.destination);
+    } catch (e) {
+      console.error("Failed to initialize AudioContext:", e);
+    }
 };
 
-const w3 = e => (t, n) => {
+const w3 = (e) => (t, n) => {
   let s;
   switch (n.type) {
     case "ADD_TO_VISIBLE":
       s = {
         ...t,
-        visible: [...t.visible, n.payload]
+        visible: [...t.visible, n.payload],
       };
       break;
     case "ADD_TO_QUEUE":
       s = {
         ...t,
-        queue: [...t.queue, n.payload]
+        queue: [...t.queue, n.payload],
       };
       break;
     case "REMOVE":
       s = {
         ...t,
-        visible: t.visible.filter(r => r.id !== n.payload.id)
+        visible: t.visible.filter((r) => r.id !== n.payload.id),
       };
       break;
     case "PROMOTE":
@@ -59,7 +63,7 @@ const w3 = e => (t, n) => {
         s = {
           ...t,
           visible: [...t.visible, r],
-          queue: o
+          queue: o,
         };
       } else s = t;
       break;
@@ -67,12 +71,14 @@ const w3 = e => (t, n) => {
       return {
         visible: [],
         queue: [],
-        showClearAll: false
+        showClearAll: false,
       };
     default:
       return t;
   }
-  return s.showClearAll = s.visible.length + s.queue.length >= e.minForClearAll, s;
+  return (
+    (s.showClearAll = s.visible.length + s.queue.length >= e.minForClearAll), s
+  );
 };
 
 const U2 = React.createContext(undefined);
@@ -83,9 +89,7 @@ export const useUI = () => {
   return e;
 };
 
-export const UIProvider = ({
-  children: e
-}) => {
+export const UIProvider = ({ children: e }) => {
   React.useEffect(() => R_(), []);
   const [t, n] = React.useState("dashboard"),
     [s, r] = React.useState(null),
@@ -101,59 +105,78 @@ export const UIProvider = ({
     [C, S] = React.useReducer(j, {
       visible: [],
       queue: [],
-      showClearAll: false
+      showClearAll: false,
     }),
-    T = React.useCallback(D => {
-      x && Gn.context && Gn.effectsGain ? D.generator(Gn.context, Gn.effectsGain) : x && console.warn("PlayEffect called, but audio engine not ready.");
-    }, [x]),
+    T = React.useCallback(
+      (D) => {
+        x && Gn.context && Gn.effectsGain
+          ? D.generator(Gn.context, Gn.effectsGain)
+          : x && console.warn("PlayEffect called, but audio engine not ready.");
+      },
+      [x]
+    ),
     P = React.useCallback(() => {
       R_();
       const D = Gn.context;
       if (!D) {
-        console.error("Cannot toggle sound, AudioContext failed to initialize.");
+        console.error(
+          "Cannot toggle sound, AudioContext failed to initialize."
+        );
         return;
       }
-      D.state === "suspended" ? D.resume().then(() => {
-        k(q => !q);
-      }) : k(q => !q);
+      D.state === "suspended"
+        ? D.resume().then(() => {
+            k((q) => !q);
+          })
+        : k((q) => !q);
     }, [k]),
-    O = React.useCallback((D, q, G = "info", de) => {
-      const re = {
-          id: Date.now() + Math.random(),
-          message: D,
-          icon: q,
-          category: G,
-          action: de
-        },
-        X = [...C.visible, ...C.queue];
-      !de && X.some(Ie => Ie.message === D && !Ie.action) || (C.visible.length < Co.maxVisible ? S({
-        type: "ADD_TO_VISIBLE",
-        payload: re
-      }) : S({
-        type: "ADD_TO_QUEUE",
-        payload: re
-      }), m && navigator.vibrate && navigator.vibrate(50));
-    }, [C.visible, C.queue, m]),
-    V = React.useCallback(D => {
+    O = React.useCallback(
+      (D, q, G = "info", de) => {
+        const re = {
+            id: Date.now() + Math.random(),
+            message: D,
+            icon: q,
+            category: G,
+            action: de,
+          },
+          X = [...C.visible, ...C.queue];
+        (!de && X.some((Ie) => Ie.message === D && !Ie.action)) ||
+          (C.visible.length < Co.maxVisible
+            ? S({
+                type: "ADD_TO_VISIBLE",
+                payload: re,
+              })
+            : S({
+                type: "ADD_TO_QUEUE",
+                payload: re,
+              }),
+          m && navigator.vibrate && navigator.vibrate(50));
+      },
+      [C.visible, C.queue, m]
+    ),
+    V = React.useCallback((D) => {
       S({
         type: "REMOVE",
         payload: {
-          id: D
-        }
+          id: D,
+        },
       });
     }, []),
     U = React.useCallback(() => {
       S({
-        type: "PROMOTE"
+        type: "PROMOTE",
       });
     }, []),
     E = React.useCallback(() => {
       S({
-        type: "CLEAR_ALL"
-      }), m && navigator.vibrate && navigator.vibrate(20);
+        type: "CLEAR_ALL",
+      }),
+        m && navigator.vibrate && navigator.vibrate(20);
     }, [m]),
-    K = D => {
-      t === "focus" && D !== "focus" && c(false), n(D), m && navigator.vibrate && navigator.vibrate(5);
+    K = (D) => {
+      t === "focus" && D !== "focus" && c(false),
+        n(D),
+        m && navigator.vibrate && navigator.vibrate(5);
     },
     oe = () => d(true),
     ve = () => d(false),
@@ -186,7 +209,7 @@ export const UIProvider = ({
       fontSize: y,
       setFontSize: p,
       devModeEnabled: g,
-      setDevModeEnabled: b
+      setDevModeEnabled: b,
     };
   return <U2.Provider value={Z}>{e}</U2.Provider>;
 };

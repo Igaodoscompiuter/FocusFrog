@@ -102,7 +102,7 @@
   width: 28px;
   height: 28px;
 }
-#pomodoro-config-card.configCard {
+:global(#pomodoro-config-card).configCard {
   background-color: var(--surface-color);
   border-radius: var(--border-radius-xl);
   border: 1px solid var(--border-color);
@@ -112,25 +112,25 @@
   flex-direction: column;
   gap: var(--sp-xs);
 }
-#pomodoro-config-card .divider {
+:global(#pomodoro-config-card) .divider {
   width: 100%;
   height: 1px;
   background-color: var(--border-color);
   margin: var(--sp-sm) 0;
 }
-#pomodoro-config-card .configCardControls {
+:global(#pomodoro-config-card) .configCardControls {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--sp-sm);
   padding: var(--sp-sm) 0;
 }
-#pomodoro-config-card .controlsLabel {
+:global(#pomodoro-config-card) .controlsLabel {
   font-size: 1rem;
   font-weight: 500;
   color: var(--text-secondary-color);
 }
-#pomodoro-config-card .cycleSelector {
+:global(#pomodoro-config-card) .cycleSelector {
   display: flex;
   align-items: center;
   gap: var(--sp-md);
@@ -138,7 +138,7 @@
   padding: var(--sp-sm);
   border-radius: var(--border-radius-lg);
 }
-#pomodoro-config-card .cycleButton {
+:global(#pomodoro-config-card) .cycleButton {
   all: unset;
   box-sizing: border-box;
   background-color: var(--border-color);
@@ -154,21 +154,21 @@
   justify-content: center;
   transition: all 0.1s ease-out;
 }
-#pomodoro-config-card .cycleButton:active {
+:global(#pomodoro-config-card) .cycleButton:active {
   box-shadow: inset 0 2px 4px #0003;
   transform: scale(0.95);
 }
-#pomodoro-config-card .cycleCount {
+:global(#pomodoro-config-card) .cycleCount {
   width: 40px;
   text-align: center;
 }
-#pomodoro-config-card .cycleCount span {
+:global(#pomodoro-config-card) .cycleCount span {
   font-family: var(--font-poppins);
   font-weight: 700;
   font-size: 1.4rem;
   color: var(--text-color);
 }
-#pomodoro-config-card .accentYellow {
+:global(#pomodoro-config-card) .accentYellow {
   all: unset;
   box-sizing: border-box;
   background-color: var(--accent-color);
@@ -187,10 +187,10 @@
   margin-top: var(--sp-sm);
   transition: filter 0.2s ease-out, transform 0.2s ease-out;
 }
-#pomodoro-config-card .accentYellow:hover {
+:global(#pomodoro-config-card) .accentYellow:hover {
   filter: brightness(1.1);
 }
-#pomodoro-config-card .accentYellow:active {
+:global(#pomodoro-config-card) .accentYellow:active {
   filter: brightness(0.95);
   transform: scale(0.98);
 }

@@ -1,7 +1,7 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
-import * as React from 'react';
-import * as jsxRuntime from 'react/jsx-runtime';
+import * as React from "react";
+import * as jsxRuntime from "react/jsx-runtime";
 
 export const Va = {
   "light-theme": {
@@ -40,9 +40,9 @@ export const Va = {
       "--primary-color-translucent": "rgba(31, 122, 77, 0.3)",
       "--surface-rgb": "255, 255, 255",
       "--text-rgb": "16, 38, 26",
-      "--danger-color-translucent": "rgba(220, 38, 38, 0.12)"
+      "--danger-color-translucent": "rgba(220, 38, 38, 0.12)",
     },
-    preview: "linear-gradient(to bottom right, #FFFFFF, #EAF5EC)"
+    preview: "linear-gradient(to bottom right, #FFFFFF, #EAF5EC)",
   },
   "dark-theme": {
     colors: {
@@ -80,18 +80,18 @@ export const Va = {
       "--primary-color-translucent": "rgba(59, 130, 246, 0.35)",
       "--surface-rgb": "31, 41, 55",
       "--text-rgb": "243, 244, 246",
-      "--danger-color-translucent": "rgba(239, 68, 68, 0.15)"
+      "--danger-color-translucent": "rgba(239, 68, 68, 0.15)",
     },
-    preview: "linear-gradient(to bottom right, #1F2937, #111827)"
-  }
+    preview: "linear-gradient(to bottom right, #1F2937, #111827)",
+  },
 };
 
-const tu = e => {
+const tu = (e) => {
   const t = parseInt(e.replace("#", ""), 16);
-  return `${t >> 16 & 255}, ${t >> 8 & 255}, ${t & 255}`;
+  return `${(t >> 16) & 255}, ${(t >> 8) & 255}, ${t & 255}`;
 };
 
-const io = e => {
+const io = (e) => {
   const t = tu(e.primary),
     n = tu(e.accent),
     s = (r, o) => `rgba(${r}, ${o})`;
@@ -131,9 +131,9 @@ const io = e => {
       "--primary-color-translucent": s(t, 0.35),
       "--surface-rgb": tu(e.surface),
       "--text-rgb": tu(e.text),
-      "--danger-color-translucent": "rgba(239, 68, 68, 0.15)"
+      "--danger-color-translucent": "rgba(239, 68, 68, 0.15)",
     },
-    preview: `linear-gradient(to bottom right, ${e.surface}, ${e.bg})`
+    preview: `linear-gradient(to bottom right, ${e.surface}, ${e.bg})`,
   };
 };
 
@@ -153,7 +153,7 @@ Object.assign(Va, {
     muted: "#8FB3AE",
     border: "#1E3A40",
     borderLight: "#2A4E55",
-    onAccent: "#0B1A1E"
+    onAccent: "#0B1A1E",
   }),
   "regia-theme": io({
     light: true,
@@ -171,7 +171,7 @@ Object.assign(Va, {
     muted: "#7B6470",
     border: "#FBD5E5",
     borderLight: "#FDE3EE",
-    onAccent: "#FFFFFF"
+    onAccent: "#FFFFFF",
   }),
   "musgo-theme": io({
     bg: "#141A12",
@@ -188,7 +188,7 @@ Object.assign(Va, {
     muted: "#A3AE96",
     border: "#2E3A29",
     borderLight: "#3C4B36",
-    onAccent: "#141A12"
+    onAccent: "#141A12",
   }),
   "mare-theme": io({
     bg: "#0A1628",
@@ -205,7 +205,7 @@ Object.assign(Va, {
     muted: "#93A8C2",
     border: "#1E3554",
     borderLight: "#2A4568",
-    onAccent: "#0A1628"
+    onAccent: "#0A1628",
   }),
   "neblina-theme": io({
     light: true,
@@ -223,7 +223,7 @@ Object.assign(Va, {
     muted: "#66756B",
     border: "#D8E2DB",
     borderLight: "#E4EBE6",
-    onAccent: "#FFFFFF"
+    onAccent: "#FFFFFF",
   }),
   "ambar-theme": io({
     bg: "#1A1206",
@@ -240,7 +240,7 @@ Object.assign(Va, {
     muted: "#BFA77F",
     border: "#3B2A12",
     borderLight: "#4A3518",
-    onAccent: "#1A1206"
+    onAccent: "#1A1206",
   }),
   "galaxia-theme": io({
     bg: "#0D0B1F",
@@ -257,57 +257,67 @@ Object.assign(Va, {
     muted: "#A79FD0",
     border: "#2D2760",
     borderLight: "#3B3478",
-    onAccent: "#0D0B1F"
-  })
+    onAccent: "#0D0B1F",
+  }),
 });
 
-export const nu = [{
-  id: "dark-theme",
-  name: "Escuro",
-  price: 0,
-  desc: "O tema de sempre."
-}, {
-  id: "light-theme",
-  name: "Claro",
-  price: 0,
-  desc: "Verde-menta, pra usar de dia."
-}, {
-  id: "musgo-theme",
-  name: "Musgo",
-  price: 200,
-  desc: "Floresta úmida, tons de terra."
-}, {
-  id: "mare-theme",
-  name: "Maré",
-  price: 200,
-  desc: "Azul fundo com boia laranja."
-}, {
-  id: "lagoa-theme",
-  name: "Lagoa à noite",
-  price: 300,
-  desc: "Verde-água e luz de vaga-lume."
-}, {
-  id: "regia-theme",
-  name: "Vitória-régia",
-  price: 300,
-  desc: "Rosa de flor sobre folha verde."
-}, {
-  id: "neblina-theme",
-  name: "Neblina",
-  price: 400,
-  desc: "Manhã cinza-verde, bem calma."
-}, {
-  id: "ambar-theme",
-  name: "Âmbar noturno",
-  price: 500,
-  desc: "Pouca luz azul, pra depois das 22h."
-}, {
-  id: "galaxia-theme",
-  name: "Galáxia",
-  price: 800,
-  desc: "O tema do Sapo Galáxia.",
-  epic: true
-}];
+export const nu = [
+  {
+    id: "dark-theme",
+    name: "Escuro",
+    price: 0,
+    desc: "O tema de sempre.",
+  },
+  {
+    id: "light-theme",
+    name: "Claro",
+    price: 0,
+    desc: "Verde-menta, pra usar de dia.",
+  },
+  {
+    id: "musgo-theme",
+    name: "Musgo",
+    price: 200,
+    desc: "Floresta úmida, tons de terra.",
+  },
+  {
+    id: "mare-theme",
+    name: "Maré",
+    price: 200,
+    desc: "Azul fundo com boia laranja.",
+  },
+  {
+    id: "lagoa-theme",
+    name: "Lagoa à noite",
+    price: 300,
+    desc: "Verde-água e luz de vaga-lume.",
+  },
+  {
+    id: "regia-theme",
+    name: "Vitória-régia",
+    price: 300,
+    desc: "Rosa de flor sobre folha verde.",
+  },
+  {
+    id: "neblina-theme",
+    name: "Neblina",
+    price: 400,
+    desc: "Manhã cinza-verde, bem calma.",
+  },
+  {
+    id: "ambar-theme",
+    name: "Âmbar noturno",
+    price: 500,
+    desc: "Pouca luz azul, pra depois das 22h.",
+  },
+  {
+    id: "galaxia-theme",
+    name: "Galáxia",
+    price: 800,
+    desc: "O tema do Sapo Galáxia.",
+    epic: true,
+  },
+];
 
 const su = "focusfrog_theme_data_v2";
 
@@ -324,39 +334,39 @@ const OI = {
   activeSoundId: "none",
   activeEffectId: "default",
   pontosFoco: 0,
-  unlockedRewards: ["dark-theme", "none"]
+  unlockedRewards: ["dark-theme", "none"],
 };
 
-export const ThemeProvider = ({
-  children: e
-}) => {
+export const ThemeProvider = ({ children: e }) => {
   const [t, n] = React.useState(OI),
     [s, r] = React.useState(true);
   React.useEffect(() => {
     try {
       const x = localStorage.getItem(su);
-      x && n(k => ({
-        ...k,
-        ...JSON.parse(x)
-      }));
+      x &&
+        n((k) => ({
+          ...k,
+          ...JSON.parse(x),
+        }));
     } catch (x) {
       console.error("Failed to load theme data from localStorage", x);
     }
     r(false);
-  }, []), React.useEffect(() => {
-    const x = Va[t.activeThemeId] || Va["dark-theme"],
-      k = document.documentElement;
-    Object.entries(x.colors).forEach(([y, p]) => {
-      k.style.setProperty(y, p);
-    });
-  }, [t.activeThemeId]);
+  }, []),
+    React.useEffect(() => {
+      const x = Va[t.activeThemeId] || Va["dark-theme"],
+        k = document.documentElement;
+      Object.entries(x.colors).forEach(([y, p]) => {
+        k.style.setProperty(y, p);
+      });
+    }, [t.activeThemeId]);
   const o = React.useCallback((x, k) => {
-      n(y => {
+      n((y) => {
         const p = y[x],
           g = typeof k == "function" ? k(p) : k,
           b = {
             ...y,
-            [x]: g
+            [x]: g,
           };
         try {
           localStorage.setItem(su, JSON.stringify(b));
@@ -366,43 +376,76 @@ export const ThemeProvider = ({
         return b;
       });
     }, []),
-    a = React.useCallback(x => {
-      o("activeThemeId", x);
-    }, [o]),
-    l = React.useCallback(x => {
-      o("activeSoundId", x);
-    }, [o]),
-    c = React.useCallback(x => {
-      o("pontosFoco", x);
-    }, [o]),
-    u = React.useCallback(x => {
-      o("unlockedRewards", x);
-    }, [o]),
-    d = React.useCallback(x => o("activeEffectId", x), [o]),
-    f = React.useCallback((x, k) => k === 0 || t.unlockedRewards.includes(x), [t.unlockedRewards]),
-    h = React.useCallback((x, k) => k === 0 || t.unlockedRewards.includes(x) ? "owned" : t.pontosFoco < k ? "insufficient" : (n(y => {
-      if (y.unlockedRewards.includes(x) || y.pontosFoco < k) return y;
-      const p = {
-        ...y,
-        pontosFoco: y.pontosFoco - k,
-        unlockedRewards: [...y.unlockedRewards, x]
-      };
-      try {
-        localStorage.setItem(su, JSON.stringify(p));
-      } catch {}
-      return p;
-    }), "ok"), [t.pontosFoco, t.unlockedRewards]),
-    m = React.useCallback(x => x <= 0 ? true : t.pontosFoco < x ? false : (n(k => {
-      if (k.pontosFoco < x) return k;
-      const y = {
-        ...k,
-        pontosFoco: k.pontosFoco - x
-      };
-      try {
-        localStorage.setItem(su, JSON.stringify(y));
-      } catch {}
-      return y;
-    }), true), [t.pontosFoco]),
+    a = React.useCallback(
+      (x) => {
+        o("activeThemeId", x);
+      },
+      [o]
+    ),
+    l = React.useCallback(
+      (x) => {
+        o("activeSoundId", x);
+      },
+      [o]
+    ),
+    c = React.useCallback(
+      (x) => {
+        o("pontosFoco", x);
+      },
+      [o]
+    ),
+    u = React.useCallback(
+      (x) => {
+        o("unlockedRewards", x);
+      },
+      [o]
+    ),
+    d = React.useCallback((x) => o("activeEffectId", x), [o]),
+    f = React.useCallback(
+      (x, k) => k === 0 || t.unlockedRewards.includes(x),
+      [t.unlockedRewards]
+    ),
+    h = React.useCallback(
+      (x, k) =>
+        k === 0 || t.unlockedRewards.includes(x)
+          ? "owned"
+          : t.pontosFoco < k
+          ? "insufficient"
+          : (n((y) => {
+              if (y.unlockedRewards.includes(x) || y.pontosFoco < k) return y;
+              const p = {
+                ...y,
+                pontosFoco: y.pontosFoco - k,
+                unlockedRewards: [...y.unlockedRewards, x],
+              };
+              try {
+                localStorage.setItem(su, JSON.stringify(p));
+              } catch {}
+              return p;
+            }),
+            "ok"),
+      [t.pontosFoco, t.unlockedRewards]
+    ),
+    m = React.useCallback(
+      (x) =>
+        x <= 0
+          ? true
+          : t.pontosFoco < x
+          ? false
+          : (n((k) => {
+              if (k.pontosFoco < x) return k;
+              const y = {
+                ...k,
+                pontosFoco: k.pontosFoco - x,
+              };
+              try {
+                localStorage.setItem(su, JSON.stringify(y));
+              } catch {}
+              return y;
+            }),
+            true),
+      [t.pontosFoco]
+    ),
     v = {
       ...t,
       setActiveThemeId: a,
@@ -413,7 +456,7 @@ export const ThemeProvider = ({
       buyItem: h,
       spendPoints: m,
       isUnlocked: f,
-      loadingTheme: s
+      loadingTheme: s,
     };
   return <iS.Provider value={v}>{e}</iS.Provider>;
 };

@@ -1,6 +1,6 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
-import * as React from 'react';
+import * as React from "react";
 
 export function useLocalStorage(e, t) {
   const [n, s] = React.useState(() => {
@@ -12,11 +12,15 @@ export function useLocalStorage(e, t) {
       return console.error(`Error reading localStorage key “${e}”:`, r), t;
     }
   });
-  return React.useEffect(() => {
-    try {
-      typeof window < "u" && window.localStorage.setItem(e, JSON.stringify(n));
-    } catch (r) {
-      console.error(`Error setting localStorage key “${e}”:`, r);
-    }
-  }, [e, n]), [n, s];
+  return (
+    React.useEffect(() => {
+      try {
+        typeof window < "u" &&
+          window.localStorage.setItem(e, JSON.stringify(n));
+      } catch (r) {
+        console.error(`Error setting localStorage key “${e}”:`, r);
+      }
+    }, [e, n]),
+    [n, s]
+  );
 }
