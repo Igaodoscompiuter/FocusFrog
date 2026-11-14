@@ -35,7 +35,7 @@ const qT = document.getElementById("root");
 
 if (!qT) throw new Error("Could not find root element to mount to");
 
-if ("serviceWorker" in navigator) {
+if (!Capacitor.isNativePlatform() && "serviceWorker" in navigator) {
   const e = new Workbox("/sw.js");
   e.addEventListener("waiting", () => {
     e.messageSkipWaiting();

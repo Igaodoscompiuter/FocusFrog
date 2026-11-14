@@ -2,6 +2,7 @@
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
 import * as React from "react";
 import { lazyImport } from "./lazyImport";
+import { Capacitor } from "@capacitor/core";
 import * as workboxWindow from "workbox-window";
 
 function jX(e = {}) {
@@ -18,7 +19,7 @@ function jX(e = {}) {
     await c, u == null || u();
   };
   async function f() {
-    if ("serviceWorker" in navigator) {
+    if (!Capacitor.isNativePlatform() && "serviceWorker" in navigator) {
       if (
         ((l = await lazyImport(async () => {
           const { Workbox: h } = await Promise.resolve().then(
