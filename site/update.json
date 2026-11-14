@@ -1,17 +1,17 @@
 {
-  "versionCode": 14,
-  "versionName": "1.5.0",
+  "versionCode": 44,
+  "versionName": "2.4.11",
   "apkUrl": "https://focusfrog.netlify.app/FocusFrog.apk",
-  "title": "FocusFrog 1.5.0",
-  "message": "Conta com Google, Loja do Sapo com sons reais de natureza e sapos, e widget do Sapo do Dia.",
+  "title": "FocusFrog 2.4.11",
+  "message": "Mais leve e mais rápido: abre no seu tema sem piscar, o foco não trava a lista e o widget do mascote ganhou layout novo.",
   "notes": [
-    "Entre com o Google e leve seus dados pra outro celular",
-    "Loja do Sapo: temas novos e 31 sons gravados de verdade",
-    "Sapos premium: coros de lagoa e o Sapo-parteiro",
-    "Escolha o som de início, pausa e fim do foco",
-    "Widget do Sapo do Dia e compartilhar sapo novo"
+    "Abre direto no seu tema, sem piscar o tema padrão",
+    "Mais leve com o foco rodando: a lista de tarefas não trava",
+    "Jardim abre mais rápido a partir da segunda visita",
+    "Widget do mascote em faixa e prévias reais na hora de adicionar widgets",
+    "Aba Foco: cartão do Pomodoro corrigido"
   ],
-  "publishedAt": "2026-10-11",
+  "publishedAt": "2026-11-14",
   "mandatory": false,
-  "sha256": "6c49b78897716ff475b69cb0d73cd8f09ac455d39072d8448e0fc4bf48c62a37"
+  "sha256": "5350e1c626c17a6a4875f1ac5f5fec8a769d205aae71a5a784f6eabf41e9ee23"
 }
