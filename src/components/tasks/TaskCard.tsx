@@ -62,7 +62,7 @@ const MM = [
   },
 ];
 
-export const TaskCard = ({
+const TaskCardImpl = ({
   task: e,
   tags: t,
   quadrant: n,
@@ -376,3 +376,6 @@ export const TaskCard = ({
     </div>
   );
 };
+
+// memo: o cartão só re-renderiza quando a tarefa/props ou os contexts que ele usa mudam.
+export const TaskCard = React.memo(TaskCardImpl);

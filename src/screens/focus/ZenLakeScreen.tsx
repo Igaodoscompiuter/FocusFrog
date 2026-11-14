@@ -11,7 +11,7 @@ import { icons } from "../../components/Icons";
 import { useTheme } from "../../context/ThemeContext";
 import { fl } from "../../data/ambientSounds";
 import { kn } from "../../domain/taskKinds";
-import { usePomodoro } from "../../context/PomodoroContext";
+import { usePomodoro, usePomodoroTime } from "../../context/PomodoroContext";
 import { useTasks } from "../../context/TasksContext";
 import { useMascot } from "../../hooks/useMascot";
 import { C_oi, Ms } from "../../components/ui/Sheet";
@@ -37,17 +37,15 @@ const ZenLakeScreen = () => {
   const {
       sessionStatus: r,
       activeTaskTitle: o,
-      timeRemaining: a,
       isPaused: l,
       resumeCycle: c,
       pauseCycle: u,
       finishSession: d,
       activeTaskId: f,
       activeStepId: h,
-      cycleProgress: m,
-      sessionProgress: v,
       sessionFrog: x,
     } = usePomodoro(),
+    { timeRemaining: a, cycleProgress: m, sessionProgress: v } = usePomodoroTime(),
     { activeSoundId: k } = useTheme(),
     { soundEnabled: y } = useUI(),
     p =

@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
 import * as React from "react";
+import { useShallowStable } from "../utils/useShallowStable";
 import * as jsxRuntime from "react/jsx-runtime";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { FROG_SPECIES } from "../data/frogs";
@@ -68,5 +69,6 @@ export const UserProvider = ({ children: e }) => {
       setCurrentFrogForSession: h,
       collectCurrentFrog: x,
     };
-  return <J2.Provider value={p}>{e}</J2.Provider>;
+  const stableValue = useShallowStable(p);
+  return <J2.Provider value={stableValue}>{e}</J2.Provider>;
 };

@@ -337,29 +337,34 @@ const OI = {
   unlockedRewards: ["dark-theme", "none"],
 };
 
+/** Lê o tema salvo de forma síncrona, para o primeiro render já sair com o tema certo. */
+export function readStoredThemeData() {
+  try {
+    const x = localStorage.getItem(su);
+    if (x) return { ...OI, ...JSON.parse(x) };
+  } catch (x) {
+    console.error("Failed to load theme data from localStorage", x);
+  }
+  return OI;
+}
+
+/** Aplica as variáveis de cor do tema no <html>. Chamado antes do React montar e a cada troca. */
+export function applyThemeVars(themeId) {
+  const x = Va[themeId] || Va["dark-theme"],
+    k = document.documentElement;
+  Object.entries(x.colors).forEach(([y, p]) => {
+    k.style.setProperty(y, p);
+  });
+  k.style.backgroundColor = x.colors["--background-color"];
+  k.style.colorScheme = x.colors["--text-rgb"].startsWith("2") ? "dark" : "light";
+}
+
 export const ThemeProvider = ({ children: e }) => {
-  const [t, n] = React.useState(OI),
-    [s, r] = React.useState(true);
-  React.useEffect(() => {
-    try {
-      const x = localStorage.getItem(su);
-      x &&
-        n((k) => ({
-          ...k,
-          ...JSON.parse(x),
-        }));
-    } catch (x) {
-      console.error("Failed to load theme data from localStorage", x);
-    }
-    r(false);
-  }, []),
-    React.useEffect(() => {
-      const x = Va[t.activeThemeId] || Va["dark-theme"],
-        k = document.documentElement;
-      Object.entries(x.colors).forEach(([y, p]) => {
-        k.style.setProperty(y, p);
-      });
-    }, [t.activeThemeId]);
+  const [t, n] = React.useState(readStoredThemeData),
+    s = false;
+  React.useLayoutEffect(() => {
+    applyThemeVars(t.activeThemeId);
+  }, [t.activeThemeId]);
   const o = React.useCallback((x, k) => {
       n((y) => {
         const p = y[x],
@@ -446,7 +451,7 @@ export const ThemeProvider = ({ children: e }) => {
             true),
       [t.pontosFoco]
     ),
-    v = {
+    v = React.useMemo(() => ({
       ...t,
       setActiveThemeId: a,
       setActiveSoundId: l,
@@ -457,6 +462,6 @@ export const ThemeProvider = ({ children: e }) => {
       spendPoints: m,
       isUnlocked: f,
       loadingTheme: s,
-    };
+    }), [t, a, l, c, u, d, h, m, f]);
   return <iS.Provider value={v}>{e}</iS.Provider>;
 };

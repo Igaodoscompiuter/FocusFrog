@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
 import * as React from "react";
+import { useShallowStable } from "../utils/useShallowStable";
 import * as jsxRuntime from "react/jsx-runtime";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
@@ -211,5 +212,6 @@ export const UIProvider = ({ children: e }) => {
       devModeEnabled: g,
       setDevModeEnabled: b,
     };
-  return <U2.Provider value={Z}>{e}</U2.Provider>;
+  const stableValue = useShallowStable(Z);
+  return <U2.Provider value={stableValue}>{e}</U2.Provider>;
 };

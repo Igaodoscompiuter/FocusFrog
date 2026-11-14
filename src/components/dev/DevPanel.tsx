@@ -10,7 +10,8 @@ import { FiArrowLeft, FiChevronRight } from "react-icons/fi";
 import { describeDays, formatMinutes, qy } from "../../domain/routinesLegacy";
 import { useTasks } from "../../context/TasksContext";
 import { Y } from "../../screens/RewardsScreen";
-import { IMPORT_EXAMPLE, parseImport } from "../../domain/taskImportLegacy";
+// A importação usa Zod (~50 kB): carregada só quando o painel do desenvolvedor abre.
+const loadImportModule = () => import("../../domain/taskImportLegacy");
 
 const fY = {
   inbox: "Despejo",
@@ -52,10 +53,19 @@ export const DevPanel = ({ onDone: e }) => {
     [m, v] = React.useState(true),
     [x, k] = React.useState(false),
     y = React.useRef(null),
+    [importMod, setImportMod] = React.useState(null),
+    IMPORT_EXAMPLE = importMod ? importMod.IMPORT_EXAMPLE : "",
     p = React.useMemo(
-      () => (l.trim() ? parseImport(l, t, n, s) : null),
-      [l, t, n, s]
+      () => (importMod && l.trim() ? importMod.parseImport(l, t, n, s) : null),
+      [importMod, l, t, n, s]
     ),
+    _loadImport = React.useEffect(() => {
+      let alive = true;
+      loadImportModule().then((m) => alive && setImportMod(m));
+      return () => {
+        alive = false;
+      };
+    }, []),
     g = p ? p.ready.filter((E) => !(m && E.duplicate)) : [],
     b = p ? p.routines.filter((E) => !(m && E.duplicate)) : [],
     j = p

@@ -9,7 +9,7 @@ import { UIProvider } from "./context/UIContext";
 import { UserProvider } from "./context/UserContext";
 import { AuthProvider } from "./hooks/useAuth";
 import { InstallProvider } from "./context/InstallContext";
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider, applyThemeVars, readStoredThemeData } from "./context/ThemeContext";
 import { PomodoroProvider } from "./context/PomodoroContext";
 import { TasksProvider } from "./context/TasksContext";
 import { App } from "./App";
@@ -30,6 +30,9 @@ if (Capacitor.isNativePlatform() && "serviceWorker" in navigator) {
     })
     .catch(() => {});
 }
+
+// Aplica o tema salvo antes do primeiro render (evita piscar o tema padrão).
+applyThemeVars(readStoredThemeData().activeThemeId);
 
 const qT = document.getElementById("root");
 

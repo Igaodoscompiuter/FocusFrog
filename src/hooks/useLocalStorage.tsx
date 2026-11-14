@@ -12,8 +12,20 @@ export function useLocalStorage(e, t) {
       return console.error(`Error reading localStorage key “${e}”:`, r), t;
     }
   });
+  // O valor inicial acabou de ser lido do storage: não precisa regravar na montagem.
+  const skipFirstWrite = React.useRef(true),
+    lastKey = React.useRef(e);
   return (
     React.useEffect(() => {
+      if (skipFirstWrite.current && lastKey.current === e) {
+        skipFirstWrite.current = false;
+        // Se a chave já existe, o estado veio dela: regravar seria só custo.
+        // Se não existe, grava o padrão (comportamento original, usado pelo backup/sync).
+        try {
+          if (window.localStorage.getItem(e) !== null) return;
+        } catch {}
+      }
+      lastKey.current = e;
       try {
         typeof window < "u" &&
           window.localStorage.setItem(e, JSON.stringify(n));

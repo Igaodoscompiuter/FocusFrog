@@ -2,6 +2,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
+    <!-- Pinta o fundo do tema salvo antes de qualquer JS/CSS, para não piscar o tema padrão. -->
+    <script>
+      (function () {
+        var bg = { 'dark-theme': '#111827', 'light-theme': '#EAF5EC', 'lagoa-theme': '#0B1A1E', 'regia-theme': '#FFF5F7', 'musgo-theme': '#141A12', 'mare-theme': '#0A1628', 'neblina-theme': '#EEF2EF', 'ambar-theme': '#1A1206', 'galaxia-theme': '#0D0B1F' };
+        var id = 'dark-theme';
+        try { var d = JSON.parse(localStorage.getItem('focusfrog_theme_data_v2') || '{}'); if (d && bg[d.activeThemeId]) id = d.activeThemeId; } catch (e) {}
+        document.documentElement.style.backgroundColor = bg[id];
+        document.documentElement.style.setProperty('--background-color', bg[id]);
+        document.documentElement.setAttribute('data-theme', id);
+      })();
+    </script>
     <!-- Google Analytics 4 — fluxo "App Android" (o site tem fluxo próprio).
          No APK o app roda em https://localhost, onde o cookie do GA não é confiável:
          o identificador do aparelho fica no localStorage e vai como client_id. -->
@@ -31,17 +42,6 @@
     <div id="modal-root"></div> 
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Script para registar o Service Worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('Service Worker registado com sucesso:', registration);
-          }).catch(error => {
-            console.log('Falha ao registar o Service Worker:', error);
-          });
-        });
-      }
-    </script>
+    <!-- O service worker é registrado em src/main.tsx, só na web (não no app Android). -->
   </body>
 </html>

@@ -10,6 +10,9 @@ import { FrogCard } from "./FrogCard";
 import { sn } from "./ZenPond";
 import { PondScene } from "./PondScene";
 
+// Lagoa pausada entre visitas ao Jardim (ver LagoaEngine.park/attach).
+let parkedLagoa = null;
+
 const C_xZ = ({ children: e, onUnsupported: t }) => {
   const { pondFrogs: n, mergeFrogs: s, setEngineDriven: r } = Nc(),
     [o] = useMascot(),
@@ -34,27 +37,32 @@ const C_xZ = ({ children: e, onUnsupported: t }) => {
         (async () => {
           const v = a.current;
           if (!v) return;
-          const { LagoaEngine: x } = await lazyImport(async () => {
+          const callbacks = {
+            onFrogTap: (y) => {
+              const p = h.current.pondFrogs.find((g) => g.id === y);
+              p &&
+                f({
+                  frogId: p.id,
+                  speciesId: p.speciesId,
+                });
+            },
+            onMerge: (y, p) => h.current.mergeFrogs(y, p),
+          };
+          let k;
+          if (parkedLagoa && !parkedLagoa.destroyed) {
+            // Reabre a lagoa que ficou pausada na última visita (muito mais rápido que recriar).
+            (k = parkedLagoa), (parkedLagoa = null), k.attach(v, callbacks);
+          } else {
+            const { LagoaEngine: x } = await lazyImport(async () => {
               const { LagoaEngine: y } = await import(
                 "../../lagoa/lagoaEngine"
               );
               return {
                 LagoaEngine: y,
               };
-            }, []),
-            k = await x
-              .create(v, {
-                onFrogTap: (y) => {
-                  const p = h.current.pondFrogs.find((g) => g.id === y);
-                  p &&
-                    f({
-                      frogId: p.id,
-                      speciesId: p.speciesId,
-                    });
-                },
-                onMerge: (y, p) => h.current.mergeFrogs(y, p),
-              })
-              .catch(() => null);
+            }, []);
+            k = await x.create(v, callbacks).catch(() => null);
+          }
           if (!m) {
             k == null || k.destroy();
             return;
@@ -67,10 +75,12 @@ const C_xZ = ({ children: e, onUnsupported: t }) => {
         })(),
         () => {
           var v;
-          (m = false),
-            r(false),
-            (v = l.current) == null || v.destroy(),
-            (l.current = null);
+          (m = false), r(false), (v = l.current);
+          if (v) {
+            // Guarda uma lagoa pausada para a próxima visita; se já houver uma guardada, destrói esta.
+            parkedLagoa ? v.destroy() : (v.park(), (parkedLagoa = v));
+          }
+          l.current = null;
         }
       );
     }, [r]),

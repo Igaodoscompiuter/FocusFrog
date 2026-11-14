@@ -23,7 +23,8 @@ export function App() {
     [f, h] = React.useState(true),
     [m, v] = React.useState(false),
     [x, k] = React.useState(false),
-    [y, p] = React.useState(false);
+    // No Android a splash é nativa: não precisa da espera mínima da animação web.
+    [y, p] = React.useState(() => Capacitor.isNativePlatform());
   React.useEffect(() => {
     (document.body.className = `font-size-${a}`),
       (document.documentElement.dataset.fontSize = a);
@@ -45,14 +46,15 @@ export function App() {
     }, []),
     React.useEffect(() => {
       if (!x || !y) return;
-      const C = setTimeout(() => v(true), 50),
+      const native = Capacitor.isNativePlatform(),
+        C = setTimeout(() => v(true), 50),
         S = setTimeout(() => {
           Capacitor.isNativePlatform() &&
             CapSplashScreen.hide({
-              fadeOutDuration: 300,
+              fadeOutDuration: 200,
             }),
             h(false);
-        }, 800);
+        }, native ? 0 : 800);
       return () => {
         clearTimeout(C), clearTimeout(S);
       };

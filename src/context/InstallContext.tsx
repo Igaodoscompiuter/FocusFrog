@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
 import * as React from "react";
+import { useShallowStable } from "../utils/useShallowStable";
 import * as jsxRuntime from "react/jsx-runtime";
 import { M3 } from "../analytics";
 
@@ -42,5 +43,6 @@ export const InstallProvider = ({ children: e }) => {
       } else console.warn("O evento de instalação não está disponível.");
     },
   };
-  return <sS.Provider value={o}>{e}</sS.Provider>;
+  const stableValue = useShallowStable(o);
+  return <sS.Provider value={stableValue}>{e}</sS.Provider>;
 };

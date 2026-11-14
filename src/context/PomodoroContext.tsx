@@ -20,11 +20,21 @@ const MO = 5 * 60;
 
 const LS = React.createContext(undefined);
 
+/** Valores que mudam a cada segundo do timer. Ficam num context separado para
+ *  que só quem mostra o relógio re-renderize a cada tick. */
+const LT = React.createContext({
+  timeRemaining: 0,
+  sessionProgress: 0,
+  cycleProgress: 0,
+});
+
 export const usePomodoro = () => {
   const e = React.useContext(LS);
   if (!e) throw new Error("usePomodoro must be used within a PomodoroProvider");
   return e;
 };
+
+export const usePomodoroTime = () => React.useContext(LT);
 
 const LO = "MYSTERY";
 
@@ -75,6 +85,7 @@ export const PomodoroProvider = ({ children: e }) => {
     [S, T] = useLocalStorage("focusfrog_sessionStatus", "idle"),
     [P, O] = React.useState(false),
     [V, U] = React.useState(d1),
+    Vref = React.useRef(V),
     [E, K] = useLocalStorage("focusfrog_focusDuration", d1),
     [oe, ve] = useLocalStorage("focusfrog_breakDuration", MO),
     [Z, D] = useLocalStorage("focusfrog_totalCycles", 1),
@@ -112,9 +123,9 @@ export const PomodoroProvider = ({ children: e }) => {
     R = React.useCallback(() => {
       if (S === "idle") return 0;
       const L = (q - 1) * E,
-        Ce = S === "focus" ? Math.max(0, E - V) : E;
+        Ce = S === "focus" ? Math.max(0, E - Vref.current) : E;
       return (L + Ce) / 60;
-    }, [S, q, E, V]),
+    }, [S, q, E]),
     Ae = React.useCallback(() => {
       if (S === "idle") return;
       v({
@@ -308,7 +319,7 @@ export const PomodoroProvider = ({ children: e }) => {
     bi = React.useCallback(() => {
       if (S !== "idle") {
         O(false);
-        const L = Date.now() + V * 1e3;
+        const L = Date.now() + Vref.current * 1e3;
         h(L),
           $i(u || "Tarefa", S === "focus" ? "focus" : "break", L),
           ou(
@@ -320,8 +331,8 @@ export const PomodoroProvider = ({ children: e }) => {
             E
           );
       }
-    }, [S, V, u, j, q, Z, oe, E, h]),
-    ki = {
+    }, [S, u, j, q, Z, oe, E, h]),
+    ki = React.useMemo(() => ({
       pomodorosCompleted: o,
       activeTaskId: l,
       sessionEndsAt: f,
@@ -331,7 +342,6 @@ export const PomodoroProvider = ({ children: e }) => {
       mode: j,
       sessionStatus: S,
       isPaused: P,
-      timeRemaining: V,
       focusDuration: E,
       breakDuration: oe,
       totalCycles: Z,
@@ -348,9 +358,16 @@ export const PomodoroProvider = ({ children: e }) => {
       clearLastCompletedFocus: $,
       distractionNotes: g,
       setDistractionNotes: b,
-      sessionProgress: X,
-      cycleProgress: $e,
       sessionFrog: z,
-    };
-  return <LS.Provider value={ki}>{e}</LS.Provider>;
+    }), [o, l, f, u, We, H, j, S, P, E, oe, Z, q, Es, wi, bi, je, Ae, Ye, x, y, m, $, g, b, z]),
+    timeValue = React.useMemo(
+      () => ({ timeRemaining: V, sessionProgress: X, cycleProgress: $e }),
+      [V, X, $e]
+    );
+  Vref.current = V;
+  return (
+    <LS.Provider value={ki}>
+      <LT.Provider value={timeValue}>{e}</LT.Provider>
+    </LS.Provider>
+  );
 };

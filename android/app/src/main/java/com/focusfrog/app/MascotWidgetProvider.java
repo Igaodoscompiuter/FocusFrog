@@ -7,6 +7,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.BroadcastReceiver;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -52,6 +53,10 @@ public class MascotWidgetProvider extends AppWidgetProvider {
     static boolean restartLayers;
     static boolean vectorMode;
     private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+    // Handler separado só para encerrar o goAsync(): o HANDLER acima é limpo a cada toque
+    // (removeCallbacksAndMessages) e não pode cancelar o finish.
+    private static final Handler FINISH_HANDLER = new Handler(Looper.getMainLooper());
+    static final long KEEP_ALIVE_MAX_MS = 3000;
     static final int[] FRAME_IDS = {R.id.mascot_f0, R.id.mascot_f1, R.id.mascot_f2, R.id.mascot_f3, R.id.mascot_f4, R.id.mascot_f5, R.id.mascot_f6, R.id.mascot_f7, R.id.mascot_f8, R.id.mascot_f9, R.id.mascot_f10, R.id.mascot_f11, R.id.mascot_f12, R.id.mascot_f13, R.id.mascot_f14, R.id.mascot_f15, R.id.mascot_f16, R.id.mascot_f17, R.id.mascot_f18, R.id.mascot_f19, R.id.mascot_f20, R.id.mascot_f21, R.id.mascot_f22, R.id.mascot_f23};
     private static final float[][] FLY_IN = {new float[]{88.0f, 18.0f}, new float[]{84.0f, 23.0f}, new float[]{79.0f, 27.0f}, new float[]{76.0f, 30.0f}, new float[]{74.0f, 31.0f}, new float[]{73.0f, 32.0f}};
 
@@ -125,6 +130,19 @@ public class MascotWidgetProvider extends AppWidgetProvider {
         long hopEnd = !ACTION_PET.equals(action) ? 0L : 1330 + now;
         long nextEnd = max > now ? max + 150 : 0L;
         scheduleRefresh(context, hopEnd, nextEnd);
+        // Mantém o processo ativo até o fim do pulo, para o "voltar ao normal" não se perder
+        // se o Android congelar o app logo depois do toque. Reações mais longas ficam com o alarme.
+        if (hopEnd > now) {
+            final BroadcastReceiver.PendingResult pending = goAsync();
+            long keep = Math.min(KEEP_ALIVE_MAX_MS, (hopEnd - now) + 250);
+            FINISH_HANDLER.postDelayed(() -> {
+                try {
+                    pending.finish();
+                } catch (Exception e) {
+                    Log.w(TAG, "finish", e);
+                }
+            }, keep);
+        }
     }
 
     static {
@@ -407,7 +425,8 @@ public class MascotWidgetProvider extends AppWidgetProvider {
             if (f2 >= 260.0f) {
                 return Kind.LARGE;
             }
-            return f2 < 118.0f ? (f >= 300.0f ? Kind.STRIP : Kind.SMALL) : Kind.WIDE;
+            // Faixas baixas a partir de ~3 colunas usam a faixa: sapo à esquerda, ações à direita.
+            return f2 < 118.0f ? Kind.STRIP : Kind.WIDE;
         }
         if (f2 >= 230.0f && f >= 150.0f) {
             return Kind.TALL;
@@ -514,6 +533,8 @@ public class MascotWidgetProvider extends AppWidgetProvider {
                 remoteViews.setViewVisibility(R.id.mascot_focus_text, btnW < 72.0f ? 8 : 0);
             }
             if (kind == Kind.STRIP) {
+                // Faixa estreita: sem espaço útil para o balão, mostra só nome e nível.
+                remoteViews.setViewVisibility(R.id.mascot_bubble, textColW < 90.0f ? 8 : 0);
                 remoteViews.setInt(R.id.mascot_bubble, "setMaxLines", WidgetKit.linesFor(f2 - 44.0f, 12.0f, 1, 3));
                 if (Build.VERSION.SDK_INT >= 31) {
                     remoteViews.setViewLayoutWidth(R.id.mascot_tap, Math.max(56.0f, f2 - 16.0f), 1);

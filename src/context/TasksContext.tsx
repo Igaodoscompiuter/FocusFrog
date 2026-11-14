@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Recuperado do build 2.4.9 (tipagem e nomes locais ainda por revisar).
 import * as React from "react";
+import { useShallowStable } from "../utils/useShallowStable";
 import * as jsxRuntime from "react/jsx-runtime";
 import { Capacitor } from "@capacitor/core";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -1400,5 +1401,6 @@ export const TasksProvider = ({ children: e }) => {
       processTriage: tE,
       endTriage: Si,
     };
-  return <VS.Provider value={oE}>{e}</VS.Provider>;
+  const stableValue = useShallowStable(oE);
+  return <VS.Provider value={stableValue}>{e}</VS.Provider>;
 };

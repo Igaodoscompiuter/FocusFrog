@@ -478,6 +478,39 @@ class $ {
     })),
       this.ro.observe(this.host));
   }
+  /** Pausa a lagoa e solta o canvas do DOM, sem destruir o WebGL nem as texturas.
+   *  Permite reabrir o Jardim sem recriar a cena inteira. */
+  park() {
+    if (this.destroyed || this.parked) return;
+    this.parked = !0;
+    try {
+      this.app.ticker.stop();
+      // O Pixi mantém um ticker de sistema para eventos de ponteiro (60 quadros/s).
+      // Sem desligar, a lagoa pausada continuaria pedindo quadros em segundo plano.
+      this.PIXI.EventsTicker && this.PIXI.EventsTicker.removeTickerListener();
+      // A lagoa é a única cena Pixi do app: pode pausar também os tickers globais.
+      this.PIXI.Ticker && (this.PIXI.Ticker.system.stop(), this.PIXI.Ticker.shared.stop());
+    } catch {}
+    document.removeEventListener("visibilitychange", this.onVis);
+    this.ro && this.ro.disconnect();
+    this.app.canvas.remove();
+  }
+  /** Religa uma lagoa pausada num novo container. */
+  attach(t, s) {
+    if (this.destroyed) return;
+    this.host = t;
+    s && (this.cb = s);
+    t.appendChild(this.app.canvas);
+    this.app.resizeTo = t;
+    this.parked = !1;
+    document.addEventListener("visibilitychange", this.onVis);
+    this.ro && this.ro.observe(t);
+    try {
+      this.PIXI.EventsTicker && this.PIXI.EventsTicker.addTickerListener();
+      this.PIXI.Ticker && (this.PIXI.Ticker.system.start(), this.PIXI.Ticker.shared.start());
+    } catch {}
+    document.hidden || this.app.ticker.start();
+  }
   destroy() {
     var t;
     if (!this.destroyed) {
